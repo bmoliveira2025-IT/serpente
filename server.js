@@ -117,10 +117,18 @@ function checkCollision(head, target) {
 }
 
 function dropDeathFood(snake) {
-    const step = 15;
-    const maxIdx = Math.min(Math.floor(snake.length) * 5, snake.history.length - 1);
+    if (!snake.history || snake.history.length < 2) return;
+
+    // Apenas a quantidade COMIDA QUE ELA COMEU (Crescimento)
+    const eatenCount = Math.max(0, Math.floor((snake.length - GAME_CONFIG.SNAKE_INITIAL_LENGTH) / GAME_CONFIG.GROWTH_PER_FOOD));
+    if (eatenCount <= 0) return;
+
+    // Distribuir eatenCount ao longo do corpo
+    const availableHistory = Math.min(snake.history.length, Math.floor(snake.length * 5));
+    const step = Math.max(1, Math.floor(availableHistory / eatenCount));
+    
     const newFoods = [];
-    for (let i = 0; i <= maxIdx; i += step) {
+    for (let i = 0; i < availableHistory && newFoods.length < eatenCount; i += step) {
         const pos = snake.history[i];
         if (pos) {
             const f = {
@@ -136,8 +144,9 @@ function dropDeathFood(snake) {
             newFoods.push(f);
         }
     }
-    // NOTIFICAR CLIENTES SOBRE OS NOVOS RESTOS (IMPORTANTE!)
-    io.emit('deathResidue', newFoods);
+    if (newFoods.length > 0) {
+        io.emit('deathResidue', newFoods);
+    }
 }
 
 // Bot & World Update Loop (~25Hz)
@@ -291,13 +300,17 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log(`Player disconnected: ${socket.id}`);
-        delete players[socket.id];
+        if (players[socket.id]) {
+            dropDeathFood(players[socket.id]);
+            delete players[socket.id];
+        }
         io.emit('playerLeft', socket.id);
     });
 
     socket.on('die', () => {
         if (players[socket.id]) {
             console.log(`Player died: ${socket.id}`);
+            dropDeathFood(players[socket.id]);
             delete players[socket.id];
             io.emit('playerLeft', socket.id);
         }
