@@ -186,6 +186,27 @@ setInterval(() => {
                 }
             }
         }
+
+        // --- BOTS COMENTO COMIDA ---
+        for (let i = foods.length - 1; i >= 0; i--) {
+            const f = foods[i];
+            const distSq = (bot.x - f.x) ** 2 + (bot.y - f.y) ** 2;
+            const eatThreshold = bot.radius + (f.radius || 2);
+            
+            if (distSq < eatThreshold ** 2) {
+                const foodId = f.id;
+                foods.splice(i, 1);
+                
+                const growth = f.isDeathFood ? 0.35 : 0.15;
+                bot.score += f.isDeathFood ? 5 : 1;
+                bot.length += growth;
+                bot.radius = Math.min(GAME_CONFIG.SNAKE_MAX_RADIUS, GAME_CONFIG.SNAKE_INITIAL_RADIUS + (bot.length - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.WIDTH_GROWTH_FACTOR);
+                
+                const newFood = spawnFood();
+                foods.push(newFood);
+                io.emit('foodEaten', { foodId, newFood });
+            }
+        }
     });
 
     // Enviar dados compactados para os clientes (AGORA COM O LENGTH)
