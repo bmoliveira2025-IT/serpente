@@ -1423,13 +1423,18 @@
         }
 
         // --- RENDERIZAÇÃO ---
-        function drawSnake(context, entity, activeSkin, isBoosting) {
+        function drawSnake(context, entity, activeSkin, isBoosting, customSpacing) {
             if (!activeSkin || !activeSkin.getBodyColor) {
                 // Safeguard: fallback skin if activeSkin is undefined
                 activeSkin = skins[0];
             }
             const segments = Math.floor(entity.length);
             const isHigh = qualityOpt === 'high';
+
+            // Determinar o espaçamento de desenho correto:
+            // Jogador local usa GAME_CONFIG.SNAKE_HISTORY_STEP (pois o histórico é 1px-step).
+            // Bots/Outros usam 1 (pois o histórico já vem "espaçado" do servidor).
+            const spacing = customSpacing || GAME_CONFIG.SNAKE_HISTORY_STEP;
 
             // PASS 1: Borda exterior e Brilho (O segredo do efeito Tubo perfeito)
             context.save();
@@ -1450,25 +1455,24 @@
             }
 
             context.lineWidth = (entity.radius * 2) + 6; // Borda preta sólida
-            context.strokeStyle = '#0a0e14';
+            context.strokeStyle = '#000000';
 
             context.beginPath();
-            let first = true;
-            const spacing = GAME_CONFIG.SNAKE_HISTORY_SPACING;
-            for (let i = segments - 1; i > 0; i--) {
+            context.moveTo(entity.x, entity.y);
+            for (let i = 1; i < segments; i++) {
                 const pos = entity.history[i * spacing];
-                if (!pos) continue;
-                if (first) { context.moveTo(pos.x, pos.y); first = false; }
-                else { context.lineTo(pos.x, pos.y); }
+                if (!pos) break;
+                context.lineTo(pos.x, pos.y);
             }
-            if (!first) context.lineTo(entity.x, entity.y);
             context.stroke();
             context.restore();
 
-            // PASS 2: Gomos Sólidos (Listras) - Agora vai até ao índice 0 (cabeça integrada no tubo)
+            // PASS 2: Corpo com gradiente por segmentos
             for (let i = segments - 1; i >= 0; i--) {
                 const pos = i === 0 ? { x: entity.x, y: entity.y } : entity.history[i * spacing];
                 if (!pos) continue;
+
+                const nextPos = i === 0 ? null : (i === 1 ? { x: entity.x, y: entity.y } : entity.history[(i - 1) * spacing]);
 
                 // Divisão por 4 cria listras mais grossas e realistas, iguais à imagem
                 let isDark = Math.floor(i / 4) % 2 === 0;
@@ -1642,7 +1646,8 @@
             ctx.globalCompositeOperation = 'source-over';
             ctx.shadowBlur = 0;
 
-            // Bots, Outros Jogadores e Jogador Local
+            const isBoostingAtivo = isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH;
+
             bots.forEach(bot => {
                 // Suavização simples para bots sincronizados
                 const lf = 0.2;
@@ -1662,13 +1667,13 @@
                     }
                 }
                 const skin = (bot.skinIndex !== undefined) ? skins[bot.skinIndex % skins.length] : skins[0];
-                drawSnake(ctx, bot, skin, bot.isBoosting);
+                drawSnake(ctx, bot, skin, bot.isBoosting, 1); // Spacing 1 para bots
             });
             Object.values(otherPlayers).forEach(p => {
                 const skin = (p.skinIndex !== undefined) ? skins[p.skinIndex % skins.length] : skins[0];
-                drawSnake(ctx, p, skin, p.isBoosting);
+                drawSnake(ctx, p, skin, p.isBoosting, 1); // Spacing 1 para outros jogadores
             });
-            drawSnake(ctx, player, skins[currentSkinIndex % skins.length], isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH);
+            drawSnake(ctx, player, skins[currentSkinIndex % skins.length], isBoostingAtivo, GAME_CONFIG.SNAKE_HISTORY_SPACING); // Spacing normal para o local
 
             // Nomes e UI In-World
             ctx.font = 'bold 16px Outfit, sans-serif'; ctx.textAlign = 'center';
