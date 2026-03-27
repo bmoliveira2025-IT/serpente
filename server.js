@@ -15,8 +15,8 @@ const PORT = process.env.PORT || 3000;
 // --- CONFIGURAÇÕES DO JOGO (100% Sincronizadas com o Front-end) ---
 // =================================================================
 const GAME_CONFIG = {
-    WORLD_SIZE: 9000,
-    TOTAL_FOOD: 1500,
+    WORLD_SIZE: 10000,                 
+    TOTAL_FOOD: 1400,                 
 
     SNAKE_INITIAL_LENGTH: 30,
     SNAKE_INITIAL_RADIUS: 18,
@@ -25,7 +25,7 @@ const GAME_CONFIG = {
     SNAKE_HISTORY_SPACING: 5,
     SNAKE_BASE_SPEED: 4.0,
 
-    SNAKE_HITBOX_SIZE: 0.75,
+    SNAKE_HITBOX_SIZE: 0.90,          // Aumentado para cobrir a linha visual exterior desenhada no canvas
     SNAKE_TURN_SPEED: 0.035,
     SNAKE_TURN_SPEED_BOOST: 0.015,
 
@@ -170,15 +170,19 @@ function killBot(bot) {
 for (let i = 0; i < GAME_CONFIG.NUM_BOTS; i++) bots.push(createBot());
 for (let i = 0; i < GAME_CONFIG.TOTAL_FOOD; i++) foods.push(spawnFood());
 
-// --- LÓGICA DE COLISÃO ---
+// --- LÓGICA DE COLISÃO (HITBOX AAA) ---
 function checkCollision(head, target) {
     if (!target.history || target.history.length < 2) return false;
 
     const headRadius = head.radius || GAME_CONFIG.SNAKE_INITIAL_RADIUS;
     const targetRadius = target.radius || GAME_CONFIG.SNAKE_INITIAL_RADIUS;
-    const tipX = head.x + Math.cos(head.angle) * (headRadius * 0.65);
-    const tipY = head.y + Math.sin(head.angle) * (headRadius * 0.65);
-    const thresholdSq = (headRadius * 0.35 + targetRadius * GAME_CONFIG.SNAKE_HITBOX_SIZE) ** 2;
+
+    // Ponta do nariz empurrada para o limite exterior (0.8)
+    const tipX = head.x + Math.cos(head.angle) * (headRadius * 0.8);
+    const tipY = head.y + Math.sin(head.angle) * (headRadius * 0.8);
+
+    // Hitbox rigorosa: Nariz contra raio visual efetivo do inimigo
+    const thresholdSq = (headRadius * 0.2 + targetRadius * GAME_CONFIG.SNAKE_HITBOX_SIZE) ** 2;
 
     const spacing = GAME_CONFIG.SNAKE_HISTORY_SPACING;
     const maxIdx = Math.min(Math.floor((target.length || GAME_CONFIG.SNAKE_INITIAL_LENGTH) * spacing), target.history.length - 1, GAME_CONFIG.MAX_HISTORY_LENGTH - 1);
@@ -278,6 +282,7 @@ setInterval(() => {
                     const neighbors = spatialGrid[`${gx + x},${gy + y}`];
                     if (neighbors) {
                         for (let other of neighbors) {
+                            // Se o bot encostar noutra entidade, ELE morre!
                             if (other.id !== bot.id && checkCollision(bot, other)) {
                                 killBot(bot); collisionTriggered = true; break;
                             }
@@ -332,7 +337,9 @@ io.on('connection', (socket) => {
             id: socket.id, name: data.name || 'Convidado',
             x: pos.x, y: pos.y, angle: 0, score: 0,
             length: GAME_CONFIG.SNAKE_INITIAL_LENGTH, radius: GAME_CONFIG.SNAKE_INITIAL_RADIUS,
-            history: [], skinIndex: data.skinIndex || 0, isDead: false
+            // CORREÇÃO CRÍTICA 1: Iniciar corpo na entrada. Sem isto, o bot atravessava um fantasma.
+            history: Array.from({ length: Math.min(GAME_CONFIG.MAX_HISTORY_LENGTH, Math.floor(GAME_CONFIG.SNAKE_INITIAL_LENGTH * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 10) }, () => ({ x: pos.x, y: pos.y })),
+            skinIndex: data.skinIndex || 0, isDead: false
         };
         socket.emit('init', { id: socket.id, players, foods, config: GAME_CONFIG });
 
@@ -342,7 +349,13 @@ io.on('connection', (socket) => {
     socket.on('update', (data) => {
         const p = players[socket.id];
         if (p) {
-            p.x = data.x; p.y = data.y; p.angle = data.angle;
+            const dx = data.x - p.x;
+            const dy = data.y - p.y;
+            const distMoved = Math.hypot(dx, dy);
+
+            p.x = data.x;
+            p.y = data.y;
+            p.angle = data.angle;
             p.isBoosting = data.isBoosting;
 
             p.score = Math.max(0, data.score || 0);
@@ -350,28 +363,25 @@ io.on('connection', (socket) => {
             p.radius = getEntityRadius(p.length);
 
             if (!p.history) p.history = [];
-            if (!p.lastHistoryX) { p.lastHistoryX = p.x; p.lastHistoryY = p.y; }
 
-            const distSinceLast = Math.hypot(p.x - p.lastHistoryX, p.y - p.lastHistoryY);
+            // CORREÇÃO CRÍTICA 2: O sistema agora rastreia o movimento EXATAMENTE como no cliente
+            // Não há mais perda de decimais (pixels engolidos) que deixavam o rabo curto
+            if (distMoved > 0.001) {
+                const pVx = dx / distMoved;
+                const pVy = dy / distMoved;
 
-            if (distSinceLast >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
-                const steps = Math.floor(distSinceLast / GAME_CONFIG.SNAKE_HISTORY_STEP);
-                const stepX = (p.x - p.lastHistoryX) / steps;
-                const stepY = (p.y - p.lastHistoryY) / steps;
-
-                for (let i = 1; i <= steps; i++) {
+                p.distAccum = (p.distAccum || 0) + distMoved;
+                while (p.distAccum >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
+                    p.distAccum -= GAME_CONFIG.SNAKE_HISTORY_STEP;
                     p.history.unshift({
-                        x: p.lastHistoryX + (stepX * i),
-                        y: p.lastHistoryY + (stepY * i)
+                        x: p.x - pVx * p.distAccum,
+                        y: p.y - pVy * p.distAccum
                     });
                 }
-
-                p.lastHistoryX = p.x;
-                p.lastHistoryY = p.y;
-
-                const targetLen = Math.min(GAME_CONFIG.MAX_HISTORY_LENGTH, Math.floor(p.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 1);
-                if (p.history.length > targetLen) p.history.length = targetLen;
             }
+
+            const targetLen = Math.min(GAME_CONFIG.MAX_HISTORY_LENGTH, Math.floor(p.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 1);
+            if (p.history.length > targetLen) p.history.length = targetLen;
 
             socket.broadcast.emit('playerUpdated', {
                 id: p.id,
