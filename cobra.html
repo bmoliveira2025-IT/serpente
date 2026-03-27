@@ -1354,8 +1354,8 @@
                     score: player.score,
                     length: player.length,
                     radius: player.radius,
-                    // optimization: send up to 2000 points for server-side collision
-                    history: player.history.slice(0, 2000),
+                    // optimization: send sparse history (every 5th point) to cover long distance with less data
+                    history: player.history.filter((_, i) => i % 5 === 0).slice(0, 400),
                     isBoosting: isBoosting
                 });
             }
