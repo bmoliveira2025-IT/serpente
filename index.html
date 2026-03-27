@@ -327,10 +327,8 @@
             height: auto;
             aspect-ratio: 2 / 1;
             background: transparent;
-            /* Removido o fundo feio da preview */
             border-radius: 12px;
             filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.5));
-            /* Sombra exterior global para a cobra inteira! */
         }
 
         .action-grid {
@@ -1511,7 +1509,14 @@
 
             const pos = getSafePosition();
             player.x = pos.x; player.y = pos.y;
-            player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH; player.score = 0; player.distAccum = 0;
+
+            // CORREÇÃO: Resetar também o targetLength e radius para evitar que a cobra nasça gigante
+            player.score = 0;
+            player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
+            player.targetLength = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
+            player.radius = GAME_CONFIG.SNAKE_INITIAL_RADIUS;
+
+            player.distAccum = 0;
             player.isDead = false;
             player.history = Array.from({ length: GAME_CONFIG.SNAKE_INITIAL_LENGTH * GAME_CONFIG.SNAKE_HISTORY_SPACING + 1 }, () => ({ x: player.x, y: player.y }));
 
