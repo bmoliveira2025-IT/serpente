@@ -15,8 +15,8 @@ const PORT = process.env.PORT || 3000;
 // --- CONFIGURAÇÕES DO JOGO (100% Sincronizadas com o Front-end) ---
 // =================================================================
 const GAME_CONFIG = {
-    WORLD_SIZE: 10000,                 
-    TOTAL_FOOD: 1400,                 
+    WORLD_SIZE: 9000,                 
+    TOTAL_FOOD: 1500,                 
 
     SNAKE_INITIAL_LENGTH: 30,
     SNAKE_INITIAL_RADIUS: 18,
@@ -42,7 +42,7 @@ const GAME_CONFIG = {
     BOOST_SPEED_MULT: 2.0,
     BOOST_SCORE_LOSS: 2,
     BOOST_LENGTH_LOSS: 0.25,          // (2 / 8 = 0.25)
-    BOOST_MIN_LENGTH: 30,             // O jogador não pode usar boost se for menor que o tamanho inicial
+    BOOST_MIN_LENGTH: 35,             // CORREÇÃO 1: Limite inicial para impedir de correr mal nasce
 
     MAGNET_STRENGTH: 0.3,
     MAGNET_RADIUS_MULT: 3.0,

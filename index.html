@@ -721,8 +721,8 @@
         // --- BLOCO DE CONFIGURAÇÃO DO JOGO (AJUSTE AQUI) ---
         // =============================================================
         const GAME_CONFIG = {
-            WORLD_SIZE: 10000,
-            TOTAL_FOOD: 1400,
+            WORLD_SIZE: 9000,
+            TOTAL_FOOD: 1500,
 
             SNAKE_INITIAL_LENGTH: 30,
             SNAKE_INITIAL_RADIUS: 18,
@@ -747,8 +747,8 @@
 
             BOOST_SPEED_MULT: 2.0,
             BOOST_SCORE_LOSS: 2,
-            BOOST_LENGTH_LOSS: 0.2,
-            BOOST_MIN_LENGTH: 10,
+            BOOST_LENGTH_LOSS: 0.25,
+            BOOST_MIN_LENGTH: 35, // CORREÇÃO 1: Limite inicial para impedir de correr mal nasce
             BOOST_FRAMES_PER_DROP: 2,
 
             CAMERA_BASE_ZOOM: 1.15,
@@ -758,7 +758,7 @@
 
             DEATH_FOOD_RADIUS: 3.5,
             FOOD_GLOW_MULT_NORMAL: 3.5,
-            FOOD_GLOW_MULT_DEATH: 3.0
+            FOOD_GLOW_MULT_DEATH: 2.0
         };
 
         let CENTER = GAME_CONFIG.WORLD_SIZE / 2;
@@ -912,7 +912,7 @@
         });
 
         socket.on('playerLeft', (id) => { delete otherPlayers[id]; });
-        socket.on('deathResidue', (newFoods) => { foods.push(...newFoods); });
+        socket.on('deathResidue', (newFoods) => { if (Array.isArray(newFoods)) foods.push(...newFoods); });
         socket.on('foodEaten', (data) => {
             const index = foods.findIndex(f => f && f.id === data.foodId);
             if (index !== -1) {
@@ -967,7 +967,7 @@
 
             const spacing = target.historySpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING;
             const targetLen = Math.max(1, Math.floor(target.length || GAME_CONFIG.SNAKE_INITIAL_LENGTH));
-            const maxHistoryIdx = Math.min(targetLen * spacing, target.history.length - 1, GAME_CONFIG.MAX_HISTORY_LENGTH - 1);
+            const maxHistoryIdx = Math.min(targetLen * spacing, (target.history?.length || 1) - 1, GAME_CONFIG.MAX_HISTORY_LENGTH - 1);
 
             const myHitboxR = headR * 0.35;
             const targetHitboxR = (target.radius || GAME_CONFIG.SNAKE_INITIAL_RADIUS) * GAME_CONFIG.SNAKE_HITBOX_SIZE;
@@ -983,8 +983,9 @@
         };
 
         const dropDeathFood = (snake) => {
+            if (!snake || !snake.history) return;
             const spacing = snake.historySpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING;
-            const segments = Math.min(Math.floor(snake.length), Math.floor(snake.history.length / spacing));
+            const segments = Math.min(Math.floor(snake.length), Math.floor((snake.history.length || 0) / spacing));
             for (let i = 0; i < segments; i++) {
                 const pos = i === 0 ? { x: snake.x, y: snake.y } : snake.history[i * spacing];
                 if (!pos) continue;
@@ -1082,7 +1083,7 @@
                     if (distToTarget > 100) {
                         const dx = ent.targetX - ent.x, dy = ent.targetY - ent.y;
                         ent.x = ent.targetX; ent.y = ent.targetY; ent.angle = ent.targetAngle;
-                        for (let i = 0; i < ent.history.length; i++) { ent.history[i].x += dx; ent.history[i].y += dy; }
+                        for (let i = 0; i < (ent.history?.length || 0); i++) { ent.history[i].x += dx; ent.history[i].y += dy; }
                         ent.lastX = ent.x; ent.lastY = ent.y; ent.distAccum = 0;
                     } else {
                         ent.x += (ent.targetX - ent.x) * lerpFactor; ent.y += (ent.targetY - ent.y) * lerpFactor;
@@ -1112,7 +1113,8 @@
             bots.forEach(updateEntityMovement);
             Object.values(otherPlayers).forEach(updateEntityMovement);
 
-            const isBoosting = isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH;
+            // CORREÇÃO 1: Limite restrito para poder usar o Boost (Precisa de ser maior que o tamanho inicial)
+            const isBoosting = isMouseDown && player.length >= GAME_CONFIG.BOOST_MIN_LENGTH;
             let camTargetX = camera.x, camTargetY = camera.y;
 
             // --- LÓGICA DO JOGADOR ---
@@ -1140,9 +1142,18 @@
                     player.boostCounter += dt;
                     if (player.boostCounter > GAME_CONFIG.BOOST_FRAMES_PER_DROP) {
                         player.boostCounter = 0;
-                        player.targetLength = Math.max(GAME_CONFIG.BOOST_MIN_LENGTH, player.targetLength - GAME_CONFIG.BOOST_LENGTH_LOSS);
+                        player.targetLength = Math.max(GAME_CONFIG.SNAKE_INITIAL_LENGTH, player.targetLength - GAME_CONFIG.BOOST_LENGTH_LOSS);
                         player.score = Math.max(0, player.score - GAME_CONFIG.BOOST_SCORE_LOSS);
-                        if (tail) foods.push(spawnFood(true, tail.x, tail.y));
+
+                        // CORREÇÃO 2: Larga uma bola de tamanho/score exato ao que consumiu!
+                        if (tail) {
+                            const bFood = spawnFood(false, tail.x, tail.y);
+                            bFood.isBoostFood = true;
+                            bFood.scoreValue = GAME_CONFIG.BOOST_SCORE_LOSS;
+                            bFood.growthValue = GAME_CONFIG.BOOST_LENGTH_LOSS;
+                            bFood.radius = 2.5; // Visualmente distinto (ligeiramente mais pequeno que as de morte)
+                            foods.push(bFood);
+                        }
                     }
                 } else {
                     player.speed = GAME_CONFIG.SNAKE_BASE_SPEED; player.boostCounter = 0;
@@ -1159,8 +1170,14 @@
                 if (!diedThisFrame) {
                     const enemies = [...bots, ...Object.values(otherPlayers)];
                     for (let e of enemies) {
+                        // Verifica se BATEU no inimigo
                         if (!e.isDead && checkPerfectCollision(player.x, player.y, player.radius, player.angle, e)) {
                             dropDeathFood(player); playerDie(); diedThisFrame = true; break;
+                        }
+                        // CORREÇÃO 3: Feedback Imediato! Verifica se o Inimigo BATEU em nós
+                        if (!e.isDead && checkPerfectCollision(e.x, e.y, e.radius, e.angle, player)) {
+                            e.isDead = true;
+                            dropDeathFood(e);
                         }
                     }
                 }
@@ -1190,13 +1207,18 @@
                 const magnet = player.radius * GAME_CONFIG.MAGNET_RADIUS_MULT;
                 for (let i = foods.length - 1; i >= 0; i--) {
                     const f = foods[i], d = Math.sqrt((player.x - f.x) ** 2 + (player.y - f.y) ** 2);
-                    if (d < player.radius + f.radius) {
+                    if (d < player.radius + (f.radius || 3)) {
                         foods.splice(i, 1);
                         spawnParticles(f.x, f.y, f.color, f.isDeathFood ? 15 : 8);
-                        let pts = f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD;
+
+                        // Atualiza com base em se a comida é de Boost, de Morte ou Normal
+                        let pts = f.isBoostFood ? f.scoreValue : (f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD);
+                        let growth = f.isBoostFood ? f.growthValue : (f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD);
+
                         spawnFloatingText(f.x, f.y, `+${pts}`, f.color);
-                        player.targetLength += f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD;
+                        player.targetLength += growth;
                         player.score += pts;
+
                         if (player.score > highScore) {
                             highScore = player.score; highScoreHomeElement.innerText = Math.floor(highScore);
                             localStorage.setItem('cobraioHighScore', highScore);
@@ -1358,7 +1380,7 @@
             foods.forEach(f => {
                 if (f.x < camera.x - vW / 2 - 30 || f.x > camera.x + vW / 2 + 30 || f.y < camera.y - vH / 2 - 30 || f.y > camera.y + vH / 2 + 30) return;
                 const phase = f.phase || 0;
-                const rAnim = f.isDeathFood ? f.radius : f.radius + Math.sin(Date.now() / 150 + phase) * 0.8;
+                const rAnim = f.isDeathFood ? (f.radius || 3.5) : (f.radius || 3) + Math.sin(Date.now() / 150 + phase) * 0.8;
                 const floatX = f.isDeathFood ? 0 : Math.sin(tTime * 1.5 + phase) * 4, floatY = f.isDeathFood ? 0 : Math.cos(tTime * 2.0 + phase) * 4;
                 const dX = f.x + floatX, dY = f.y + floatY;
 
@@ -1381,7 +1403,7 @@
                 ctx.globalCompositeOperation = 'source-over';
             }
 
-            const isBoostingAtivo = isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH;
+            const isBoostingAtivo = isMouseDown && player.length >= GAME_CONFIG.BOOST_MIN_LENGTH;
             bots.forEach(bot => drawSnake(ctx, bot, skins[bot.skinIndex % skins.length || 0], bot.isBoosting));
             Object.values(otherPlayers).forEach(p => drawSnake(ctx, p, skins[p.skinIndex % skins.length || 0], p.isBoosting));
 
@@ -1510,7 +1532,7 @@
             const pos = getSafePosition();
             player.x = pos.x; player.y = pos.y;
 
-            // CORREÇÃO: Resetar também o targetLength e radius para evitar que a cobra nasça gigante
+            // CORREÇÃO: Resetar também o targetLength e radius em cada vida nova.
             player.score = 0;
             player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
             player.targetLength = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
