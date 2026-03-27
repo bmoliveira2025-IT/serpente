@@ -25,6 +25,8 @@ const GAME_CONFIG = {
     SCORE_PER_FOOD: 10,
     SNAKE_INITIAL_LENGTH: 26,
     SNAKE_INITIAL_RADIUS: 20,
+    SNAKE_MAX_RADIUS: 36,
+    WIDTH_GROWTH_FACTOR: 0.05,
     SERVER_TICK_RATE: 25 // 40ms interval
 };
 
@@ -162,8 +164,15 @@ setInterval(() => {
             if (d < bot.radius + f.radius) {
                 foods.splice(i, 1);
                 foods.push(spawnFood());
-                bot.length += 0.5;
-                bot.score += 10;
+                bot.length += GAME_CONFIG.GROWTH_PER_FOOD;
+                bot.score += GAME_CONFIG.SCORE_PER_FOOD;
+                
+                // Atualizar raio dinamicamente com a mesma fórmula do cliente
+                bot.radius = Math.min(
+                    GAME_CONFIG.SNAKE_MAX_RADIUS, 
+                    GAME_CONFIG.SNAKE_INITIAL_RADIUS + (bot.length - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.WIDTH_GROWTH_FACTOR
+                );
+
                 io.emit('foodEaten', { foodId: f.id, newFood: foods[foods.length - 1] });
                 break;
             }
