@@ -1187,11 +1187,22 @@
                 if (s.life <= 0) sparks.splice(i, 1);
             }
 
-            // --- SUAVIZAÇÃO E HISTÓRICO DE BOTS E OUTROS JOGADORES (CORRIGIDO) ---
+            // --- SUAVIZAÇÃO E EXTRAPOLAÇÃO PREDITIVA (DEAD RECKONING) ---
             const lerpFactor = Math.min(1, 0.2 * (dt || 1));
 
             const updateEntityMovement = (ent) => {
                 if (ent.targetX !== undefined) {
+
+                    // 1. PREVISÃO DE MOVIMENTO (Impede as cobras de travarem quando a internet atrasa)
+                    const moveSpeed = ent.isBoosting
+                        ? GAME_CONFIG.SNAKE_BASE_SPEED * GAME_CONFIG.BOOST_SPEED_MULT
+                        : GAME_CONFIG.SNAKE_BASE_SPEED;
+
+                    // Movemos as coordenadas alvo para a frente autonomamente
+                    ent.targetX += Math.cos(ent.targetAngle) * moveSpeed * dt;
+                    ent.targetY += Math.sin(ent.targetAngle) * moveSpeed * dt;
+
+                    // 2. CORREÇÃO SUAVE (Lerp) para a posição real
                     ent.x += (ent.targetX - ent.x) * lerpFactor;
                     ent.y += (ent.targetY - ent.y) * lerpFactor;
 
@@ -1200,6 +1211,7 @@
                     while (aDiff > Math.PI) aDiff -= Math.PI * 2;
                     ent.angle += aDiff * lerpFactor;
 
+                    // 3. ATUALIZAÇÃO DO HISTÓRICO (Cauda fluida)
                     if (!ent.lastX) { ent.lastX = ent.x; ent.lastY = ent.y; }
                     const distMoved = Math.hypot(ent.x - ent.lastX, ent.y - ent.lastY);
 
@@ -1222,6 +1234,7 @@
                 }
             };
 
+            // Atualiza o movimento fluido previsto
             bots.forEach(updateEntityMovement);
             Object.values(otherPlayers).forEach(updateEntityMovement);
 
