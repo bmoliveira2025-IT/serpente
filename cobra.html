@@ -608,9 +608,11 @@
                 padding: 15px;
                 max-width: 400px;
             }
+
             .settings-header {
                 margin-bottom: 10px;
             }
+
             .settings-group {
                 margin-bottom: 10px;
             }
@@ -721,13 +723,13 @@
             TOTAL_FOOD: 1500,                 // Quantidade máxima de comida normal espalhada pelo mapa em simultâneo
 
             // 🐍 2. CONFIGURAÇÕES BASE DA COBRA
-            SNAKE_INITIAL_LENGTH: 23,         // Tamanho inicial da cobra ao nascer (quantidade de gomos virtuais)
+            SNAKE_INITIAL_LENGTH: 24,         // Tamanho inicial da cobra ao nascer (quantidade de gomos virtuais)
             SNAKE_INITIAL_RADIUS: 20,         // Grossura inicial da cabeça e do corpo ao nascer (em pixels)
             SNAKE_MAX_RADIUS: 36,             // Limite máximo de grossura que a cobra pode atingir ao crescer muito
             SNAKE_HISTORY_STEP: 1,            // Precisão da física: guarda a posição a cada 1 pixel (garante movimento 100% fluido sem tremer)
             SNAKE_HISTORY_SPACING: 5,         // Distância visual entre as listras desenhadas (ajustado para formar o "tubo perfeito" contínuo)
             SNAKE_BASE_SPEED_PC: 3.0,         // Velocidade de movimento normal quando jogado no Computador (Rato)
-            SNAKE_BASE_SPEED_MOBILE: 2.0,     // Velocidade de movimento normal quando jogado no Telemóvel/Celular (mais lento para facilitar o toque)
+            SNAKE_BASE_SPEED_MOBILE: 2.3,     // Velocidade de movimento normal quando jogado no Telemóvel/Celular (mais lento para facilitar o toque)
 
             // 💥 3. DINÂMICA DE COLISÃO E ROTAÇÃO (CURVAS)
             SNAKE_HITBOX_SIZE: 0.75,          // Área de colisão letal: a cabeça tem de entrar 75% no corpo inimigo para a tua cobra morrer
@@ -735,7 +737,7 @@
             SNAKE_TURN_SPEED_BOOST: 0.015,    // Rapidez de curva ao correr com o Boost (fica mais "dura" e faz curvas bem mais abertas)
 
             // 🍎 4. ALIMENTAÇÃO, CRESCIMENTO E PONTUAÇÃO
-            GROWTH_PER_FOOD: 0.1,             // Quanto a cobra cresce em comprimento por cada partícula de comida normal absorvida
+            GROWTH_PER_FOOD: 0.2,             // Quanto a cobra cresce em comprimento por cada partícula de comida normal absorvida
             SCORE_PER_FOOD: 10,               // Quantos pontos ganhas no "Score" por cada partícula de comida normal
             DEATH_GROWTH: 0.25,               // Quanto a cobra cresce ao absorver restos brilhantes de uma cobra morta (dá muito mais tamanho)
             DEATH_SCORE: 30,                  // Quantos pontos ganhas por restos de cobra morta
@@ -841,20 +843,20 @@
                 otherPlayers[data.id] = data;
                 return;
             }
-            
+
             // Suavização da cabeça
             p.targetX = data.x;
             p.targetY = data.y;
             p.targetAngle = data.angle;
-            
+
             p.score = data.score;
             p.length = data.length;
             p.radius = data.radius;
             p.isBoosting = data.isBoosting;
-            
+
             // Suavização do corpo: em vez de substituir, atualizamos os alvos das coordenadas
             if (p.history && data.history && p.history.length === data.history.length) {
-                for(let i=0; i<p.history.length; i++) {
+                for (let i = 0; i < p.history.length; i++) {
                     p.history[i].tx = data.history[i].x;
                     p.history[i].ty = data.history[i].y;
                 }
@@ -862,7 +864,7 @@
                 // Se o tamanho mudou, aceitamos o salto uma vez
                 p.history = data.history;
             }
-            
+
             p.lastPacketTime = Date.now();
         });
 
@@ -1269,7 +1271,7 @@
                     length: player.length,
                     radius: player.radius,
                     // optimization: only send history needed for visible segments/collisions
-                    history: player.history.slice(0, 150), 
+                    history: player.history.slice(0, 150),
                     isBoosting: isBoosting
                 });
             }
@@ -1280,11 +1282,11 @@
                 let p = otherPlayers[id];
                 if (p.targetX !== undefined) {
                     // Fator de suavização mais agressivo para evitar o efeito "tremido"
-                    const lerpFactor = 0.25; 
-                    
+                    const lerpFactor = 0.25;
+
                     p.x += (p.targetX - p.x) * lerpFactor;
                     p.y += (p.targetY - p.y) * lerpFactor;
-                    
+
                     let aDiff = p.targetAngle - p.angle;
                     while (aDiff < -Math.PI) aDiff += Math.PI * 2;
                     while (aDiff > Math.PI) aDiff -= Math.PI * 2;
