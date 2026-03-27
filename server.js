@@ -127,15 +127,15 @@ function killBot(bot) {
     console.log(`Bot ${bot.name} (${bot.id}) morreu.`);
     dropDeathFood(bot);
 
-    // Manter na lista por 1000ms como "fantasma" para o cliente ver a morte
+    // Manter na lista por 1000ms para o cliente ver o "encolhimento"
     io.emit('botDied', { id: bot.id, x: bot.x, y: bot.y });
 
-    // Renascer um novo bot após 3 segundos
+    // Renascer um novo bot após 1 segundo (tempo de encolher)
     setTimeout(() => {
         const idx = bots.indexOf(bot);
         if (idx !== -1) bots.splice(idx, 1);
         bots.push(createBot());
-    }, 3000);
+    }, 1000);
 }
 
 // Inicialização
@@ -192,7 +192,11 @@ setInterval(() => {
     updateSpatialGrid();
 
     bots.forEach(bot => {
-        if (bot.isDead) return; // Não processar bots mortos no loop de física
+        if (bot.isDead) {
+            // Encolher gradualmente ao morrer (Efeito visual intencional)
+            bot.length = Math.max(0, bot.length - 1.5);
+            return;
+        }
         
         // AI Simples e suave
         const distToCenter = Math.hypot(bot.x - CENTER, bot.y - CENTER);

@@ -705,7 +705,8 @@
             <div class="settings-group" id="pwa-install-group" style="display:none;">
                 <label>Aplicativo</label>
                 <div class="settings-options">
-                    <button class="opt-btn" id="pwa-install-btn" style="grid-column: span 2; background: var(--neon-blue); color: #000; border: none;">
+                    <button class="opt-btn" id="pwa-install-btn"
+                        style="grid-column: span 2; background: var(--neon-blue); color: #000; border: none;">
                         INSTALAR APP (APK)
                     </button>
                 </div>
@@ -746,11 +747,11 @@
             SNAKE_TURN_SPEED: 0.035,          // Rapidez máxima de curva
             SNAKE_TURN_SPEED_BOOST: 0.015,    // Rapidez de curva ao correr
 
-            GROWTH_PER_FOOD: 0.8,             // Crescimento por comida normal
-            SCORE_PER_FOOD: 10,               // Pontos por comida normal
-            DEATH_GROWTH: 0.25,               // Crescimento por comida da morte
+            GROWTH_PER_FOOD: 1.0,             // Crescimento por comida normal
+            SCORE_PER_FOOD: 8,               // Pontos por comida normal
+            DEATH_GROWTH: 0.50,               // Crescimento por comida da morte
             DEATH_SCORE: 30,                  // Pontos por comida da morte
-            WIDTH_GROWTH_FACTOR: 0.01,        // Fator de engordamento
+            WIDTH_GROWTH_FACTOR: 0.10,        // Fator de engordamento
             MAGNET_STRENGTH: 0.0,             // Atração da comida (desativado)
             MAGNET_RADIUS_MULT: 3.0,          // Área da atração
 
@@ -1424,7 +1425,10 @@
         function drawSnake(context, entity, activeSkin, isBoosting, customSpacing) {
             if (!activeSkin || !activeSkin.getBodyColor) activeSkin = skins[0];
 
-            if (entity.isDead) context.globalAlpha = 0.5; // Efeito de fantasma ao morrer
+            if (entity.isDead) {
+                // Opacidade dinâmica baseada no tamanho restante (Dissolver)
+                context.globalAlpha = Math.max(0, Math.min(0.8, entity.length / 20));
+            }
 
             const radius = Math.max(10, entity.radius || 20);
             const spacing = customSpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING || 5;
