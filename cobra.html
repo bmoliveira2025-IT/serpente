@@ -538,7 +538,83 @@
                 right: 20px;
             }
         }
-    </style>
+
+        /* --- LANDSCAPE MOBILE OPTIMIZATION --- */
+        @media screen and (max-height: 500px) and (orientation: landscape) {
+            #start-screen {
+                flex-direction: row;
+                gap: 40px;
+                padding: 10px 40px;
+                justify-content: center;
+            }
+
+            .main-logo {
+                font-size: 40px;
+                margin-bottom: 0px;
+            }
+
+            .home-record-display {
+                font-size: 10px;
+                margin-bottom: 5px;
+            }
+
+            #game-over-msg {
+                font-size: 14px;
+                margin-bottom: 5px;
+            }
+
+            .final-score-text {
+                font-size: 10px;
+            }
+
+            .menu-card {
+                padding: 15px;
+                gap: 8px;
+                max-width: 320px;
+                border-radius: 1.5rem;
+            }
+
+            #player-name {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .skin-selector {
+                padding: 5px;
+                gap: 2px;
+            }
+
+            #preview-canvas {
+                max-width: 140px;
+            }
+
+            #start-btn {
+                padding: 10px;
+                font-size: 14px;
+                box-shadow: 0 4px 0 #255215;
+            }
+
+            #start-btn:active {
+                transform: translateY(2px);
+                box-shadow: 0 2px 0 #255215;
+            }
+
+            #settings-open-btn {
+                width: 45px;
+                padding: 5px;
+            }
+
+            .settings-content {
+                padding: 15px;
+                max-width: 400px;
+            }
+            .settings-header {
+                margin-bottom: 10px;
+            }
+            .settings-group {
+                margin-bottom: 10px;
+            }
+        }
     </style>
     <script src="/socket.io/socket.io.js"></script>
 </head>
