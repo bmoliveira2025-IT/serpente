@@ -716,7 +716,7 @@
             SNAKE_HISTORY_SPACING: 5,
             SNAKE_BASE_SPEED: 4.0,
 
-            SNAKE_HITBOX_SIZE: 0.65, // Removido do uso de forma simples. Agora a Hitbox é dinâmica.
+            SNAKE_HITBOX_SIZE: 0.65, // Margem rígida para as extremidades dos corpos no servidor
             SNAKE_TURN_SPEED: 0.035,
             SNAKE_TURN_SPEED_BOOST: 0.015,
 
@@ -972,34 +972,28 @@
             return { x: CENTER + Math.cos(angle) * r, y: CENTER + Math.sin(angle) * r, radius: Math.random() * 1 + 2, color: neonColors[Math.floor(Math.random() * neonColors.length)], phase: Math.random() * Math.PI * 2, floatOffset: Math.random() * Math.PI * 2, isDeathFood: false };
         }
 
-        // SISTEMA DE COLISÃO PROFISSIONAL (Hitbox Perdoável + Prevenção de Ghost Deaths)
+        // SISTEMA DE COLISÃO CLÁSSICO E RÍGIDO (Bateu = Morreu)
         const checkPerfectCollision = (headX, headY, headR, headAngle, target) => {
-            // Recuamos o centro da hitbox da cabeça para dentro (menos fatal por "passar de raspão")
-            const tipX = headX + Math.cos(headAngle) * (headR * 0.3);
-            const tipY = headY + Math.sin(headAngle) * (headR * 0.3);
+            // A "testa" da cobra (ponto frontal exato de impacto)
+            const tipX = headX + Math.cos(headAngle) * (headR * 0.5);
+            const tipY = headY + Math.sin(headAngle) * (headR * 0.5);
 
             const spacing = target.historySpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING;
             const maxHistoryIdx = Math.min(Math.floor(target.length) * spacing, target.history.length - 1);
 
-            // A hitbox real agora soma a nossa cabeça (30% do raio) com o corpo do inimigo (50% do raio dele)
-            // Isto garante que o tamanho da SUA cobra importa na colisão, e não apenas uma "ponta" fininha.
-            const myHitboxR = headR * 0.3;
-            const targetHitboxR = (target.radius || GAME_CONFIG.SNAKE_INITIAL_RADIUS) * 0.5;
+            // Hitbox exata e impiedosa: centro da sua testa colidindo com o raio físico do inimigo
+            const myHitboxR = headR * 0.4;
+            const targetHitboxR = (target.radius || GAME_CONFIG.SNAKE_INITIAL_RADIUS) * GAME_CONFIG.SNAKE_HITBOX_SIZE;
             const thresholdSq = (myHitboxR + targetHitboxR) ** 2;
 
-            // NECK IMMUNITY: Ignora a cabeça e o início do pescoço do adversário (evita double-kills estranhos e lag)
-            const startIndex = spacing * 4;
-
-            for (let i = startIndex; i <= maxHistoryIdx; i += spacing) {
+            // Sem imunidade de pescoço. O loop começa no 0 (A cabeça e pescoço inimigo são letais).
+            // Se baterem de frente perfeitamente ao mesmo tempo, a ordem de processamento do Javascript (ou servidor) decide.
+            for (let i = 0; i <= maxHistoryIdx; i += spacing) {
                 const s = target.history[i];
                 if (!s || isNaN(s.x) || isNaN(s.y)) continue;
 
-                // GHOST PREVENTER: Impede de morrer ao raspar no local onde o inimigo fez "Spawn" 
-                // Se houver pontos sobrepostos (não se moveram), ignora essa zona condensada
-                if (i > spacing * 10 && Math.abs(s.x - target.x) < 2 && Math.abs(s.y - target.y) < 2) continue;
-
                 const distSq = (tipX - s.x) ** 2 + (tipY - s.y) ** 2;
-                if (distSq < thresholdSq) return true;
+                if (distSq < thresholdSq) return true; // Encostou em qualquer parte da cobra inimiga = Morte
             }
             return false;
         };

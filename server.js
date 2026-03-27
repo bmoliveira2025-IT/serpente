@@ -201,20 +201,20 @@ for (let i = 0; i < GAME_CONFIG.TOTAL_FOOD; i++) foods.push(spawnFood());
 function checkCollision(head, target) {
     if (!target.history || target.history.length < 2) return false;
 
-    // SISTEMA PROFISSIONAL: Recuamos o ponto da cabeça e usamos raio dinâmico
-    const tipX = head.x + Math.cos(head.angle) * (head.radius * 0.3);
-    const tipY = head.y + Math.sin(head.angle) * (head.radius * 0.3);
+    // SISTEMA CLÁSSICO E RÍGIDO (Sincronizado): Bateu = Morreu
+    const tipX = head.x + Math.cos(head.angle) * (head.radius * 0.5);
+    const tipY = head.y + Math.sin(head.angle) * (head.radius * 0.5);
     
     const headRadius = head.radius || 20;
     const targetRadius = target.radius || 20;
 
-    // A hitbox real agora soma a nossa cabeça (30% do raio) com o corpo do inimigo (50% do raio dele)
-    const thresholdSq = (headRadius * 0.3 + targetRadius * 0.5) ** 2;
+    // Hitbox impiedosa: centro da testa colidindo com o raio físico do inimigo
+    const thresholdSq = (headRadius * 0.4 + targetRadius * GAME_CONFIG.SNAKE_HITBOX_SIZE) ** 2;
 
-    // NECK IMMUNITY: Ignora o início do pescoço (evita double-kills estranhos)
-    const startIndex = 20; // Equivalente a spacing * 4 no cliente
+    // Sem imunidade de pescoço.
+    const startIndex = 0;
 
-    // 1. Checar cabeça do alvo (Só se não for nós mesmos e não estivermos no neck immunity zone)
+    // 1. Checar cabeça do alvo
     const dHead2 = (tipX - target.x) ** 2 + (tipY - target.y) ** 2;
     if (dHead2 < thresholdSq) return true;
 
@@ -222,9 +222,6 @@ function checkCollision(head, target) {
     for (let i = startIndex; i < target.history.length; i += 2) {
         const seg = target.history[i];
         if (!seg) continue;
-
-        // GHOST PREVENTER: Ignora pontos condensados de spawn
-        if (i > 50 && Math.abs(seg.x - target.x) < 2 && Math.abs(seg.y - target.y) < 2) continue;
 
         const d2 = (tipX - seg.x) ** 2 + (tipY - seg.y) ** 2;
         if (d2 < thresholdSq) return true;
