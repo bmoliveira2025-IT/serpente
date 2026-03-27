@@ -1457,10 +1457,7 @@
         function drawSnake(context, entity, activeSkin, isBoosting, customSpacing) {
             if (!activeSkin || !activeSkin.getBodyColor) activeSkin = skins[0];
 
-            if (entity.isDead) {
-                // Opacidade dinâmica baseada no temporizador de morte
-                context.globalAlpha = Math.max(0, entity.deathTimer || 0);
-            }
+            if (entity.isDead) return;
 
             const radius = Math.max(10, entity.radius || 20);
             const spacing = customSpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING || 5;
