@@ -856,19 +856,22 @@
             serverBots.forEach(sb => {
                 let b = bots.find(x => x.id === sb.id);
                 if (!b) {
-                    sb.targetX = sb.x; sb.targetY = sb.y; sb.targetAngle = sb.angle;
-                    sb.history = [];
-                    const maxLen = Math.floor((sb.length || GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 50;
-                    for (let i = 0; i <= maxLen; i++) {
-                        sb.history.push({
-                            x: sb.x - Math.cos(sb.angle) * i * GAME_CONFIG.SNAKE_HISTORY_STEP,
-                            y: sb.y - Math.sin(sb.angle) * i * GAME_CONFIG.SNAKE_HISTORY_STEP
+                    // Inicializar bot NOVO
+                    b = { ...sb };
+                    b.targetX = sb.x; b.targetY = sb.y; b.targetAngle = sb.angle;
+                    b.history = [];
+                    const initialLen = Math.floor((sb.length || 26) * 5) + 50;
+                    for (let i = 0; i <= initialLen; i++) {
+                        b.history.push({
+                            x: sb.x - Math.cos(sb.angle) * i,
+                            y: sb.y - Math.sin(sb.angle) * i
                         });
                     }
-                    bots.push(sb);
+                    bots.push(b);
                 } else {
+                    // Atualizar bot EXISTENTE
                     b.targetX = sb.x; b.targetY = sb.y; b.targetAngle = sb.angle;
-                    b.score = sb.score; b.length = sb.length; b.radius = sb.radius;
+                    b.score = sb.score; b.length = sb.length; b.radius = sb.radius || b.radius;
                     b.isBoosting = sb.isBoosting;
                 }
             });
@@ -1402,12 +1405,23 @@
         }
 
         function drawSnake(context, entity, activeSkin, isBoosting, customSpacing) {
-            if (!activeSkin || !activeSkin.getBodyColor) {
-                activeSkin = skins[0];
+            if (!activeSkin || !activeSkin.getBodyColor) activeSkin = skins[0];
+            
+            const radius = Math.max(10, entity.radius || 20);
+            const spacing = customSpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING || 5;
+            const segments = Math.max(1, Math.floor(entity.length || 10));
+            
+            // Se o histórico está vazio, criamos um fake mínimo para não ficar sem corpo
+            if (!entity.history || entity.history.length < 2) {
+                entity.history = [];
+                for(let i=0; i<20; i++) {
+                    entity.history.push({ 
+                        x: entity.x - Math.cos(entity.angle) * i * 2, 
+                        y: entity.y - Math.sin(entity.angle) * i * 2 
+                    });
+                }
             }
-            const spacing = customSpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING;
-            const segments = Math.floor(entity.length);
-            // IMPORTANTE: Só desenha o que temos no histórico (mínimo de 1 para a cabeça ser visível)
+
             const availableSegments = Math.max(1, Math.min(segments, Math.floor((entity.history.length - 1) / spacing)));
             const isHigh = qualityOpt === 'high';
 
@@ -1444,16 +1458,15 @@
             // PASS 2: Corpo
             for (let i = availableSegments - 1; i >= 0; i--) {
                 const pos = i === 0 ? { x: entity.x, y: entity.y } : entity.history[i * spacing];
-                if (!pos) continue;
+                if (!pos || isNaN(pos.x)) continue;
 
                 let isDark = Math.floor(i / 4) % 2 === 0;
-
                 const baseColors = activeSkin.getBodyColor(isDark, i, availableSegments);
                 let c = activeSkin.getTailColor && activeSkin.getTailColor(availableSegments - i) ? activeSkin.getTailColor(availableSegments - i) : { c1: baseColors[0], c2: baseColors[1] };
 
-                context.fillStyle = c.c1;
+                context.fillStyle = c.c1 || '#fff';
                 context.beginPath();
-                context.arc(pos.x, pos.y, entity.radius, 0, Math.PI * 2);
+                context.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
                 context.fill();
             }
 
