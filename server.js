@@ -132,10 +132,13 @@ function checkCollision(head, target) {
     const tipY = head.y + Math.sin(head.angle) * (head.radius * 0.6);
 
     // Checar apenas os pontos necessários do histórico
+    const headRadius = head.radius || 20;
+    const targetRadius = target.radius || 20;
+    const threshold = (headRadius + targetRadius) * 0.75; // 75% da soma dos raios para colisão justa
+
     for (let i = 2; i < target.history.length; i += 2) {
         const seg = target.history[i];
         const d2 = (tipX - seg.x) ** 2 + (tipY - seg.y) ** 2;
-        const threshold = (target.radius || 20) * 0.9;
         if (d2 < threshold ** 2) return true;
     }
     return false;
@@ -177,10 +180,10 @@ setInterval(() => {
         if (distToCenter > CENTER - 350) {
             bot.targetAngle = Math.atan2(CENTER - bot.y, CENTER - bot.x);
         } else {
-            // 2. DESVIO DE OUTRAS COBRAS (Proximity Awareness)
+            // 2. DESVIO DE OUTRAS COBRAS (Body Awareness)
             const gx = Math.floor(bot.x / GAME_CONFIG.GRID_SIZE);
             const gy = Math.floor(bot.y / GAME_CONFIG.GRID_SIZE);
-            let nearestDist = 150;
+            let nearestDist = 200; // Visão de 200px
             let fleeAngle = null;
 
             for (let x = -1; x <= 1; x++) {
@@ -189,11 +192,21 @@ setInterval(() => {
                     if (neighbors) {
                         neighbors.forEach(other => {
                             if (other.id === bot.id) return;
-                            const d = Math.hypot(bot.x - other.x, bot.y - other.y);
-                            if (d < nearestDist) {
-                                nearestDist = d;
-                                fleeAngle = Math.atan2(bot.y - other.y, bot.x - other.x);
-                            }
+                            
+                            // Checar não só a cabeça, mas um pouco do rastro para evitar "corpo"
+                            // Checamos a cabeça e os primeiros 10 segmentos (50px de corpo)
+                            const pointsToCheck = [
+                                {x: other.x, y: other.y},
+                                ...(other.history ? other.history.slice(0, 10) : [])
+                            ];
+
+                            pointsToCheck.forEach(p => {
+                                const d = Math.hypot(bot.x - p.x, bot.y - p.y);
+                                if (d < nearestDist) {
+                                    nearestDist = d;
+                                    fleeAngle = Math.atan2(bot.y - p.y, bot.x - p.x);
+                                }
+                            });
                         });
                     }
                 }
