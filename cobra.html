@@ -1214,6 +1214,7 @@
             const lerpFactor = Math.min(1, 0.2 * (dt || 1));
 
             const updateEntityMovement = (ent) => {
+                if (ent.isDead) return; // Cobras mortas não se movem nem atualizam rastro
                 if (ent.targetX !== undefined) {
 
                     // 1. PREVISÃO DE MOVIMENTO (Impede as cobras de travarem quando a internet atrasa)
