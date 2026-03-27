@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>cobra.io - Edição Premium</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
@@ -23,7 +25,8 @@
             -webkit-user-select: none;
         }
 
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             width: 100vw;
@@ -31,7 +34,7 @@
             overflow: hidden;
             background-color: var(--bg-dark);
             color: white;
-            touch-action: none; 
+            touch-action: none;
         }
 
         canvas {
@@ -54,14 +57,16 @@
             display: none;
             border-left: 3px solid var(--neon-green);
         }
+
         #live-hud .hud-title {
             font-size: 10px;
-            color: rgba(255,255,255,0.5);
+            color: rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
             font-weight: 900;
             letter-spacing: 1px;
             margin-bottom: 2px;
         }
+
         #live-hud .hud-score {
             font-size: 22px;
             font-weight: 900;
@@ -100,10 +105,35 @@
             font-weight: 500;
         }
 
-        .rank-num { width: 20px; text-align: left; opacity: 0.6; }
-        .leader-name { flex-grow: 1; text-align: left; padding-left: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .leader-score { width: 50px; text-align: right; opacity: 0.8; font-variant-numeric: tabular-nums; }
-        .my-rank { color: var(--neon-blue); border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: 4px; padding-top: 4px; font-weight: 700; }
+        .rank-num {
+            width: 20px;
+            text-align: left;
+            opacity: 0.6;
+        }
+
+        .leader-name {
+            flex-grow: 1;
+            text-align: left;
+            padding-left: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .leader-score {
+            width: 50px;
+            text-align: right;
+            opacity: 0.8;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .my-rank {
+            color: var(--neon-blue);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 4px;
+            padding-top: 4px;
+            font-weight: 700;
+        }
 
         /* --- Menu Inicial --- */
         #start-screen {
@@ -142,6 +172,7 @@
             margin-bottom: clamp(10px, 3vw, 20px);
             font-weight: 600;
         }
+
         .home-record-display span {
             color: var(--neon-green);
             text-shadow: 0 0 10px rgba(86, 171, 47, 0.5);
@@ -157,6 +188,7 @@
             text-shadow: 0 0 10px rgba(255, 68, 68, 0.4);
             animation: pulse 2s infinite;
         }
+
         .final-score-text {
             display: block;
             font-size: clamp(12px, 3vw, 14px);
@@ -166,9 +198,24 @@
             font-weight: 700;
             letter-spacing: 1px;
         }
-        .final-score-text span { color: var(--neon-green); }
 
-        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+        .final-score-text span {
+            color: var(--neon-green);
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.8;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.8;
+            }
+        }
 
         .menu-card {
             background: var(--glass-bg);
@@ -238,10 +285,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
-        .carousel-btn svg { width: 20px; height: 20px; fill: white; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
-        .carousel-btn:active { transform: scale(0.95); }
+
+        .carousel-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+        }
+
+        .carousel-btn:active {
+            transform: scale(0.95);
+        }
 
         #skin-name {
             font-weight: 800;
@@ -256,7 +312,7 @@
             max-width: 200px;
             height: auto;
             aspect-ratio: 2 / 1;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 12px;
         }
 
@@ -282,7 +338,11 @@
             text-transform: uppercase;
             letter-spacing: 2px;
         }
-        #start-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #255215; }
+
+        #start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #255215;
+        }
 
         #settings-open-btn {
             background: rgba(255, 255, 255, 0.05);
@@ -295,15 +355,25 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        #settings-open-btn:active { background: rgba(255,255,255,0.1); }
-        #settings-open-btn svg { width: 24px; height: 24px; stroke: rgba(255,255,255,0.5); stroke-width: 2; fill: none; }
+
+        #settings-open-btn:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #settings-open-btn svg {
+            width: 24px;
+            height: 24px;
+            stroke: rgba(255, 255, 255, 0.5);
+            stroke-width: 2;
+            fill: none;
+        }
 
         /* --- CONFIGURAÇÕES (MODAL) --- */
         #settings-modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(5px);
             z-index: 200;
             justify-content: center;
@@ -313,7 +383,7 @@
 
         .settings-content {
             background: var(--bg-dark);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 25px;
             width: 100%;
@@ -326,17 +396,47 @@
             align-items: center;
             margin-bottom: 20px;
         }
-        .settings-header h2 { margin: 0; font-size: 18px; color: var(--neon-green); text-transform: uppercase; }
-        .settings-close { background: none; border: none; color: white; opacity: 0.5; font-size: 24px; cursor: pointer; }
-        
-        .settings-group { margin-bottom: 15px; }
-        .settings-group label { display: block; font-size: 10px; text-transform: uppercase; opacity: 0.5; font-weight: bold; margin-bottom: 8px; letter-spacing: 1px; }
-        .settings-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        
+
+        .settings-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--neon-green);
+            text-transform: uppercase;
+        }
+
+        .settings-close {
+            background: none;
+            border: none;
+            color: white;
+            opacity: 0.5;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .settings-group {
+            margin-bottom: 15px;
+        }
+
+        .settings-group label {
+            display: block;
+            font-size: 10px;
+            text-transform: uppercase;
+            opacity: 0.5;
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .settings-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
         .opt-btn {
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.4);
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.4);
             padding: 10px;
             border-radius: 10px;
             font-weight: bold;
@@ -345,6 +445,7 @@
             text-transform: uppercase;
             font-size: 12px;
         }
+
         .opt-btn.active {
             background: var(--neon-green);
             border-color: var(--neon-green);
@@ -375,8 +476,10 @@
 
         #joystick-stick {
             position: absolute;
-            top: 50%; left: 50%;
-            width: 40%; height: 40%;
+            top: 50%;
+            left: 50%;
+            width: 40%;
+            height: 40%;
             background: var(--neon-green);
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -404,19 +507,42 @@
 
         /* Ajustes Mobile Portrait (Em pé) */
         @media screen and (orientation: portrait) {
-            #start-screen { justify-content: flex-start; padding-top: 15vh; }
-            .menu-card { max-width: 90vw; }
-            #leaderboard { top: auto; bottom: 15px; right: 15px; width: 160px; }
-            #live-hud { top: env(safe-area-inset-top, 15px); left: 15px; }
-            
-            #joystick-base { bottom: 80px; left: 20px; }
-            #boost-btn { bottom: 80px; right: 20px; }
-        }
+            #start-screen {
+                justify-content: flex-start;
+                padding-top: 15vh;
+            }
 
+            .menu-card {
+                max-width: 90vw;
+            }
+
+            #leaderboard {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+                width: 160px;
+            }
+
+            #live-hud {
+                top: env(safe-area-inset-top, 15px);
+                left: 15px;
+            }
+
+            #joystick-base {
+                bottom: 80px;
+                left: 20px;
+            }
+
+            #boost-btn {
+                bottom: 80px;
+                right: 20px;
+            }
+        }
     </style>
     </style>
     <script src="/socket.io/socket.io.js"></script>
 </head>
+
 <body>
 
     <!-- HUD em Tempo Real -->
@@ -434,18 +560,22 @@
                 <span class="final-score-text">PONTUAÇÃO FINAL: <span id="final-score-val">0</span></span>
             </div>
         </div>
-        
+
         <div class="menu-card">
             <input type="text" id="player-name" placeholder="TEU NICKNAME" maxlength="15">
 
             <div class="skin-selector">
                 <div class="carousel-controls">
                     <button class="carousel-btn" id="prev-skin">
-                        <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" />
+                        </svg>
                     </button>
                     <span id="skin-name">Clássica (USA)</span>
                     <button class="carousel-btn" id="next-skin">
-                        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                        </svg>
                     </button>
                 </div>
                 <canvas id="preview-canvas" width="200" height="100"></canvas>
@@ -456,7 +586,9 @@
                 <button id="settings-open-btn">
                     <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                        </path>
                     </svg>
                 </button>
             </div>
@@ -470,7 +602,7 @@
                 <h2>Configurações</h2>
                 <button class="settings-close" id="settings-close-btn">&times;</button>
             </div>
-            
+
             <div class="settings-group">
                 <label>Qualidade Gráfica</label>
                 <div class="settings-options">
@@ -522,7 +654,7 @@
             SNAKE_BASE_SPEED_MOBILE: 2.0,     // Velocidade de movimento normal quando jogado no Telemóvel/Celular (mais lento para facilitar o toque)
 
             // 💥 3. DINÂMICA DE COLISÃO E ROTAÇÃO (CURVAS)
-            SNAKE_HITBOX_SIZE: 0.10,          // Área de colisão letal: a cabeça tem de entrar 75% no corpo inimigo para a tua cobra morrer
+            SNAKE_HITBOX_SIZE: 0.75,          // Área de colisão letal: a cabeça tem de entrar 75% no corpo inimigo para a tua cobra morrer
             SNAKE_TURN_SPEED: 0.035,          // Rapidez máxima de curva da cobra (valores baixos obrigam a fazer curvas suaves em formato de '8')
             SNAKE_TURN_SPEED_BOOST: 0.015,    // Rapidez de curva ao correr com o Boost (fica mais "dura" e faz curvas bem mais abertas)
 
@@ -573,7 +705,7 @@
             document.getElementById('q-low').classList.toggle('active', qualityOpt === 'low');
             document.getElementById('c-joystick').classList.toggle('active', controlOpt === 'joystick');
             document.getElementById('c-touch').classList.toggle('active', controlOpt === 'touch');
-            
+
             const jBase = document.getElementById('joystick-base');
             if (isTouch) {
                 document.getElementById('controls-group').style.display = 'block';
@@ -582,8 +714,8 @@
         }
 
         function setOpt(type, val) {
-            if(type === 'quality') { qualityOpt = val; localStorage.setItem('cobraioQuality', val); }
-            if(type === 'control') { controlOpt = val; localStorage.setItem('cobraioControl', val); }
+            if (type === 'quality') { qualityOpt = val; localStorage.setItem('cobraioQuality', val); }
+            if (type === 'control') { controlOpt = val; localStorage.setItem('cobraioControl', val); }
             applySettingsUI();
         }
 
@@ -609,7 +741,7 @@
         let myId = null;
         let lastUpdateTime = 0;
         const otherPlayers = {};
-        
+
         socket.on('init', (data) => {
             myId = data.id;
             // Clear and sync players
@@ -626,8 +758,27 @@
             if (player.id !== myId) otherPlayers[player.id] = player;
         });
 
-        socket.on('playerUpdated', (player) => {
-            if (player.id !== myId) otherPlayers[player.id] = player;
+        socket.on('playerUpdated', (data) => {
+            if (data.id === myId) return;
+            let p = otherPlayers[data.id];
+            if (!p) {
+                otherPlayers[data.id] = data;
+                return;
+            }
+            // Suavização: Definir alvos em vez de saltar
+            p.targetX = data.x;
+            p.targetY = data.y;
+            p.targetAngle = data.angle;
+            
+            p.score = data.score;
+            p.length = data.length;
+            p.radius = data.radius;
+            p.isBoosting = data.isBoosting;
+            
+            // Reconciliação de histórico: apenas se estiver muito longe ou se o servidor mudou muito
+            // Para simplicidade, atualizamos o histórico, mas a interpolação da cabeça suaviza o visual
+            p.history = data.history;
+            p.lastPacketTime = Date.now();
         });
 
         socket.on('playerLeft', (id) => {
@@ -657,7 +808,7 @@
 
         function spawnParticles(x, y, color, amount = 8) {
             if (qualityOpt === 'low') return;
-            for(let i=0; i<amount; i++) {
+            for (let i = 0; i < amount; i++) {
                 const speed = Math.random() * 6 + 2;
                 const angle = Math.random() * Math.PI * 2;
                 particles.push({
@@ -678,10 +829,10 @@
             const sparkColors = ['#ffffff', '#00ddff', '#aaddff'];
             sparks.push({
                 x, y,
-                vx: -Math.cos(angle) * (Math.random()*3 + 1) + (Math.random()-0.5)*2,
-                vy: -Math.sin(angle) * (Math.random()*3 + 1) + (Math.random()-0.5)*2,
+                vx: -Math.cos(angle) * (Math.random() * 3 + 1) + (Math.random() - 0.5) * 2,
+                vy: -Math.sin(angle) * (Math.random() * 3 + 1) + (Math.random() - 0.5) * 2,
                 life: 1,
-                color: sparkColors[Math.floor(Math.random()*sparkColors.length)]
+                color: sparkColors[Math.floor(Math.random() * sparkColors.length)]
             });
         }
 
@@ -700,20 +851,20 @@
         let currentSkinIndex = 0;
 
         const botNames = [
-            "TWITCH_M1UNO", "LND! Bolado", "Flamengo", "Cobra Rosa S2", "GABRIEL01", 
+            "TWITCH_M1UNO", "LND! Bolado", "Flamengo", "Cobra Rosa S2", "GABRIEL01",
             "SERGIO / XPBR", "CHILE", "ARGENTINA", "Uruguai_Rex", "Mexico_Neon"
         ];
 
-        const player = { 
-            x: CENTER, y: CENTER, angle: 0, 
-            speed: GAME_CONFIG.SNAKE_BASE_SPEED_PC, 
-            radius: GAME_CONFIG.SNAKE_INITIAL_RADIUS, 
-            length: GAME_CONFIG.SNAKE_INITIAL_LENGTH, 
-            history: [], historySpacing: GAME_CONFIG.SNAKE_HISTORY_SPACING, 
-            score: 0, boostCounter: 0, name: '', isTop1: false, distAccum: 0 
+        const player = {
+            x: CENTER, y: CENTER, angle: 0,
+            speed: GAME_CONFIG.SNAKE_BASE_SPEED_PC,
+            radius: GAME_CONFIG.SNAKE_INITIAL_RADIUS,
+            length: GAME_CONFIG.SNAKE_INITIAL_LENGTH,
+            history: [], historySpacing: GAME_CONFIG.SNAKE_HISTORY_SPACING,
+            score: 0, boostCounter: 0, name: '', isTop1: false, distAccum: 0
         };
         const foods = [];
-        
+
         const bots = [];
         let spawnTimer = 20;
 
@@ -725,7 +876,7 @@
                 const x = CENTER + Math.cos(angle) * r;
                 const y = CENTER + Math.sin(angle) * r;
                 let isSafe = true;
-                const distToPlayer = Math.sqrt((x - player.x)**2 + (y - player.y)**2);
+                const distToPlayer = Math.sqrt((x - player.x) ** 2 + (y - player.y) ** 2);
                 if (distToPlayer < GAME_CONFIG.SPAWN_SAFE_RADIUS) isSafe = false;
                 if (isSafe) return { x, y };
                 attempts++;
@@ -737,16 +888,16 @@
             const pos = getSafePosition();
             const behaviors = ['wander', 'chase', 'aggressive', 'coward'];
             const initialLen = GAME_CONFIG.SNAKE_INITIAL_LENGTH + Math.random() * 20;
-            
+
             const bot = {
                 id: 'bot-' + Math.random().toString(36).substr(2, 9),
                 x: pos.x, y: pos.y, angle: Math.random() * Math.PI * 2,
                 targetAngle: Math.random() * Math.PI * 2,
-                speed: GAME_CONFIG.SNAKE_BASE_SPEED_PC, 
+                speed: GAME_CONFIG.SNAKE_BASE_SPEED_PC,
                 normalSpeed: GAME_CONFIG.SNAKE_BASE_SPEED_PC - 0.7 + Math.random(),
-                radius: GAME_CONFIG.SNAKE_INITIAL_RADIUS, 
+                radius: GAME_CONFIG.SNAKE_INITIAL_RADIUS,
                 length: initialLen,
-                history: [], historySpacing: GAME_CONFIG.SNAKE_HISTORY_SPACING, 
+                history: [], historySpacing: GAME_CONFIG.SNAKE_HISTORY_SPACING,
                 score: Math.floor(Math.random() * 500) + 100,
                 name: botNames[Math.floor(Math.random() * botNames.length)],
                 skin: skins[Math.floor(Math.random() * skins.length)],
@@ -755,8 +906,8 @@
                 isTop1: false, distAccum: 0
             };
 
-            for(let i=0; i <= initialLen * GAME_CONFIG.SNAKE_HISTORY_SPACING; i++) {
-                bot.history.push({x: pos.x, y: pos.y});
+            for (let i = 0; i <= initialLen * GAME_CONFIG.SNAKE_HISTORY_SPACING; i++) {
+                bot.history.push({ x: pos.x, y: pos.y });
             }
             return bot;
         }
@@ -771,10 +922,10 @@
             }
             const angle = Math.random() * Math.PI * 2;
             const r = Math.sqrt(Math.random()) * (CENTER - 20);
-            return { 
-                x: CENTER + Math.cos(angle) * r, y: CENTER + Math.sin(angle) * r, 
-                radius: Math.random() * 1 + 2, color: neonColors[Math.floor(Math.random() * neonColors.length)], 
-                phase: Math.random() * Math.PI * 2, floatOffset: Math.random() * Math.PI * 2, isDeathFood: false 
+            return {
+                x: CENTER + Math.cos(angle) * r, y: CENTER + Math.sin(angle) * r,
+                radius: Math.random() * 1 + 2, color: neonColors[Math.floor(Math.random() * neonColors.length)],
+                phase: Math.random() * Math.PI * 2, floatOffset: Math.random() * Math.PI * 2, isDeathFood: false
             };
         }
 
@@ -783,12 +934,12 @@
             const tipY = headY + Math.sin(headAngle) * (headR * 0.3);
             const spacing = GAME_CONFIG.SNAKE_HISTORY_SPACING;
             const maxHistoryIdx = Math.min(Math.floor(target.length) * spacing, target.history.length - 1);
-            
+
             for (let i = 0; i <= maxHistoryIdx; i += spacing) {
                 const s = target.history[i]; if (!s) continue;
-                const distSq = (tipX - s.x)**2 + (tipY - s.y)**2;
+                const distSq = (tipX - s.x) ** 2 + (tipY - s.y) ** 2;
                 const threshold = (target.radius || GAME_CONFIG.SNAKE_INITIAL_RADIUS) * GAME_CONFIG.SNAKE_HITBOX_SIZE;
-                if (distSq < threshold**2) return true;
+                if (distSq < threshold ** 2) return true;
             }
             return false;
         };
@@ -804,12 +955,12 @@
 
         let mouseX = 0, mouseY = 0, isMouseDown = false;
         const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        
+
         window.addEventListener('resize', resize);
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            if (!isTouch && gameState !== 'PLAYING') { mouseX = canvas.width/2; mouseY = canvas.height/2; }
+            if (!isTouch && gameState !== 'PLAYING') { mouseX = canvas.width / 2; mouseY = canvas.height / 2; }
         }
         resize();
 
@@ -818,9 +969,9 @@
             applySettingsUI();
         }
 
-        window.addEventListener('mousemove', (e) => { if(!isTouch) { mouseX = e.clientX; mouseY = e.clientY; }});
-        window.addEventListener('mousedown', () => { if(!isTouch) isMouseDown = true; });
-        window.addEventListener('mouseup', () => { if(!isTouch) isMouseDown = false; });
+        window.addEventListener('mousemove', (e) => { if (!isTouch) { mouseX = e.clientX; mouseY = e.clientY; } });
+        window.addEventListener('mousedown', () => { if (!isTouch) isMouseDown = true; });
+        window.addEventListener('mouseup', () => { if (!isTouch) isMouseDown = false; });
 
         const joystickBase = document.getElementById('joystick-base');
         const joystickStick = document.getElementById('joystick-stick');
@@ -828,7 +979,7 @@
 
         window.addEventListener('touchstart', (e) => {
             if (!isTouch || e.target.closest('#start-screen') || e.target.closest('#settings-modal') || e.target.id === 'boost-btn') return;
-            
+
             if (controlOpt === 'touch') {
                 mouseX = e.touches[0].clientX;
                 mouseY = e.touches[0].clientY;
@@ -840,8 +991,8 @@
                     joystickTouchId = t.identifier;
                     joyX = t.clientX; joyY = t.clientY;
                     const bRect = joystickBase.getBoundingClientRect();
-                    joystickBase.style.left = `${joyX - bRect.width/2}px`;
-                    joystickBase.style.top = `${joyY - bRect.height/2}px`;
+                    joystickBase.style.left = `${joyX - bRect.width / 2}px`;
+                    joystickBase.style.top = `${joyY - bRect.height / 2}px`;
                     joystickBase.style.bottom = 'auto';
                 }
             }
@@ -860,19 +1011,19 @@
             for (let t of e.changedTouches) {
                 if (t.identifier === joystickTouchId) {
                     let dx = t.clientX - joyX, dy = t.clientY - joyY;
-                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    let dist = Math.sqrt(dx * dx + dy * dy);
                     let max = joystickBase.offsetWidth / 2;
-                    if (dist > max) { dx *= max/dist; dy *= max/dist; }
+                    if (dist > max) { dx *= max / dist; dy *= max / dist; }
                     joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
                     let angle = Math.atan2(dy, dx);
-                    mouseX = canvas.width/2 + Math.cos(angle) * 200;
-                    mouseY = canvas.height/2 + Math.sin(angle) * 200;
+                    mouseX = canvas.width / 2 + Math.cos(angle) * 200;
+                    mouseY = canvas.height / 2 + Math.sin(angle) * 200;
                 }
             }
         });
 
         window.addEventListener('touchend', (e) => {
-            if(controlOpt === 'touch') return;
+            if (controlOpt === 'touch') return;
             for (let t of e.changedTouches) {
                 if (t.identifier === joystickTouchId) {
                     joystickTouchId = null;
@@ -892,53 +1043,53 @@
             if (gameState !== 'PLAYING') return;
 
             // Arrays Efeitos Visuais
-            for(let i=particles.length-1; i>=0; i--) {
+            for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
                 p.x += p.vx; p.y += p.vy; p.life -= 0.03;
-                if(p.life <= 0) particles.splice(i, 1);
+                if (p.life <= 0) particles.splice(i, 1);
             }
-            for(let i=floatingTexts.length-1; i>=0; i--) {
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
                 let ft = floatingTexts[i];
                 ft.y += ft.vy; ft.life -= 0.02;
-                if(ft.life <= 0) floatingTexts.splice(i, 1);
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
             }
-            for(let i=sparks.length-1; i>=0; i--) {
+            for (let i = sparks.length - 1; i >= 0; i--) {
                 let s = sparks[i];
                 s.x += s.vx; s.y += s.vy; s.life -= 0.05;
-                if(s.life <= 0) sparks.splice(i, 1);
+                if (s.life <= 0) sparks.splice(i, 1);
             }
 
             // --- FÍSICA DO JOGADOR ---
             const isBoosting = isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH;
-            const zoomNerf = isBoosting ? 0.15 : 0; 
-            
+            const zoomNerf = isBoosting ? 0.15 : 0;
+
             const targetZoom = Math.max(GAME_CONFIG.CAMERA_MIN_ZOOM, GAME_CONFIG.CAMERA_BASE_ZOOM - (player.length - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.ZOOM_SHRINK_RATE - zoomNerf);
             camera.zoom += (targetZoom - camera.zoom) * 0.05;
-            
+
             const baseRadius = Math.min(GAME_CONFIG.SNAKE_MAX_RADIUS, GAME_CONFIG.SNAKE_INITIAL_RADIUS + (player.length - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.WIDTH_GROWTH_FACTOR);
 
-            const tx = (mouseX - canvas.width/2) / camera.zoom + camera.x;
-            const ty = (mouseY - canvas.height/2) / camera.zoom + camera.y;
+            const tx = (mouseX - canvas.width / 2) / camera.zoom + camera.x;
+            const ty = (mouseY - canvas.height / 2) / camera.zoom + camera.y;
             const targetAngle = Math.atan2(ty - player.y, tx - player.x);
             let diff = targetAngle - player.angle;
-            while(diff < -Math.PI) diff += Math.PI*2;
-            while(diff > Math.PI) diff -= Math.PI*2;
-            
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+
             const growthDampening = Math.max(0.55, 1 - (player.length - 20) * 0.001);
             player.angle += diff * (isBoosting ? GAME_CONFIG.SNAKE_TURN_SPEED_BOOST : GAME_CONFIG.SNAKE_TURN_SPEED) * growthDampening;
 
             const speedBase = isTouch ? GAME_CONFIG.SNAKE_BASE_SPEED_MOBILE : GAME_CONFIG.SNAKE_BASE_SPEED_PC;
-            
+
             if (isBoosting) {
                 player.speed = speedBase * GAME_CONFIG.BOOST_SPEED_MULT;
                 player.radius = baseRadius;
-                
+
                 const tail = player.history[Math.floor(player.length * player.historySpacing)];
                 if (tail && Math.random() < 0.4) spawnSpark(tail.x, tail.y, player.angle);
 
                 if (++player.boostCounter > GAME_CONFIG.BOOST_FRAMES_PER_DROP) {
-                    player.boostCounter = 0; 
-                    player.length -= GAME_CONFIG.BOOST_LENGTH_LOSS; 
+                    player.boostCounter = 0;
+                    player.length -= GAME_CONFIG.BOOST_LENGTH_LOSS;
                     player.score = Math.max(0, player.score - GAME_CONFIG.BOOST_SCORE_LOSS);
                     if (tail) foods.push(spawnFood(true, tail.x, tail.y));
                 }
@@ -951,13 +1102,13 @@
             player.x += Math.cos(player.angle) * player.speed;
             player.y += Math.sin(player.angle) * player.speed;
 
-            if (Math.sqrt((player.x - CENTER)**2 + (player.y - CENTER)**2) > CENTER - player.radius * 0.2) { 
-                dropDeathFood(player); gameOver(); return; 
+            if (Math.sqrt((player.x - CENTER) ** 2 + (player.y - CENTER) ** 2) > CENTER - player.radius * 0.2) {
+                dropDeathFood(player); gameOver(); return;
             }
 
             for (let bot of bots) {
-                if (checkPerfectCollision(player.x, player.y, player.radius, player.angle, bot)) { 
-                    dropDeathFood(player); playerDie(); return; 
+                if (checkPerfectCollision(player.x, player.y, player.radius, player.angle, bot)) {
+                    dropDeathFood(player); playerDie(); return;
                 }
             }
 
@@ -972,13 +1123,13 @@
             player.distAccum = (player.distAccum || 0) + player.speed;
             while (player.distAccum >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
                 player.distAccum -= GAME_CONFIG.SNAKE_HISTORY_STEP;
-                player.history.unshift({ 
-                    x: player.x - pVx * player.distAccum, 
-                    y: player.y - pVy * player.distAccum 
+                player.history.unshift({
+                    x: player.x - pVx * player.distAccum,
+                    y: player.y - pVy * player.distAccum
                 });
             }
             player.history.length = Math.min(player.history.length, Math.floor(player.length * player.historySpacing) + 1);
-            
+
             // Câmera Inteligente (Look-ahead)
             let lookDist = isBoosting ? 130 : player.speed * GAME_CONFIG.CAMERA_LOOK_AHEAD;
             let camTargetX = player.x + Math.cos(player.angle) * lookDist;
@@ -989,26 +1140,26 @@
             // Consumo de Comida (Jogador)
             const magnet = player.radius * GAME_CONFIG.MAGNET_RADIUS_MULT;
             for (let i = foods.length - 1; i >= 0; i--) {
-                const f = foods[i], d = Math.sqrt((player.x - f.x)**2 + (player.y - f.y)**2);
+                const f = foods[i], d = Math.sqrt((player.x - f.x) ** 2 + (player.y - f.y) ** 2);
                 if (d < player.radius + f.radius) {
-                    foods.splice(i, 1); 
-                    
+                    foods.splice(i, 1);
+
                     // Burst de partículas explosivas
                     spawnParticles(f.x, f.y, f.color, f.isDeathFood ? 15 : 8);
-                    
+
                     // Texto flutuante colado
                     let pts = f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD;
                     spawnFloatingText(f.x, f.y, `+${pts}`, f.color);
-                    
+
                     // Tremor de câmara em comida lendária
                     if (f.isDeathFood) camera.shake = 8;
 
-                    player.length += f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD; 
+                    player.length += f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD;
                     player.score += pts;
-                    if (player.score > highScore) { 
-                        highScore = player.score; 
-                        highScoreHomeElement.innerText = Math.floor(highScore); 
-                        localStorage.setItem('cobraioHighScore', highScore); 
+                    if (player.score > highScore) {
+                        highScore = player.score;
+                        highScoreHomeElement.innerText = Math.floor(highScore);
+                        localStorage.setItem('cobraioHighScore', highScore);
                     }
                     updateLeaderboard();
 
@@ -1023,7 +1174,7 @@
 
             // Send local state to server (Throttled to ~20Hz for bandwidth efficiency)
             const now = Date.now();
-            if (now - lastUpdateTime > 50) { 
+            if (now - lastUpdateTime > 50) {
                 lastUpdateTime = now;
                 socket.emit('update', {
                     x: player.x,
@@ -1037,6 +1188,40 @@
                 });
             }
 
+            // --- SUAVIZAÇÃO DE OUTROS JOGADORES ---
+            const spacing = GAME_CONFIG.SNAKE_HISTORY_SPACING;
+            for (let id in otherPlayers) {
+                let p = otherPlayers[id];
+                if (p.targetX !== undefined) {
+                    // Mover suavemente para o alvo (interpolação)
+                    const lerpFactor = 0.15;
+                    p.x += (p.targetX - p.x) * lerpFactor;
+                    p.y += (p.targetY - p.y) * lerpFactor;
+                    
+                    let aDiff = p.targetAngle - p.angle;
+                    while (aDiff < -Math.PI) aDiff += Math.PI * 2;
+                    while (aDiff > Math.PI) aDiff -= Math.PI * 2;
+                    p.angle += aDiff * lerpFactor;
+
+                    // Simulação local do histórico entre pacotes para evitar "corpo quebrado"
+                    const curSpeed = (p.isBoosting ? 1.8 : 1.0) * GAME_CONFIG.SNAKE_BASE_SPEED_PC; // Estimativa
+                    const pVx = Math.cos(p.angle);
+                    const pVy = Math.sin(p.angle);
+                    p.distAccum = (p.distAccum || 0) + curSpeed;
+                    
+                    while (p.distAccum >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
+                        p.distAccum -= GAME_CONFIG.SNAKE_HISTORY_STEP;
+                        p.history.unshift({ 
+                            x: p.x - pVx * p.distAccum, 
+                            y: p.y - pVy * p.distAccum 
+                        });
+                    }
+                    if (p.history.length > Math.floor(p.length * spacing) + 5) {
+                        p.history.length = Math.floor(p.length * spacing) + 5;
+                    }
+                }
+            }
+
             liveScoreVal.innerText = Math.floor(player.score);
 
             // --- FÍSICA DOS BOTS (AI REAL) ---
@@ -1047,42 +1232,42 @@
                 bot.isBoosting = false;
                 if (bot.behavior === 'aggressive' && player.length < bot.length && distToPlayer < GAME_CONFIG.BOT_VISION_RADIUS) {
                     targetX = player.x; targetY = player.y;
-                    if(distToPlayer < 400 && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) bot.isBoosting = true;
+                    if (distToPlayer < 400 && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) bot.isBoosting = true;
                 } else if (bot.behavior === 'coward' && player.length > bot.length && distToPlayer < GAME_CONFIG.BOT_VISION_RADIUS) {
                     targetX = bot.x - (player.x - bot.x); targetY = bot.y - (player.y - bot.y);
-                    if(distToPlayer < 400 && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) bot.isBoosting = true;
+                    if (distToPlayer < 400 && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) bot.isBoosting = true;
                 } else if (bot.behavior === 'wander') {
-                    if(--bot.aiTimer <= 0) { bot.targetAngle += (Math.random()-0.5)*2; bot.aiTimer = 60; }
+                    if (--bot.aiTimer <= 0) { bot.targetAngle += (Math.random() - 0.5) * 2; bot.aiTimer = 60; }
                 }
 
                 if (!targetX && bot.behavior !== 'wander') {
-                    let nearest = null; let minD = 500*500;
-                    for(let i=0; i<foods.length; i+=10) {
-                        const f = foods[i]; const dSq = (bot.x - f.x)**2 + (bot.y - f.y)**2;
-                        if(dSq < minD) { minD = dSq; nearest = f; }
+                    let nearest = null; let minD = 500 * 500;
+                    for (let i = 0; i < foods.length; i += 10) {
+                        const f = foods[i]; const dSq = (bot.x - f.x) ** 2 + (bot.y - f.y) ** 2;
+                        if (dSq < minD) { minD = dSq; nearest = f; }
                     }
-                    if(nearest) { targetX = nearest.x; targetY = nearest.y; }
-                    else if(--bot.aiTimer <= 0) { bot.targetAngle += (Math.random()-0.5); bot.aiTimer = 60; }
+                    if (nearest) { targetX = nearest.x; targetY = nearest.y; }
+                    else if (--bot.aiTimer <= 0) { bot.targetAngle += (Math.random() - 0.5); bot.aiTimer = 60; }
                 }
 
                 if (targetX !== null) {
                     bot.targetAngle = Math.atan2(targetY - bot.y, targetX - bot.x);
                 }
-                
+
                 const avoid = (other) => {
-                    for(let i=0; i<other.history.length; i += other.historySpacing * 2) {
-                        const s = other.history[i]; if(!s) continue;
-                        if((bot.x-s.x)**2 + (bot.y-s.y)**2 < (bot.radius * GAME_CONFIG.BOT_AVOID_RADIUS_MULT)**2) {
-                            bot.targetAngle = Math.atan2(bot.y-s.y, bot.x-s.x); bot.isBoosting = true; return true;
+                    for (let i = 0; i < other.history.length; i += other.historySpacing * 2) {
+                        const s = other.history[i]; if (!s) continue;
+                        if ((bot.x - s.x) ** 2 + (bot.y - s.y) ** 2 < (bot.radius * GAME_CONFIG.BOT_AVOID_RADIUS_MULT) ** 2) {
+                            bot.targetAngle = Math.atan2(bot.y - s.y, bot.x - s.x); bot.isBoosting = true; return true;
                         }
                     }
                     return false;
                 };
-                if(!avoid(player)) { for(let b of bots) if(b.id !== bot.id && avoid(b)) break; }
-                if (Math.sqrt((bot.x-CENTER)**2 + (bot.y-CENTER)**2) > CENTER - 800) bot.targetAngle = Math.atan2(CENTER-bot.y, CENTER-bot.x);
-                
-                let bDiff = bot.targetAngle - bot.angle; while(bDiff < -Math.PI) bDiff += Math.PI*2; while(bDiff > Math.PI) bDiff -= Math.PI*2; 
-                
+                if (!avoid(player)) { for (let b of bots) if (b.id !== bot.id && avoid(b)) break; }
+                if (Math.sqrt((bot.x - CENTER) ** 2 + (bot.y - CENTER) ** 2) > CENTER - 800) bot.targetAngle = Math.atan2(CENTER - bot.y, CENTER - bot.x);
+
+                let bDiff = bot.targetAngle - bot.angle; while (bDiff < -Math.PI) bDiff += Math.PI * 2; while (bDiff > Math.PI) bDiff -= Math.PI * 2;
+
                 const bDamp = Math.max(0.6, 1 - (bot.length - 20) * 0.001);
                 bot.angle += bDiff * (bot.isBoosting ? GAME_CONFIG.SNAKE_TURN_SPEED_BOOST : GAME_CONFIG.SNAKE_TURN_SPEED) * bDamp;
 
@@ -1091,7 +1276,7 @@
                 const curSpd = (bot.isBoosting && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) ? (bSpeedBase * GAME_CONFIG.BOOST_SPEED_MULT) : bSpeedBase;
 
                 bot.x += Math.cos(bot.angle) * curSpd; bot.y += Math.sin(bot.angle) * curSpd;
-                
+
                 if (bot.isBoosting && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) {
                     const tail = bot.history[Math.floor(bot.length * bot.historySpacing)];
                     if (tail && Math.random() < 0.4) spawnSpark(tail.x, tail.y, bot.angle);
@@ -1102,19 +1287,19 @@
                     }
                 } else { bot.boostCounter = 0; }
 
-                let died = Math.sqrt((bot.x-CENTER)**2 + (bot.y-CENTER)**2) > CENTER - bot.radius * 0.2;
-                if(!died) died = checkPerfectCollision(bot.x, bot.y, bot.radius, bot.angle, player);
-                if(!died) {
-                    for(let b of bots) {
-                        if(b.id !== bot.id && checkPerfectCollision(bot.x, bot.y, bot.radius, bot.angle, b)) { died = true; break; }
+                let died = Math.sqrt((bot.x - CENTER) ** 2 + (bot.y - CENTER) ** 2) > CENTER - bot.radius * 0.2;
+                if (!died) died = checkPerfectCollision(bot.x, bot.y, bot.radius, bot.angle, player);
+                if (!died) {
+                    for (let b of bots) {
+                        if (b.id !== bot.id && checkPerfectCollision(bot.x, bot.y, bot.radius, bot.angle, b)) { died = true; break; }
                     }
                 }
-                
-                if(died) { 
+
+                if (died) {
                     dropDeathFood(bot);
-                    bots.splice(idx, 1); return; 
+                    bots.splice(idx, 1); return;
                 }
-                
+
                 const bVx = Math.cos(bot.angle);
                 const bVy = Math.sin(bot.angle);
                 bot.distAccum = (bot.distAccum || 0) + curSpd;
@@ -1124,51 +1309,51 @@
                 }
                 bot.history.length = Math.min(bot.history.length, Math.floor(bot.length * bot.historySpacing) + 1);
                 bot.radius = Math.min(GAME_CONFIG.SNAKE_MAX_RADIUS, GAME_CONFIG.SNAKE_INITIAL_RADIUS + (bot.length - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.WIDTH_GROWTH_FACTOR);
-                
+
                 const bMagnet = bot.radius * GAME_CONFIG.MAGNET_RADIUS_MULT;
-                for(let i=foods.length-1; i>=0; i-=2) {
-                    const f = foods[i]; const dSq = (bot.x-f.x)**2 + (bot.y-f.y)**2;
-                    if(dSq < (bot.radius+f.radius)**2) { 
-                        foods.splice(i, 1); 
+                for (let i = foods.length - 1; i >= 0; i -= 2) {
+                    const f = foods[i]; const dSq = (bot.x - f.x) ** 2 + (bot.y - f.y) ** 2;
+                    if (dSq < (bot.radius + f.radius) ** 2) {
+                        foods.splice(i, 1);
                         spawnParticles(f.x, f.y, f.color, f.isDeathFood ? 10 : 5);
-                        bot.length += f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD; 
-                        bot.score += f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD; 
+                        bot.length += f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD;
+                        bot.score += f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD;
                     }
-                    else if(dSq < bMagnet**2) { f.x += (bot.x-f.x)*0.06; f.y += (bot.y-f.y)*0.06; }
+                    else if (dSq < bMagnet ** 2) { f.x += (bot.x - f.x) * 0.06; f.y += (bot.y - f.y) * 0.06; }
                 }
             });
 
             if (bots.length < GAME_CONFIG.NUM_BOTS && --spawnTimer <= 0) {
                 bots.push(createBot()); spawnTimer = GAME_CONFIG.SPAWN_DELAY;
             }
-            while(foods.length < GAME_CONFIG.TOTAL_FOOD) foods.push(spawnFood());
+            while (foods.length < GAME_CONFIG.TOTAL_FOOD) foods.push(spawnFood());
         }
 
         function updateLeaderboard() {
             const others = Object.values(otherPlayers).map(p => ({ name: p.name, score: p.score || 0, isPlayer: false, ref: p }));
-            const list = [...bots.map(b => ({ name: b.name, score: b.score, isPlayer: false, ref: b })), 
-                          ...others,
-                          { name: player.name, score: player.score, isPlayer: true, ref: player }]
-                .sort((a,b) => b.score - a.score);
-            
+            const list = [...bots.map(b => ({ name: b.name, score: b.score, isPlayer: false, ref: b })),
+            ...others,
+            { name: player.name, score: player.score, isPlayer: true, ref: player }]
+                .sort((a, b) => b.score - a.score);
+
             const pIdx = list.findIndex(x => x.isPlayer);
-            
+
             bots.forEach(b => b.isTop1 = false);
             player.isTop1 = false;
-            if(list.length > 0) list[0].ref.isTop1 = true;
-            
+            if (list.length > 0) list[0].ref.isTop1 = true;
+
             const top10 = list.slice(0, 10);
-            
+
             leaderList.innerHTML = top10.map((p, i) => `
                 <div class="leader-item" style="color: ${p.isPlayer ? 'var(--neon-green)' : 'rgba(255,255,255,0.4)'}">
-                    <span class="rank-num">#${i+1}</span>
+                    <span class="rank-num">#${i + 1}</span>
                     <span class="leader-name">${p.name}</span>
                     <span class="leader-score">${Math.floor(p.score)}</span>
                 </div>
             `).join('') + (pIdx >= 10 ? `
                 <div style="text-align:center; font-size:10px; opacity:0.3; margin:2px 0;">...</div>
                 <div class="leader-item my-rank">
-                    <span class="rank-num">#${pIdx+1}</span>
+                    <span class="rank-num">#${pIdx + 1}</span>
                     <span class="leader-name">${player.name}</span>
                     <span class="leader-score">${Math.floor(player.score)}</span>
                 </div>
@@ -1184,7 +1369,7 @@
             context.save();
             context.lineCap = 'round';
             context.lineJoin = 'round';
-            
+
             if (isHigh) {
                 if (isBoosting) {
                     const headColor = activeSkin.getBodyColor(false, 0, segments)[0];
@@ -1197,10 +1382,10 @@
             } else {
                 context.shadowBlur = 0;
             }
-            
+
             context.lineWidth = (entity.radius * 2) + 6; // Borda preta sólida
-            context.strokeStyle = '#0a0e14'; 
-            
+            context.strokeStyle = '#0a0e14';
+
             context.beginPath();
             let first = true;
             const spacing = GAME_CONFIG.SNAKE_HISTORY_SPACING;
@@ -1216,29 +1401,29 @@
 
             // PASS 2: Gomos Sólidos (Listras) - Agora vai até ao índice 0 (cabeça integrada no tubo)
             for (let i = segments - 1; i >= 0; i--) {
-                const pos = i === 0 ? {x: entity.x, y: entity.y} : entity.history[i * spacing];
+                const pos = i === 0 ? { x: entity.x, y: entity.y } : entity.history[i * spacing];
                 if (!pos) continue;
-                
+
                 // Divisão por 4 cria listras mais grossas e realistas, iguais à imagem
-                let isDark = Math.floor(i / 4) % 2 === 0; 
-                
+                let isDark = Math.floor(i / 4) % 2 === 0;
+
                 const baseColors = activeSkin.getBodyColor(isDark, i, segments);
-                let c = activeSkin.getTailColor && activeSkin.getTailColor(segments-i) ? activeSkin.getTailColor(segments-i) : { c1: baseColors[0], c2: baseColors[1] };
-                
+                let c = activeSkin.getTailColor && activeSkin.getTailColor(segments - i) ? activeSkin.getTailColor(segments - i) : { c1: baseColors[0], c2: baseColors[1] };
+
                 context.fillStyle = c.c1; // Cor totalmente lisa, sem efeitos esféricos
-                context.beginPath(); 
-                context.arc(pos.x, pos.y, entity.radius, 0, Math.PI*2); 
+                context.beginPath();
+                context.arc(pos.x, pos.y, entity.radius, 0, Math.PI * 2);
                 context.fill();
             }
-            
+
             // PASS 3: Brilho de Cilíndro 3D - Passa por cima da cabeça, selando o efeito
             if (isHigh) {
                 context.save();
                 context.lineCap = 'round';
                 context.lineJoin = 'round';
-                context.lineWidth = entity.radius * 0.8; 
-                context.strokeStyle = 'rgba(255, 255, 255, 0.15)'; 
-                
+                context.lineWidth = entity.radius * 0.8;
+                context.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+
                 context.beginPath();
                 first = true;
                 for (let i = segments - 1; i > 0; i--) {
@@ -1251,17 +1436,17 @@
                 context.stroke();
                 context.restore();
             }
-            
+
             // PASS 4: Apenas os Olhos (A cabeça fundiu-se com o corpo)
-            [entity.angle-0.7, entity.angle+0.7].forEach(a => {
-                const ex = entity.x + Math.cos(a)*entity.radius*0.6, ey = entity.y + Math.sin(a)*entity.radius*0.6;
+            [entity.angle - 0.7, entity.angle + 0.7].forEach(a => {
+                const ex = entity.x + Math.cos(a) * entity.radius * 0.6, ey = entity.y + Math.sin(a) * entity.radius * 0.6;
                 const eR = entity.radius * 0.42;
-                context.fillStyle = '#fff'; context.beginPath(); context.arc(ex, ey, eR, 0, Math.PI*2); context.fill();
+                context.fillStyle = '#fff'; context.beginPath(); context.arc(ex, ey, eR, 0, Math.PI * 2); context.fill();
                 const pR = eR * 0.55;
-                const px = ex+Math.cos(entity.angle)*pR*0.4, py = ey+Math.sin(entity.angle)*pR*0.4;
-                context.fillStyle = '#000'; context.beginPath(); context.arc(px, py, pR, 0, Math.PI*2); context.fill();
+                const px = ex + Math.cos(entity.angle) * pR * 0.4, py = ey + Math.sin(entity.angle) * pR * 0.4;
+                context.fillStyle = '#000'; context.beginPath(); context.arc(px, py, pR, 0, Math.PI * 2); context.fill();
                 if (isHigh) {
-                    context.fillStyle = '#fff'; context.beginPath(); context.arc(px - pR*0.3, py - pR*0.3, pR*0.3, 0, Math.PI*2); context.fill();
+                    context.fillStyle = '#fff'; context.beginPath(); context.arc(px - pR * 0.3, py - pR * 0.3, pR * 0.3, 0, Math.PI * 2); context.fill();
                 }
             });
 
@@ -1270,30 +1455,30 @@
                 context.save();
                 context.translate(entity.x, entity.y);
                 context.rotate(entity.angle);
-                
-                context.fillStyle = '#ffdd00'; 
+
+                context.fillStyle = '#ffdd00';
                 context.shadowBlur = isHigh ? 15 : 0;
                 context.shadowColor = '#ffaa00';
                 context.strokeStyle = '#ffffff';
                 context.lineWidth = 1.5;
-                
+
                 context.beginPath();
                 let cr = entity.radius;
-                context.moveTo(-cr * 0.1, -cr * 0.5); 
-                context.lineTo(-cr * 0.8, -cr * 0.6); 
-                context.lineTo(-cr * 0.5, -cr * 0.15); 
-                context.lineTo(-cr * 1.0, 0);         
-                context.lineTo(-cr * 0.5, cr * 0.15);  
-                context.lineTo(-cr * 0.8, cr * 0.6);  
-                context.lineTo(-cr * 0.1, cr * 0.5);  
-                context.quadraticCurveTo(cr * 0.2, 0, -cr * 0.1, -cr * 0.5); 
-                
+                context.moveTo(-cr * 0.1, -cr * 0.5);
+                context.lineTo(-cr * 0.8, -cr * 0.6);
+                context.lineTo(-cr * 0.5, -cr * 0.15);
+                context.lineTo(-cr * 1.0, 0);
+                context.lineTo(-cr * 0.5, cr * 0.15);
+                context.lineTo(-cr * 0.8, cr * 0.6);
+                context.lineTo(-cr * 0.1, cr * 0.5);
+                context.quadraticCurveTo(cr * 0.2, 0, -cr * 0.1, -cr * 0.5);
+
                 context.fill(); context.stroke();
-                
+
                 context.shadowBlur = isHigh ? 5 : 0;
-                context.fillStyle = '#ff00aa'; context.beginPath(); context.arc(-cr*0.75, -cr*0.5, cr*0.1, 0, Math.PI*2); context.fill();
-                context.fillStyle = '#00ddff'; context.beginPath(); context.arc(-cr*0.9, 0, cr*0.1, 0, Math.PI*2); context.fill();
-                context.fillStyle = '#ff00aa'; context.beginPath(); context.arc(-cr*0.75, cr*0.5, cr*0.1, 0, Math.PI*2); context.fill();
+                context.fillStyle = '#ff00aa'; context.beginPath(); context.arc(-cr * 0.75, -cr * 0.5, cr * 0.1, 0, Math.PI * 2); context.fill();
+                context.fillStyle = '#00ddff'; context.beginPath(); context.arc(-cr * 0.9, 0, cr * 0.1, 0, Math.PI * 2); context.fill();
+                context.fillStyle = '#ff00aa'; context.beginPath(); context.arc(-cr * 0.75, cr * 0.5, cr * 0.1, 0, Math.PI * 2); context.fill();
                 context.restore();
             }
         }
@@ -1303,48 +1488,48 @@
 
             // Decaimento suave do tremer de ecrã (Camera Shake)
             camera.shake *= 0.85;
-            if(camera.shake < 0.5) camera.shake = 0;
+            if (camera.shake < 0.5) camera.shake = 0;
 
             ctx.save();
-            let sx = camera.shake > 0 ? (Math.random()-0.5)*camera.shake : 0;
-            let sy = camera.shake > 0 ? (Math.random()-0.5)*camera.shake : 0;
-            
-            ctx.translate(canvas.width/2 + sx, canvas.height/2 + sy); 
-            ctx.scale(camera.zoom, camera.zoom); 
+            let sx = camera.shake > 0 ? (Math.random() - 0.5) * camera.shake : 0;
+            let sy = camera.shake > 0 ? (Math.random() - 0.5) * camera.shake : 0;
+
+            ctx.translate(canvas.width / 2 + sx, canvas.height / 2 + sy);
+            ctx.scale(camera.zoom, camera.zoom);
             ctx.translate(-camera.x, -camera.y);
-            
+
             const isHigh = qualityOpt === 'high';
 
             // Hexágonos
-            const r = 45, w = Math.sqrt(3)*r, h = 2*r, offY = h*0.75;
-            const vW = canvas.width/camera.zoom, vH = canvas.height/camera.zoom;
-            for (let row = Math.floor((camera.y - vH/2)/offY)-1; row <= Math.floor((camera.y + vH/2)/offY)+1; row++) {
-                for (let col = Math.floor((camera.x - vW/2)/w)-1; col <= Math.floor((camera.x + vW/2)/w)+1; col++) {
-                    let px = col*w + (row%2===0?0:w/2), py = row*offY;
+            const r = 45, w = Math.sqrt(3) * r, h = 2 * r, offY = h * 0.75;
+            const vW = canvas.width / camera.zoom, vH = canvas.height / camera.zoom;
+            for (let row = Math.floor((camera.y - vH / 2) / offY) - 1; row <= Math.floor((camera.y + vH / 2) / offY) + 1; row++) {
+                for (let col = Math.floor((camera.x - vW / 2) / w) - 1; col <= Math.floor((camera.x + vW / 2) / w) + 1; col++) {
+                    let px = col * w + (row % 2 === 0 ? 0 : w / 2), py = row * offY;
                     ctx.strokeStyle = '#0d1116'; ctx.fillStyle = '#181d24'; ctx.lineWidth = 4;
                     ctx.beginPath();
-                    for(let i=0; i<6; i++) {
-                        let a = Math.PI/180 * (60*i - 30);
-                        let x = px + r*0.95*Math.cos(a), y = py + r*0.95*Math.sin(a);
-                        if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                    for (let i = 0; i < 6; i++) {
+                        let a = Math.PI / 180 * (60 * i - 30);
+                        let x = px + r * 0.95 * Math.cos(a), y = py + r * 0.95 * Math.sin(a);
+                        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                     }
                     ctx.closePath(); ctx.fill(); ctx.stroke();
                 }
             }
 
             // Borda Pulsante Dinâmica Intensa
-            ctx.beginPath(); ctx.arc(CENTER, CENTER, CENTER, 0, Math.PI*2);
+            ctx.beginPath(); ctx.arc(CENTER, CENTER, CENTER, 0, Math.PI * 2);
             let distToCenter = Math.hypot(player.x - CENTER, player.y - CENTER);
-            let danger = Math.max(0, (distToCenter - (CENTER - 1000)) / 1000); 
+            let danger = Math.max(0, (distToCenter - (CENTER - 1000)) / 1000);
             let pulse = (Math.sin(Date.now() / 150) + 1) / 2;
-            
-            ctx.strokeStyle = `rgba(255, 50, 50, ${0.2 + (danger * pulse * 0.4)})`; 
+
+            ctx.strokeStyle = `rgba(255, 50, 50, ${0.2 + (danger * pulse * 0.4)})`;
             ctx.lineWidth = 20 + (danger * pulse * 20); // Linha cresce com o perigo
             ctx.stroke();
             if (isHigh) {
                 ctx.globalCompositeOperation = 'lighter';
-                ctx.strokeStyle = '#ff3333'; 
-                ctx.lineWidth = 4 + (danger * pulse * 4); 
+                ctx.strokeStyle = '#ff3333';
+                ctx.lineWidth = 4 + (danger * pulse * 4);
                 ctx.shadowBlur = 20 + (danger * pulse * 60); // Brilho intensifica com o perigo
                 ctx.shadowColor = '#ff0000'; ctx.stroke();
                 ctx.shadowBlur = 0; ctx.globalCompositeOperation = 'source-over';
@@ -1353,30 +1538,30 @@
             // Comidas
             const tTime = Date.now() / 1000;
             foods.forEach(f => {
-                if (f.x < camera.x - vW/2 - 30 || f.x > camera.x + vW/2 + 30 || f.y < camera.y - vH/2 - 30 || f.y > camera.y + vH/2 + 30) return;
-                
+                if (f.x < camera.x - vW / 2 - 30 || f.x > camera.x + vW / 2 + 30 || f.y < camera.y - vH / 2 - 30 || f.y > camera.y + vH / 2 + 30) return;
+
                 // Defensive checks to prevent NaN
                 const phase = f.phase || 0;
-                const rAnim = f.isDeathFood ? f.radius : f.radius + Math.sin(Date.now()/150 + phase)*0.8;
-                
+                const rAnim = f.isDeathFood ? f.radius : f.radius + Math.sin(Date.now() / 150 + phase) * 0.8;
+
                 const floatX = f.isDeathFood ? 0 : Math.sin(tTime * 1.5 + phase) * 4;
                 const floatY = f.isDeathFood ? 0 : Math.cos(tTime * 2.0 + phase) * 4;
                 const dX = f.x + floatX;
                 const dY = f.y + floatY;
-                
+
                 if (isHigh) {
-                    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.arc(dX+2, dY+3, rAnim, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.arc(dX + 2, dY + 3, rAnim, 0, Math.PI * 2); ctx.fill();
                     ctx.globalCompositeOperation = 'lighter';
                     const glowMult = f.isDeathFood ? GAME_CONFIG.FOOD_GLOW_MULT_DEATH : GAME_CONFIG.FOOD_GLOW_MULT_NORMAL;
-                    const g = ctx.createRadialGradient(dX, dY, rAnim, dX, dY, rAnim*glowMult);
-                    g.addColorStop(0, f.color+'99'); g.addColorStop(1, f.color+'00');
-                    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(dX, dY, rAnim*glowMult, 0, Math.PI*2); ctx.fill();
+                    const g = ctx.createRadialGradient(dX, dY, rAnim, dX, dY, rAnim * glowMult);
+                    g.addColorStop(0, f.color + '99'); g.addColorStop(1, f.color + '00');
+                    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(dX, dY, rAnim * glowMult, 0, Math.PI * 2); ctx.fill();
                     ctx.globalCompositeOperation = 'source-over';
-                    const s = ctx.createRadialGradient(dX-rAnim*0.3, dY-rAnim*0.3, rAnim*0.1, dX, dY, rAnim);
+                    const s = ctx.createRadialGradient(dX - rAnim * 0.3, dY - rAnim * 0.3, rAnim * 0.1, dX, dY, rAnim);
                     s.addColorStop(0, '#fff'); s.addColorStop(0.5, f.color); s.addColorStop(1, f.color);
-                    ctx.fillStyle = s; ctx.beginPath(); ctx.arc(dX, dY, rAnim, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = s; ctx.beginPath(); ctx.arc(dX, dY, rAnim, 0, Math.PI * 2); ctx.fill();
                 } else {
-                    ctx.fillStyle = f.color; ctx.beginPath(); ctx.arc(dX, dY, rAnim, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = f.color; ctx.beginPath(); ctx.arc(dX, dY, rAnim, 0, Math.PI * 2); ctx.fill();
                 }
             });
 
@@ -1386,7 +1571,7 @@
                 ctx.fillStyle = `rgba(255,255,255,${s.life})`;
                 ctx.shadowColor = s.color;
                 ctx.shadowBlur = 5;
-                ctx.beginPath(); ctx.arc(s.x, s.y, 2 * s.life, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(s.x, s.y, 2 * s.life, 0, Math.PI * 2); ctx.fill();
             });
             ctx.globalCompositeOperation = 'source-over';
             ctx.shadowBlur = 0;
@@ -1397,13 +1582,13 @@
                 drawSnake(ctx, p, skins[p.skinIndex || 0], p.isBoosting);
             });
             drawSnake(ctx, player, skins[currentSkinIndex], isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH);
-            
+
             // Nomes e UI In-World
             ctx.font = 'bold 16px Outfit, sans-serif'; ctx.textAlign = 'center';
-            if(isHigh) { ctx.shadowBlur = 5; ctx.shadowColor = 'black'; }
-            
+            if (isHigh) { ctx.shadowBlur = 5; ctx.shadowColor = 'black'; }
+
             bots.forEach(bot => {
-                if (bot.x > camera.x - vW/2 && bot.x < camera.x + vW/2 && bot.y > camera.y - vH/2 && bot.y < camera.y + vH/2) {
+                if (bot.x > camera.x - vW / 2 && bot.x < camera.x + vW / 2 && bot.y > camera.y - vH / 2 && bot.y < camera.y + vH / 2) {
                     ctx.fillStyle = 'rgba(255,255,255,0.6)';
                     ctx.fillText(bot.name, bot.x, bot.y - bot.radius - 15);
                 }
@@ -1416,7 +1601,7 @@
             particles.forEach(p => {
                 ctx.fillStyle = p.color;
                 ctx.globalAlpha = Math.max(0, p.life);
-                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill();
             });
             ctx.globalAlpha = 1.0;
 
@@ -1434,32 +1619,32 @@
             // Minimapa
             if (gameState === 'PLAYING') {
                 const mmR = isTouch ? 40 : 50, mmM = 20, mmX = mmM + mmR, mmY = mmM + mmR;
-                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.arc(mmX, mmY, mmR, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.arc(mmX, mmY, mmR, 0, Math.PI * 2); ctx.fill();
                 ctx.strokeStyle = 'rgba(86,171,47,0.3)'; ctx.lineWidth = 2; ctx.stroke();
-                
+
                 bots.forEach(b => {
-                    const dXb = mmX + (b.x - CENTER)/CENTER*(mmR-3);
-                    const dYb = mmY + (b.y - CENTER)/CENTER*(mmR-3);
-                    ctx.beginPath(); ctx.arc(dXb, dYb, 2, 0, Math.PI*2); ctx.fill();
+                    const dXb = mmX + (b.x - CENTER) / CENTER * (mmR - 3);
+                    const dYb = mmY + (b.y - CENTER) / CENTER * (mmR - 3);
+                    ctx.beginPath(); ctx.arc(dXb, dYb, 2, 0, Math.PI * 2); ctx.fill();
                 });
 
                 Object.values(otherPlayers).forEach(p => {
-                    const dXp = mmX + (p.x - CENTER)/CENTER*(mmR-3);
-                    const dYp = mmY + (p.y - CENTER)/CENTER*(mmR-3);
-                    ctx.fillStyle = '#ff00aa'; 
-                    ctx.beginPath(); ctx.arc(dXp, dYp, 2, 0, Math.PI*2); ctx.fill();
+                    const dXp = mmX + (p.x - CENTER) / CENTER * (mmR - 3);
+                    const dYp = mmY + (p.y - CENTER) / CENTER * (mmR - 3);
+                    ctx.fillStyle = '#ff00aa';
+                    ctx.beginPath(); ctx.arc(dXp, dYp, 2, 0, Math.PI * 2); ctx.fill();
                 });
 
-                const dX = mmX + (player.x - CENTER)/CENTER*(mmR-3), dY = mmY + (player.y - CENTER)/CENTER*(mmR-3);
+                const dX = mmX + (player.x - CENTER) / CENTER * (mmR - 3), dY = mmY + (player.y - CENTER) / CENTER * (mmR - 3);
                 ctx.fillStyle = '#fff'; ctx.shadowBlur = 8; ctx.shadowColor = '#fff';
-                ctx.beginPath(); ctx.arc(dX, dY, 3, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+                ctx.beginPath(); ctx.arc(dX, dY, 3, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
             }
         }
 
         function gameOver() {
             gameState = 'GAME_OVER';
             camera.shake = 30; // Tremor forte ao morrer
-            
+
             document.getElementById('final-score-val').innerText = Math.floor(player.score);
             document.getElementById('game-over-msg').style.display = 'block';
             startScreen.style.opacity = '1'; startScreen.style.display = 'flex';
@@ -1467,8 +1652,8 @@
             liveHud.style.display = 'none';
             document.getElementById('mobile-controls').style.display = 'none';
             highScoreHomeElement.innerText = Math.floor(highScore);
-            
-            mouseX = canvas.width/2; mouseY = canvas.height/2;
+
+            mouseX = canvas.width / 2; mouseY = canvas.height / 2;
         }
 
         function playerDie() {
@@ -1480,34 +1665,34 @@
         const pCanvas_ = document.getElementById('preview-canvas');
         const pCtx_ = pCanvas_.getContext('2d');
         const pSnake = { x: -60, y: 50, angle: 0, radius: 15, length: 25, history: [], historySpacing: GAME_CONFIG.SNAKE_HISTORY_SPACING, isTop1: false };
-        
-        for(let i=0; i<=25 * GAME_CONFIG.SNAKE_HISTORY_SPACING; i++) {
-            pSnake.history.push({x:-60, y:50});
+
+        for (let i = 0; i <= 25 * GAME_CONFIG.SNAKE_HISTORY_SPACING; i++) {
+            pSnake.history.push({ x: -60, y: 50 });
         }
 
         function drawPreview() {
             if (gameState === 'PLAYING') return;
-            pCtx_.clearRect(0,0,pCanvas_.width, pCanvas_.height);
-            
+            pCtx_.clearRect(0, 0, pCanvas_.width, pCanvas_.height);
+
             const w = pCanvas_.width, h = pCanvas_.height;
             const time = Date.now() * 0.004;
             const speed = 1.5;
             const oldX = pSnake.x;
             const oldY = pSnake.y;
-            
+
             pSnake.x += speed;
-            pSnake.y = (h/2) + Math.sin(time) * 12;
+            pSnake.y = (h / 2) + Math.sin(time) * 12;
             pSnake.angle = Math.atan2(pSnake.y - oldY, pSnake.x - oldX);
-            
+
             if (pSnake.x > w + 60) {
                 pSnake.x = -60;
                 pSnake.history = [];
-                for(let i=0; i<=25 * GAME_CONFIG.SNAKE_HISTORY_SPACING; i++) {
-                    pSnake.history.push({x:-60, y: pSnake.y});
+                for (let i = 0; i <= 25 * GAME_CONFIG.SNAKE_HISTORY_SPACING; i++) {
+                    pSnake.history.push({ x: -60, y: pSnake.y });
                 }
             }
-            
-            pSnake.history.unshift({x: pSnake.x, y: pSnake.y});
+
+            pSnake.history.unshift({ x: pSnake.x, y: pSnake.y });
             pSnake.history.length = Math.floor(pSnake.length * pSnake.historySpacing) + 1;
             drawSnake(pCtx_, pSnake, skins[currentSkinIndex], false);
         }
@@ -1520,29 +1705,29 @@
         document.getElementById('start-btn').onclick = () => {
             player.name = document.getElementById('player-name').value.trim() || 'Convidado';
             localStorage.setItem('cobraioNick', player.name);
-            player.x = CENTER; player.y = CENTER; 
-            player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH; 
+            player.x = CENTER; player.y = CENTER;
+            player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
             player.score = 0; player.distAccum = 0;
             player.history = [];
-            
-            for(let i=0; i<=GAME_CONFIG.SNAKE_INITIAL_LENGTH * GAME_CONFIG.SNAKE_HISTORY_SPACING; i++) {
-                player.history.push({x: CENTER, y: CENTER});
+
+            for (let i = 0; i <= GAME_CONFIG.SNAKE_INITIAL_LENGTH * GAME_CONFIG.SNAKE_HISTORY_SPACING; i++) {
+                player.history.push({ x: CENTER, y: CENTER });
             }
 
             camera.x = CENTER; camera.y = CENTER; camera.shake = 0;
-            
+
             foods.length = 0; particles.length = 0; floatingTexts.length = 0; sparks.length = 0;
-            for(let i=0; i<GAME_CONFIG.TOTAL_FOOD; i++) foods.push(spawnFood());
-            
+            for (let i = 0; i < GAME_CONFIG.TOTAL_FOOD; i++) foods.push(spawnFood());
+
             bots.length = 0;
             spawnTimer = GAME_CONFIG.SPAWN_DELAY;
-            for(let i=0; i<GAME_CONFIG.NUM_BOTS; i++) bots.push(createBot());
-            
-            mouseX = canvas.width/2; mouseY = canvas.height/2;
+            for (let i = 0; i < GAME_CONFIG.NUM_BOTS; i++) bots.push(createBot());
+
+            mouseX = canvas.width / 2; mouseY = canvas.height / 2;
             isMouseDown = false;
 
             gameState = 'PLAYING';
-            
+
             // Join server
             socket.emit('join', {
                 name: player.name,
@@ -1552,7 +1737,7 @@
             startScreen.style.display = 'none';
             leaderboardContainer.style.display = 'block';
             liveHud.style.display = 'block';
-            if(isTouch) document.getElementById('mobile-controls').style.display = 'block';
+            if (isTouch) document.getElementById('mobile-controls').style.display = 'block';
             updateLeaderboard();
         };
 
@@ -1563,4 +1748,5 @@
         loop();
     </script>
 </body>
+
 </html>
