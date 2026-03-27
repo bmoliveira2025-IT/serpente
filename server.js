@@ -57,6 +57,10 @@ const botNames = ['SlitherMaster', 'Viper', 'NeonSnake', 'CobraQueen', 'Toxic', 
 
 // --- FUNÇÕES UTILITÁRIAS ---
 
+function calculateLengthFromScore(score) {
+    return GAME_CONFIG.SNAKE_INITIAL_LENGTH + (score * (GAME_CONFIG.GROWTH_PER_FOOD / GAME_CONFIG.SCORE_PER_FOOD));
+}
+
 function getEntityRadius(length) {
     const lenDiff = Math.max(0, length - GAME_CONFIG.SNAKE_INITIAL_LENGTH);
     return Math.min(GAME_CONFIG.SNAKE_MAX_RADIUS, GAME_CONFIG.SNAKE_INITIAL_RADIUS + Math.sqrt(lenDiff) * GAME_CONFIG.WIDTH_GROWTH_FACTOR);
@@ -128,14 +132,16 @@ function getSafePosition() {
 function createBot() {
     const pos = getSafePosition();
     const isBoss = Math.random() < 0.25;
-    const initialLength = isBoss ? 80 + Math.random() * 150 : GAME_CONFIG.SNAKE_INITIAL_LENGTH;
+
+    const initialScore = isBoss ? 500 + Math.random() * 1500 : 50 + Math.random() * 100;
+    const initialLength = calculateLengthFromScore(initialScore);
     const initialRadius = getEntityRadius(initialLength);
 
     return {
         id: 'bot-' + Math.random().toString(36).substr(2, 9),
         name: botNames[Math.floor(Math.random() * botNames.length)] + (isBoss ? ' [BOSS]' : ''),
         x: pos.x, y: pos.y, angle: Math.random() * Math.PI * 2, targetAngle: Math.random() * Math.PI * 2,
-        score: isBoss ? 500 + Math.random() * 1500 : 100, length: initialLength, radius: initialRadius,
+        score: initialScore, length: initialLength, radius: initialRadius,
         history: Array.from({ length: Math.min(GAME_CONFIG.MAX_HISTORY_LENGTH, Math.floor(initialLength * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 10) }, () => ({ x: pos.x, y: pos.y })),
         skinIndex: Math.floor(Math.random() * 10), aiTimer: 0, speed: GAME_CONFIG.SNAKE_BASE_SPEED, isDead: false, distAccum: 0
     };
@@ -180,7 +186,6 @@ function dropDeathFood(snake) {
     if (!snake || !snake.history || snake.history.length === 0) return;
     const newFoods = [];
     const spacing = GAME_CONFIG.SNAKE_HISTORY_SPACING;
-    // Garante que desenha o rasto para a totalidade do corpo
     const segments = Math.min(Math.floor(snake.length), Math.floor(snake.history.length / spacing));
 
     for (let i = 0; i < segments; i++) {
@@ -195,7 +200,6 @@ function dropDeathFood(snake) {
         newFoods.push(f1, f2);
     }
 
-    // Dispara a comida do rastro para TODOS os jogadores online instantaneamente
     if (newFoods.length > 0) io.emit('deathResidue', newFoods);
 }
 
@@ -278,7 +282,8 @@ setInterval(() => {
             if (distSq < eatThreshold ** 2) {
                 const foodId = f.id; foods.splice(i, 1);
                 bot.score += f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD;
-                bot.length += f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD;
+
+                bot.length = calculateLengthFromScore(bot.score);
                 bot.radius = getEntityRadius(bot.length);
 
                 if (foods.length < GAME_CONFIG.TOTAL_FOOD) {
@@ -291,20 +296,22 @@ setInterval(() => {
         }
     });
 
+    // CORREÇÃO 1: Bot envia floats reais (com 2 casas decimais) para evitar congelamentos matemáticos!
     io.emit('botsUpdated', bots.map(b => ({
-        id: b.id, name: b.name, x: Math.round(b.x), y: Math.round(b.y), angle: b.angle,
-        score: b.score, radius: Math.round(b.radius), skinIndex: b.skinIndex,
-        length: b.length, isBoosting: b.isBoosting || false, isDead: b.isDead || false
+        id: b.id, name: b.name,
+        x: parseFloat(b.x.toFixed(2)),
+        y: parseFloat(b.y.toFixed(2)),
+        angle: parseFloat(b.angle.toFixed(3)),
+        score: Math.round(b.score),
+        radius: parseFloat(b.radius.toFixed(1)),
+        skinIndex: b.skinIndex,
+        length: parseFloat(b.length.toFixed(1)),
+        isBoosting: b.isBoosting || false,
+        isDead: b.isDead || false
     })));
 
-    Object.keys(players).forEach(id => {
-        const p = players[id];
-        io.emit('playerUpdated', {
-            id: p.id, x: Math.round(p.x), y: Math.round(p.y), angle: p.angle,
-            score: p.score, length: p.length, radius: Math.round(p.radius),
-            isBoosting: p.isBoosting, isDead: p.isDead || false, skinIndex: p.skinIndex
-        });
-    });
+    // NOTA: Os jogadores reais JÁ NÃO SÃO emitidos neste loop a 25fps. 
+    // Eles são repassados individualmente na função socket.on('update') (abaixo).
 }, 1000 / GAME_CONFIG.SERVER_TICK_RATE);
 
 // --- ROTAS E SOCKETS ---
@@ -321,22 +328,26 @@ io.on('connection', (socket) => {
             history: [], skinIndex: data.skinIndex || 0, isDead: false
         };
         socket.emit('init', { id: socket.id, players, foods, config: GAME_CONFIG });
+
+        // CORREÇÃO 2: Avisar os outros jogadores do mapa que entrámos! (Caso contrário éramos invisíveis até nos mexermos)
+        socket.broadcast.emit('playerJoined', players[socket.id]);
     });
 
     socket.on('update', (data) => {
         const p = players[socket.id];
         if (p) {
             p.x = data.x; p.y = data.y; p.angle = data.angle;
-            p.score = data.score; p.length = data.length; p.radius = data.radius; p.isBoosting = data.isBoosting;
+            p.isBoosting = data.isBoosting;
+
+            p.score = Math.max(0, data.score || 0);
+            p.length = calculateLengthFromScore(p.score);
+            p.radius = getEntityRadius(p.length);
 
             if (!p.history) p.history = [];
             if (!p.lastHistoryX) { p.lastHistoryX = p.x; p.lastHistoryY = p.y; }
 
             const distSinceLast = Math.hypot(p.x - p.lastHistoryX, p.y - p.lastHistoryY);
 
-            // CORREÇÃO CRÍTICA DE INTERPOLAÇÃO: Preenche os espaços em branco (pontos)
-            // de forma a que, quando morre, o corpo tenha a estrutura completa registada
-            // no servidor para spawnar toda a comida perfeitamente para todo o mundo ver!
             if (distSinceLast >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
                 const steps = Math.floor(distSinceLast / GAME_CONFIG.SNAKE_HISTORY_STEP);
                 const stepX = (p.x - p.lastHistoryX) / steps;
@@ -355,6 +366,20 @@ io.on('connection', (socket) => {
                 const targetLen = Math.min(GAME_CONFIG.MAX_HISTORY_LENGTH, Math.floor(p.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 1);
                 if (p.history.length > targetLen) p.history.length = targetLen;
             }
+
+            // CORREÇÃO 3: Enviar a nossa posição real de imediato (Float sem arredondamento), e apenas quando mexemos!
+            socket.broadcast.emit('playerUpdated', {
+                id: p.id,
+                x: parseFloat(p.x.toFixed(2)),
+                y: parseFloat(p.y.toFixed(2)),
+                angle: parseFloat(p.angle.toFixed(3)),
+                score: Math.round(p.score),
+                length: parseFloat(p.length.toFixed(1)),
+                radius: parseFloat(p.radius.toFixed(1)),
+                isBoosting: p.isBoosting,
+                isDead: p.isDead || false,
+                skinIndex: p.skinIndex
+            });
         }
     });
 
@@ -367,7 +392,6 @@ io.on('connection', (socket) => {
                 foods.splice(idx, 1);
 
                 let newFood = null;
-                // Apenas spawna mais comida genérica se estiver abaixo do limite
                 if (foods.length < GAME_CONFIG.TOTAL_FOOD) {
                     newFood = spawnFood();
                     foods.push(newFood);
