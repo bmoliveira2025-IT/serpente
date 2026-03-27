@@ -710,13 +710,13 @@
             TOTAL_FOOD: 1500,
 
             SNAKE_INITIAL_LENGTH: 30,
-            SNAKE_INITIAL_RADIUS: 18, // Afinado para um início mais ágil e profissional
-            SNAKE_MAX_RADIUS: 55,     // Cobras gigantes ficam com tamanho visual espetacular
+            SNAKE_INITIAL_RADIUS: 18,
+            SNAKE_MAX_RADIUS: 55,
             SNAKE_HISTORY_STEP: 1,
             SNAKE_HISTORY_SPACING: 5,
             SNAKE_BASE_SPEED: 4.0,
 
-            SNAKE_HITBOX_SIZE: 0.55,
+            SNAKE_HITBOX_SIZE: 0.65, // Mais equilibrado para não parecer que bateu no ar
             SNAKE_TURN_SPEED: 0.035,
             SNAKE_TURN_SPEED_BOOST: 0.015,
 
@@ -724,7 +724,7 @@
             SCORE_PER_FOOD: 8,
             DEATH_GROWTH: 0.50,
             DEATH_SCORE: 30,
-            WIDTH_GROWTH_FACTOR: 0.15, // Crescimento em largura 100% igualitário
+            WIDTH_GROWTH_FACTOR: 0.15,
             MAGNET_STRENGTH: 0.3,
             MAGNET_RADIUS_MULT: 3.0,
 
@@ -741,10 +741,10 @@
             BOT_VISION_RADIUS: 1500,
             BOT_AVOID_RADIUS_MULT: 8,
 
-            CAMERA_BASE_ZOOM: 1.15,   // Início com foco mais intenso
-            CAMERA_MIN_ZOOM: 0.35,    // Zoom out máximo para o endgame
-            ZOOM_SHRINK_RATE: 0.0015, // Afastamento dinâmico super suave
-            CAMERA_LOOK_AHEAD: 2.5,   // Câmera acompanha à frente baseada no raio da cobra
+            CAMERA_BASE_ZOOM: 1.15,
+            CAMERA_MIN_ZOOM: 0.35,
+            ZOOM_SHRINK_RATE: 0.0015,
+            CAMERA_LOOK_AHEAD: 2.5,
 
             DEATH_FOOD_RADIUS: 3.5,
             DEATH_FOOD_STEP: 15,
@@ -807,7 +807,7 @@
             id: null, x: CENTER, y: CENTER, angle: 0, speed: GAME_CONFIG.SNAKE_BASE_SPEED,
             radius: GAME_CONFIG.SNAKE_INITIAL_RADIUS, length: GAME_CONFIG.SNAKE_INITIAL_LENGTH,
             targetLength: GAME_CONFIG.SNAKE_INITIAL_LENGTH, history: [], historySpacing: GAME_CONFIG.SNAKE_HISTORY_SPACING,
-            score: 0, boostCounter: 0, name: '', isTop1: false, distAccum: 0
+            score: 0, boostCounter: 0, name: '', isTop1: false, distAccum: 0, isDead: false
         };
 
         // --- SKINS ---
@@ -826,7 +826,6 @@
         let currentSkinIndex = 0;
 
         // --- MULTIPLAYER SETUP ---
-        // Tratamento de Erro caso servidor não exista (Fallback para visualização local)
         let socket;
         try {
             socket = io();
@@ -846,7 +845,8 @@
                     if (id !== player.id) {
                         let p = data.players[id];
                         p.targetX = p.x; p.targetY = p.y; p.targetAngle = p.angle;
-                        p.history = Array(Math.floor(p.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 1).fill({ x: p.x, y: p.y });
+                        // CORREÇÃO: Array.from garante que os pontos da memória não dão conflito (evitando mortes falsas)
+                        p.history = Array.from({ length: Math.floor(p.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 1 }, () => ({ x: p.x, y: p.y }));
                         otherPlayers[id] = p;
                     }
                 });
@@ -861,7 +861,7 @@
                 bots = data.bots.map(b => {
                     b.targetX = b.x; b.targetY = b.y; b.targetAngle = b.angle;
                     const maxLen = Math.floor(b.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 50;
-                    b.history = Array(maxLen).fill({ x: b.x, y: b.y });
+                    b.history = Array.from({ length: maxLen }, () => ({ x: b.x, y: b.y }));
                     return b;
                 });
             }
@@ -877,14 +877,13 @@
                     b.isBoosting = sb.isBoosting; b.isDead = sb.isDead;
                 } else {
                     const maxLen = Math.floor((sb.length || 26) * 5) + 30;
-                    bots.push({ ...sb, targetX: sb.x, targetY: sb.y, targetAngle: sb.angle, history: Array(maxLen).fill({ x: sb.x, y: sb.y }) });
+                    bots.push({ ...sb, targetX: sb.x, targetY: sb.y, targetAngle: sb.angle, history: Array.from({ length: maxLen }, () => ({ x: sb.x, y: sb.y })) });
                 }
             });
             bots = bots.filter(b => serverBots.find(sb => sb.id === b.id));
         });
 
         socket.on('botDied', (data) => {
-            // Removido o efeito de explosão. Apenas as comidas irão preencher o local da morte.
             const dist = Math.hypot(data.x - camera.x, data.y - camera.y);
             if (dist < 1800) camera.shake = Math.max(camera.shake, 10 * (1 - dist / 1800));
         });
@@ -894,7 +893,7 @@
         socket.on('playerJoined', (p) => {
             if (p.id !== player.id) {
                 p.targetX = p.x; p.targetY = p.y; p.targetAngle = p.angle;
-                p.history = Array(Math.floor(p.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 1).fill({ x: p.x, y: p.y });
+                p.history = Array.from({ length: Math.floor(p.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 1 }, () => ({ x: p.x, y: p.y }));
                 otherPlayers[p.id] = p;
             }
         });
@@ -904,7 +903,7 @@
             let p = otherPlayers[data.id];
             if (!p) {
                 data.targetX = data.x; data.targetY = data.y; data.targetAngle = data.angle;
-                data.history = Array(Math.floor((data.length || 30) * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 50).fill({ x: data.x, y: data.y });
+                data.history = Array.from({ length: Math.floor((data.length || 30) * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 50 }, () => ({ x: data.x, y: data.y }));
                 otherPlayers[data.id] = data;
                 return;
             }
@@ -975,8 +974,9 @@
         }
 
         const checkPerfectCollision = (headX, headY, headR, headAngle, target) => {
-            const tipX = headX + Math.cos(headAngle) * (headR * 0.5);
-            const tipY = headY + Math.sin(headAngle) * (headR * 0.5);
+            // CORREÇÃO: O ponto exato da cabeça (hitbox mais precisa)
+            const tipX = headX + Math.cos(headAngle) * (headR * 0.75);
+            const tipY = headY + Math.sin(headAngle) * (headR * 0.75);
             const spacing = target.historySpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING;
             const maxHistoryIdx = Math.min(Math.floor(target.length) * spacing, target.history.length - 1);
 
@@ -1081,7 +1081,6 @@
             if (gameState !== 'PLAYING' && gameState !== 'DYING') return;
 
             const nowTime = performance.now();
-            // CLAMP DT: Impede teleportes quando a janela do browser vai para 2º plano
             let dt = (nowTime - lastLoopTime) / 16.667;
             if (dt > 5) dt = 1;
             lastLoopTime = nowTime;
@@ -1122,8 +1121,6 @@
                         ent.lastX = ent.x; ent.lastY = ent.y;
                     }
                 }
-
-                // Força igualdade absoluta de tamanho (bots e users) baseada no comprimento
                 const lenCalc = Math.max(GAME_CONFIG.SNAKE_INITIAL_LENGTH, ent.length || GAME_CONFIG.SNAKE_INITIAL_LENGTH);
                 ent.radius = Math.min(GAME_CONFIG.SNAKE_MAX_RADIUS, GAME_CONFIG.SNAKE_INITIAL_RADIUS + (lenCalc - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.WIDTH_GROWTH_FACTOR);
             };
@@ -1133,97 +1130,118 @@
 
             const isBoosting = isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH;
 
-            // Iguala as regras para o jogador local
-            const baseRadius = Math.min(GAME_CONFIG.SNAKE_MAX_RADIUS, GAME_CONFIG.SNAKE_INITIAL_RADIUS + (Math.max(GAME_CONFIG.SNAKE_INITIAL_LENGTH, player.length) - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.WIDTH_GROWTH_FACTOR);
-            player.radius = baseRadius;
+            // Variáveis de posição alvo da câmera
+            let camTargetX = camera.x;
+            let camTargetY = camera.y;
 
-            // --- CAMERA PROFISSIONAL (Smart Zoom in/out) ---
-            const targetZoom = Math.max(GAME_CONFIG.CAMERA_MIN_ZOOM, GAME_CONFIG.CAMERA_BASE_ZOOM - (player.length - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.ZOOM_SHRINK_RATE - (isBoosting ? 0.08 : 0));
-            camera.zoom += (targetZoom - camera.zoom) * 0.04 * dt; // Interpolação super fluída baseada em dt
+            // --- LÓGICA DO JOGADOR (apenas corre se ele estiver VIVO) ---
+            if (!player.isDead) {
+                const baseRadius = Math.min(GAME_CONFIG.SNAKE_MAX_RADIUS, GAME_CONFIG.SNAKE_INITIAL_RADIUS + (Math.max(GAME_CONFIG.SNAKE_INITIAL_LENGTH, player.length) - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.WIDTH_GROWTH_FACTOR);
+                player.radius = baseRadius;
 
-            player.length += (player.targetLength - player.length) * 0.1 * dt;
+                const targetZoom = Math.max(GAME_CONFIG.CAMERA_MIN_ZOOM, GAME_CONFIG.CAMERA_BASE_ZOOM - (player.length - GAME_CONFIG.SNAKE_INITIAL_LENGTH) * GAME_CONFIG.ZOOM_SHRINK_RATE - (isBoosting ? 0.08 : 0));
+                camera.zoom += (targetZoom - camera.zoom) * 0.04 * dt;
 
-            const tx = (mouseX - canvas.width / 2) / camera.zoom + camera.x, ty = (mouseY - canvas.height / 2) / camera.zoom + camera.y;
-            const targetAngle = Math.atan2(ty - player.y, tx - player.x);
-            let diff = targetAngle - player.angle;
-            while (diff < -Math.PI) diff += Math.PI * 2;
-            while (diff > Math.PI) diff -= Math.PI * 2;
+                player.length += (player.targetLength - player.length) * 0.1 * dt;
 
-            const growthDampening = Math.max(0.55, 1 - (player.length - 20) * 0.001);
-            player.angle += diff * (isBoosting ? GAME_CONFIG.SNAKE_TURN_SPEED_BOOST : GAME_CONFIG.SNAKE_TURN_SPEED) * growthDampening * dt;
+                const tx = (mouseX - canvas.width / 2) / camera.zoom + camera.x, ty = (mouseY - canvas.height / 2) / camera.zoom + camera.y;
+                const targetAngle = Math.atan2(ty - player.y, tx - player.x);
+                let diff = targetAngle - player.angle;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
 
-            if (isBoosting) {
-                player.speed = GAME_CONFIG.SNAKE_BASE_SPEED * GAME_CONFIG.BOOST_SPEED_MULT;
-                const tail = player.history[Math.floor(player.length * player.historySpacing)];
-                if (tail && Math.random() < 0.4) spawnSpark(tail.x, tail.y, player.angle);
-                player.boostCounter += dt;
-                if (player.boostCounter > GAME_CONFIG.BOOST_FRAMES_PER_DROP) {
+                const growthDampening = Math.max(0.55, 1 - (player.length - 20) * 0.001);
+                player.angle += diff * (isBoosting ? GAME_CONFIG.SNAKE_TURN_SPEED_BOOST : GAME_CONFIG.SNAKE_TURN_SPEED) * growthDampening * dt;
+
+                if (isBoosting) {
+                    player.speed = GAME_CONFIG.SNAKE_BASE_SPEED * GAME_CONFIG.BOOST_SPEED_MULT;
+                    const tail = player.history[Math.floor(player.length * player.historySpacing)];
+                    if (tail && Math.random() < 0.4) spawnSpark(tail.x, tail.y, player.angle);
+                    player.boostCounter += dt;
+                    if (player.boostCounter > GAME_CONFIG.BOOST_FRAMES_PER_DROP) {
+                        player.boostCounter = 0;
+                        player.targetLength = Math.max(GAME_CONFIG.BOOST_MIN_LENGTH, player.targetLength - GAME_CONFIG.BOOST_LENGTH_LOSS);
+                        player.score = Math.max(0, player.score - GAME_CONFIG.BOOST_SCORE_LOSS);
+                        if (tail) foods.push(spawnFood(true, tail.x, tail.y));
+                    }
+                } else {
+                    player.speed = GAME_CONFIG.SNAKE_BASE_SPEED;
                     player.boostCounter = 0;
-                    player.targetLength = Math.max(GAME_CONFIG.BOOST_MIN_LENGTH, player.targetLength - GAME_CONFIG.BOOST_LENGTH_LOSS);
-                    player.score = Math.max(0, player.score - GAME_CONFIG.BOOST_SCORE_LOSS);
-                    if (tail) foods.push(spawnFood(true, tail.x, tail.y));
+                }
+
+                player.x += Math.cos(player.angle) * player.speed * dt;
+                player.y += Math.sin(player.angle) * player.speed * dt;
+
+                // Testes de Morte da Cobra
+                let diedThisFrame = false;
+                if (Math.sqrt((player.x - CENTER) ** 2 + (player.y - CENTER) ** 2) > CENTER - player.radius * 0.2) {
+                    dropDeathFood(player); playerDie(); diedThisFrame = true;
+                }
+
+                if (!diedThisFrame) {
+                    const enemies = [...bots, ...Object.values(otherPlayers)];
+                    for (let e of enemies) {
+                        if (!e.isDead && checkPerfectCollision(player.x, player.y, player.radius, player.angle, e)) {
+                            dropDeathFood(player); playerDie(); diedThisFrame = true; break;
+                        }
+                    }
+                }
+
+                // Só processa história e movimento da câmera se ainda estiver vivo após a colisão
+                if (!diedThisFrame) {
+                    const pVx = Math.cos(player.angle), pVy = Math.sin(player.angle);
+                    player.distAccum = (player.distAccum || 0) + player.speed * dt;
+                    while (player.distAccum >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
+                        player.distAccum -= GAME_CONFIG.SNAKE_HISTORY_STEP;
+                        player.history.unshift({ x: player.x - pVx * player.distAccum, y: player.y - pVy * player.distAccum });
+                    }
+                    player.history.length = Math.min(player.history.length, Math.floor(player.length * player.historySpacing) + 1);
+
+                    let lookDist = player.radius * GAME_CONFIG.CAMERA_LOOK_AHEAD * (isBoosting ? 1.8 : 1.0);
+                    camTargetX = player.x + Math.cos(player.angle) * lookDist;
+                    camTargetY = player.y + Math.sin(player.angle) * lookDist;
+                } else {
+                    camTargetX = player.x;
+                    camTargetY = player.y;
                 }
             } else {
-                player.speed = GAME_CONFIG.SNAKE_BASE_SPEED;
-                player.boostCounter = 0;
-            }
-            player.radius = baseRadius;
-
-            player.x += Math.cos(player.angle) * player.speed * dt;
-            player.y += Math.sin(player.angle) * player.speed * dt;
-
-            if (Math.sqrt((player.x - CENTER) ** 2 + (player.y - CENTER) ** 2) > CENTER - player.radius * 0.2) { dropDeathFood(player); playerDie(); return; }
-
-            const enemies = [...bots, ...Object.values(otherPlayers)];
-            for (let e of enemies) {
-                if (!e.isDead && checkPerfectCollision(player.x, player.y, player.radius, player.angle, e)) {
-                    dropDeathFood(player); playerDie(); return;
-                }
+                // Se morto, a câmera fica fixa onde ele morreu a observar o banquete
+                camTargetX = player.x;
+                camTargetY = player.y;
             }
 
-            const pVx = Math.cos(player.angle), pVy = Math.sin(player.angle);
-            player.distAccum = (player.distAccum || 0) + player.speed * dt;
-            while (player.distAccum >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
-                player.distAccum -= GAME_CONFIG.SNAKE_HISTORY_STEP;
-                player.history.unshift({ x: player.x - pVx * player.distAccum, y: player.y - pVy * player.distAccum });
-            }
-            player.history.length = Math.min(player.history.length, Math.floor(player.length * player.historySpacing) + 1);
-
-            // --- CAMERA PROFISSIONAL (Smart Look-Ahead) ---
-            // A distância de visão à frente escala graciosamente com o tamanho do corpo (raio) e se está em boost
-            let lookDist = player.radius * GAME_CONFIG.CAMERA_LOOK_AHEAD * (isBoosting ? 1.8 : 1.0);
-            let camTargetX = player.x + Math.cos(player.angle) * lookDist;
-            let camTargetY = player.y + Math.sin(player.angle) * lookDist;
-
-            // Suavização cinematográfica desvinculada do framerate
+            // Movimentação suavizada da câmera (aplicada sempre)
             camera.x += (camTargetX - camera.x) * 0.06 * dt;
             camera.y += (camTargetY - camera.y) * 0.06 * dt;
 
-            const magnet = player.radius * GAME_CONFIG.MAGNET_RADIUS_MULT;
-            for (let i = foods.length - 1; i >= 0; i--) {
-                const f = foods[i], d = Math.sqrt((player.x - f.x) ** 2 + (player.y - f.y) ** 2);
-                if (d < player.radius + f.radius) {
-                    foods.splice(i, 1);
-                    spawnParticles(f.x, f.y, f.color, f.isDeathFood ? 15 : 8);
-                    let pts = f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD;
-                    spawnFloatingText(f.x, f.y, `+${pts}`, f.color);
-                    player.targetLength += f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD;
-                    player.score += pts;
-                    if (player.score > highScore) {
-                        highScore = player.score; highScoreHomeElement.innerText = Math.floor(highScore);
-                        localStorage.setItem('cobraioHighScore', highScore);
-                    }
-                    socket.emit('eatFood', f.id);
-                } else if (d < magnet) { f.x += (player.x - f.x) * GAME_CONFIG.MAGNET_STRENGTH; f.y += (player.y - f.y) * GAME_CONFIG.MAGNET_STRENGTH; }
+            // --- LÓGICA DE ALIMENTAÇÃO DA COBRA PRINCIPAL ---
+            if (!player.isDead) {
+                const magnet = player.radius * GAME_CONFIG.MAGNET_RADIUS_MULT;
+                for (let i = foods.length - 1; i >= 0; i--) {
+                    const f = foods[i], d = Math.sqrt((player.x - f.x) ** 2 + (player.y - f.y) ** 2);
+                    if (d < player.radius + f.radius) {
+                        foods.splice(i, 1);
+                        spawnParticles(f.x, f.y, f.color, f.isDeathFood ? 15 : 8);
+                        let pts = f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD;
+                        spawnFloatingText(f.x, f.y, `+${pts}`, f.color);
+                        player.targetLength += f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD;
+                        player.score += pts;
+                        if (player.score > highScore) {
+                            highScore = player.score; highScoreHomeElement.innerText = Math.floor(highScore);
+                            localStorage.setItem('cobraioHighScore', highScore);
+                        }
+                        socket.emit('eatFood', f.id);
+                    } else if (d < magnet) { f.x += (player.x - f.x) * GAME_CONFIG.MAGNET_STRENGTH; f.y += (player.y - f.y) * GAME_CONFIG.MAGNET_STRENGTH; }
+                }
+
+                const now = Date.now();
+                if (now - lastUpdateTime > 50) {
+                    lastUpdateTime = now;
+                    socket.emit('update', { x: player.x, y: player.y, angle: player.angle, score: player.score, length: player.length, radius: player.radius, isBoosting: isBoosting });
+                }
             }
 
-            const now = Date.now();
-            if (now - lastUpdateTime > 50) {
-                lastUpdateTime = now;
-                socket.emit('update', { x: player.x, y: player.y, angle: player.angle, score: player.score, length: player.length, radius: player.radius, isBoosting: isBoosting });
-            }
-
-            if (now % 30 < 2) updateLeaderboard();
+            if (Date.now() % 30 < 2) updateLeaderboard();
         }
 
         function updateLeaderboard() {
@@ -1247,6 +1265,8 @@
 
         function drawSnake(context, entity, activeSkin, isBoosting, customSpacing) {
             if (!activeSkin || !activeSkin.getBodyColor) activeSkin = skins[0];
+
+            // CORREÇÃO: Não renderiza de todo o corpo se a cobra morreu (desaparece)
             if (entity.isDead) return;
 
             const radius = Math.max(10, entity.radius || 20), spacing = customSpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING || 5;
@@ -1254,7 +1274,7 @@
             const isHigh = qualityOpt === 'high';
 
             if (!entity.history || entity.history.length < 2) {
-                entity.history = Array(20).fill({ x: entity.x, y: entity.y });
+                entity.history = Array.from({ length: 20 }, () => ({ x: entity.x, y: entity.y }));
             }
 
             const availableSegments = Math.max(1, Math.min(segments, Math.floor((entity.history.length - 1) / spacing)));
@@ -1362,7 +1382,7 @@
             ctx.strokeStyle = `rgba(255, 50, 50, ${0.2 + (danger * pulse * 0.4)})`;
             ctx.lineWidth = 20 + (danger * pulse * 20); ctx.stroke();
 
-            // OTIMIZAÇÃO: Renderização de Comida (sem vazamento de GPU)
+            // Renderização de Comida
             const tTime = Date.now() / 1000;
             foods.forEach(f => {
                 if (f.x < camera.x - vW / 2 - 30 || f.x > camera.x + vW / 2 + 30 || f.y < camera.y - vH / 2 - 30 || f.y > camera.y + vH / 2 + 30) return;
@@ -1394,15 +1414,21 @@
             const isBoostingAtivo = isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH;
             bots.forEach(bot => drawSnake(ctx, bot, skins[bot.skinIndex % skins.length || 0], bot.isBoosting));
             Object.values(otherPlayers).forEach(p => drawSnake(ctx, p, skins[p.skinIndex % skins.length || 0], p.isBoosting));
-            drawSnake(ctx, player, skins[currentSkinIndex % skins.length], isBoostingAtivo);
+
+            // Só desenha o jogador se não estiver morto
+            if (!player.isDead) {
+                drawSnake(ctx, player, skins[currentSkinIndex % skins.length], isBoostingAtivo);
+
+                ctx.font = 'bold 16px Outfit, sans-serif'; ctx.textAlign = 'center';
+                ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillText(player.name, player.x, player.y - player.radius - 15);
+            }
 
             ctx.font = 'bold 16px Outfit, sans-serif'; ctx.textAlign = 'center';
             bots.forEach(bot => {
-                if (bot.x > camera.x - vW / 2 && bot.x < camera.x + vW / 2 && bot.y > camera.y - vH / 2 && bot.y < camera.y + vH / 2) {
+                if (!bot.isDead && bot.x > camera.x - vW / 2 && bot.x < camera.x + vW / 2 && bot.y > camera.y - vH / 2 && bot.y < camera.y + vH / 2) {
                     ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText(bot.name, bot.x, bot.y - bot.radius - 15);
                 }
             });
-            ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillText(player.name, player.x, player.y - player.radius - 15);
 
             particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life); ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); });
             ctx.globalAlpha = 1.0;
@@ -1410,15 +1436,7 @@
             floatingTexts.forEach(ft => { ctx.fillStyle = ft.color; ctx.globalAlpha = Math.max(0, ft.life); ctx.fillText(ft.text, ft.x, ft.y); });
             ctx.globalAlpha = 1.0;
 
-            if (gameState === 'DYING') {
-                ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#fff'; ctx.font = 'bold 60px Outfit, sans-serif'; ctx.textAlign = 'center';
-                ctx.shadowBlur = 20; ctx.shadowColor = '#ff0000'; ctx.fillText('ELIMINADO', canvas.width / 2, canvas.height / 2);
-                ctx.font = 'bold 20px Outfit, sans-serif'; ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; ctx.shadowBlur = 0;
-                ctx.fillText('Voltando à base...', canvas.width / 2, canvas.height / 2 + 50);
-                ctx.restore();
-            }
+            // O ecrã "ELIMINADO" de overlay foi apagado. Você apenas vê o corpo virar comida organicamente.
             ctx.restore();
 
             // Radar Minimap
@@ -1428,20 +1446,26 @@
                 ctx.strokeStyle = 'rgba(86,171,47,0.4)'; ctx.lineWidth = 2; ctx.stroke();
 
                 bots.forEach(b => {
+                    if (b.isDead) return;
                     ctx.fillStyle = 'rgba(255,255,255,0.4)';
                     ctx.beginPath(); ctx.arc(mmX + (b.x - CENTER) / CENTER * (mmR - 3), mmY + (b.y - CENTER) / CENTER * (mmR - 3), 2, 0, Math.PI * 2); ctx.fill();
                 });
                 Object.values(otherPlayers).forEach(p => {
+                    if (p.isDead) return;
                     ctx.fillStyle = '#ff00aa';
                     ctx.beginPath(); ctx.arc(mmX + (p.x - CENTER) / CENTER * (mmR - 3), mmY + (p.y - CENTER) / CENTER * (mmR - 3), 2, 0, Math.PI * 2); ctx.fill();
                 });
-                ctx.fillStyle = '#fff';
-                ctx.beginPath(); ctx.arc(mmX + (player.x - CENTER) / CENTER * (mmR - 3), mmY + (player.y - CENTER) / CENTER * (mmR - 3), 3, 0, Math.PI * 2); ctx.fill();
+
+                // Apaga o ponto branco (você) no mapa quando você morre
+                if (!player.isDead) {
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath(); ctx.arc(mmX + (player.x - CENTER) / CENTER * (mmR - 3), mmY + (player.y - CENTER) / CENTER * (mmR - 3), 3, 0, Math.PI * 2); ctx.fill();
+                }
             }
         }
 
         function gameOver() {
-            gameState = 'GAME_OVER'; camera.shake = 30;
+            gameState = 'GAME_OVER'; camera.shake = 0;
             document.getElementById('final-score-val').innerText = Math.floor(player.score);
             document.getElementById('game-over-msg').style.display = 'block';
             startScreen.style.opacity = '1'; startScreen.style.display = 'flex';
@@ -1452,11 +1476,16 @@
         }
 
         function playerDie() {
-            if (gameState === 'DYING' || gameState === 'GAME_OVER') return;
+            // Previne loops onde o trigger da morte ocorria 2x
+            if (player.isDead || gameState === 'GAME_OVER') return;
+
             socket.emit('playerDied');
+
+            player.isDead = true;
             gameState = 'DYING';
-            camera.shake = 20; // Tremor menor, sem poluição de partículas
-            // Explosão de partículas removida para limpar a visão e focar apenas na comida deixada
+            camera.shake = 15; // Tremor subtil na câmera ao colidir
+
+            // Aguarda 2.5 segundos enquanto assiste as cobras a lutar pela sua comida e depois reseta
             setTimeout(() => { gameOver(); }, 2500);
         }
 
@@ -1464,17 +1493,17 @@
         const pCanvas_ = document.getElementById('preview-canvas');
         const pCtx_ = pCanvas_.getContext('2d');
         const pSnake = { x: -60, y: 50, angle: 0, radius: 15, length: 25, history: [], historySpacing: GAME_CONFIG.SNAKE_HISTORY_SPACING, isTop1: false };
-        pSnake.history = Array(150).fill({ x: -60, y: 50 });
+        pSnake.history = Array.from({ length: 150 }, () => ({ x: -60, y: 50 }));
 
         function drawPreview() {
-            if (gameState === 'PLAYING') return;
+            if (gameState === 'PLAYING' || gameState === 'DYING') return;
             pCtx_.clearRect(0, 0, pCanvas_.width, pCanvas_.height);
             const w = pCanvas_.width, h = pCanvas_.height, speed = 1.5;
             pSnake.x += speed; pSnake.y = (h / 2) + Math.sin(Date.now() * 0.004) * 12;
             pSnake.angle = Math.atan2(pSnake.y - pSnake.history[0].y, pSnake.x - pSnake.history[0].x);
 
             if (pSnake.x > w + 60) {
-                pSnake.x = -60; pSnake.history = Array(150).fill({ x: -60, y: pSnake.y });
+                pSnake.x = -60; pSnake.history = Array.from({ length: 150 }, () => ({ x: -60, y: pSnake.y }));
             }
             pSnake.history.unshift({ x: pSnake.x, y: pSnake.y });
             pSnake.history.length = Math.floor(pSnake.length * pSnake.historySpacing) + 1;
@@ -1497,7 +1526,9 @@
             const pos = getSafePosition();
             player.x = pos.x; player.y = pos.y;
             player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH; player.score = 0; player.distAccum = 0;
-            player.history = Array(GAME_CONFIG.SNAKE_INITIAL_LENGTH * GAME_CONFIG.SNAKE_HISTORY_SPACING + 1).fill({ x: player.x, y: player.y });
+            player.isDead = false;
+            // CORREÇÃO: Utilizar Array.from em vez de fill() para não cruzar pontos falsos
+            player.history = Array.from({ length: GAME_CONFIG.SNAKE_INITIAL_LENGTH * GAME_CONFIG.SNAKE_HISTORY_SPACING + 1 }, () => ({ x: player.x, y: player.y }));
 
             camera.x = player.x; camera.y = player.y; camera.shake = 0;
             foods.length = 0; particles.length = 0; floatingTexts.length = 0; sparks.length = 0;
@@ -1508,7 +1539,7 @@
 
             startScreen.style.display = 'none'; leaderboardContainer.style.display = 'block';
             if (isTouch) document.getElementById('mobile-controls').style.display = 'block';
-            lastLoopTime = performance.now(); // Resetar tempo para o jogo
+            lastLoopTime = performance.now();
             updateLeaderboard();
         };
 

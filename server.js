@@ -24,7 +24,7 @@ const GAME_CONFIG = {
     SNAKE_HISTORY_SPACING: 5,         // Distância visual entre as listras
     SNAKE_BASE_SPEED: 4.0,            // Velocidade IGUAL para bots e players (Sincronizado)
 
-    SNAKE_HITBOX_SIZE: 0.55,          // Área de colisão letal
+    SNAKE_HITBOX_SIZE: 0.65,          // Área de colisão letal (Sincronizado)
     SNAKE_TURN_SPEED: 0.035,          // Rapidez máxima de curva
     SNAKE_TURN_SPEED_BOOST: 0.015,    // Rapidez de curva ao correr
 
@@ -166,7 +166,7 @@ function createBot() {
         score: initialScore,
         length: initialLength,
         radius: initialRadius,
-        history: Array(Math.floor(initialLength * 5) + 10).fill({ x: pos.x, y: pos.y }),
+        history: Array.from({ length: Math.floor(initialLength * 5) + 10 }, () => ({ x: pos.x, y: pos.y })),
         skinIndex: Math.floor(Math.random() * 10),
         aiTimer: 0,
         speed: GAME_CONFIG.SNAKE_BASE_SPEED,
@@ -201,8 +201,8 @@ for (let i = 0; i < GAME_CONFIG.TOTAL_FOOD; i++) foods.push(spawnFood());
 function checkCollision(head, target) {
     if (!target.history || target.history.length < 2) return false;
 
-    const tipX = head.x + Math.cos(head.angle) * (head.radius * 0.7);
-    const tipY = head.y + Math.sin(head.angle) * (head.radius * 0.7);
+    const tipX = head.x + Math.cos(head.angle) * (head.radius * 0.75);
+    const tipY = head.y + Math.sin(head.angle) * (head.radius * 0.75);
     const headRadius = head.radius || 20;
     const targetRadius = target.radius || 20;
     const threshold = (headRadius + targetRadius) * 0.75;
