@@ -1257,9 +1257,9 @@
             // Server should ideally handle this, but for now client-side check if someone else ate it is too slow.
             // We rely on 'foodEaten' event above.
 
-            // Send local state to server (Throttled to ~25Hz for higher precision)
+            // Send local state to server (Throttled but optimized)
             const now = Date.now();
-            if (now - lastUpdateTime > 40) {
+            if (now - lastUpdateTime > 45) {
                 lastUpdateTime = now;
                 socket.emit('update', {
                     x: player.x,
@@ -1268,18 +1268,19 @@
                     score: player.score,
                     length: player.length,
                     radius: player.radius,
-                    history: player.history, // Send full history for accurate collision and rendering
+                    // optimization: only send history needed for visible segments/collisions
+                    history: player.history.slice(0, 150), 
                     isBoosting: isBoosting
                 });
             }
 
-            // --- SUAVIZAÇÃO DE OUTROS JOGADORES ---
+            // --- SUAVIZAÇÃO DE OUTROS JOGADORES (MELHORADA) ---
             const spacing = GAME_CONFIG.SNAKE_HISTORY_SPACING;
             for (let id in otherPlayers) {
                 let p = otherPlayers[id];
                 if (p.targetX !== undefined) {
-                    // Fator de suavização (0.1 = muito suave, 0.3 = mais responsivo)
-                    const lerpFactor = 0.12;
+                    // Fator de suavização mais agressivo para evitar o efeito "tremido"
+                    const lerpFactor = 0.25; 
                     
                     p.x += (p.targetX - p.x) * lerpFactor;
                     p.y += (p.targetY - p.y) * lerpFactor;
@@ -1289,9 +1290,10 @@
                     while (aDiff > Math.PI) aDiff -= Math.PI * 2;
                     p.angle += aDiff * lerpFactor;
 
-                    // Suavizar o corpo também (ponto a ponto)
+                    // Suavizar o corpo: Lerp apenas nos segmentos críticos ou de forma mais rápida
                     if (p.history) {
-                        for (let seg of p.history) {
+                        for (let i = 0; i < p.history.length; i++) {
+                            const seg = p.history[i];
                             if (seg.tx !== undefined) {
                                 seg.x += (seg.tx - seg.x) * lerpFactor;
                                 seg.y += (seg.ty - seg.y) * lerpFactor;
