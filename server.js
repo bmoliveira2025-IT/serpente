@@ -66,7 +66,29 @@ function updateSpatialGrid() {
 }
 
 function getSafePosition() {
-    // Tenta posições aleatórias evitando o centro populado
+    let attempts = 0;
+    const safeDistance = 1500; // Distância mínima para não ser visto ou nascer em cima de alguém
+
+    while (attempts < 100) {
+        const x = 500 + Math.random() * (GAME_CONFIG.WORLD_SIZE - 1000);
+        const y = 500 + Math.random() * (GAME_CONFIG.WORLD_SIZE - 1000);
+        
+        let isSafe = true;
+        const entities = [...Object.values(players), ...bots];
+        
+        for (let ent of entities) {
+            const dist = Math.hypot(x - ent.x, y - ent.y);
+            if (dist < safeDistance) {
+                isSafe = false;
+                break;
+            }
+        }
+
+        if (isSafe) return { x, y };
+        attempts++;
+    }
+
+    // Fallback se o mapa estiver muito cheio
     return {
         x: 500 + Math.random() * (GAME_CONFIG.WORLD_SIZE - 1000),
         y: 500 + Math.random() * (GAME_CONFIG.WORLD_SIZE - 1000)
