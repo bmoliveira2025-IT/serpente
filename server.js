@@ -24,7 +24,7 @@ const GAME_CONFIG = {
     SNAKE_HISTORY_SPACING: 5,         // Distância visual entre as listras
     SNAKE_BASE_SPEED: 4.0,            // Velocidade IGUAL para bots e players (Sincronizado)
 
-    SNAKE_HITBOX_SIZE: 0.55,          // Área de colisão letal (Calibrado para ser mais justo)
+    SNAKE_HITBOX_SIZE: 0.65,          // Valor de referência (Lógica agora é dinâmica no sistema profissional)
     SNAKE_TURN_SPEED: 0.035,          // Rapidez máxima de curva
     SNAKE_TURN_SPEED_BOOST: 0.015,    // Rapidez de curva ao correr
 
@@ -201,21 +201,33 @@ for (let i = 0; i < GAME_CONFIG.TOTAL_FOOD; i++) foods.push(spawnFood());
 function checkCollision(head, target) {
     if (!target.history || target.history.length < 2) return false;
 
-    const tipX = head.x + Math.cos(head.angle) * (head.radius * 0.4);
-    const tipY = head.y + Math.sin(head.angle) * (head.radius * 0.4);
+    // SISTEMA PROFISSIONAL: Recuamos o ponto da cabeça e usamos raio dinâmico
+    const tipX = head.x + Math.cos(head.angle) * (head.radius * 0.3);
+    const tipY = head.y + Math.sin(head.angle) * (head.radius * 0.3);
+    
     const headRadius = head.radius || 20;
     const targetRadius = target.radius || 20;
-    const threshold = (headRadius + targetRadius) * GAME_CONFIG.SNAKE_HITBOX_SIZE;
 
-    // 1. Checar cabeça do alvo
+    // A hitbox real agora soma a nossa cabeça (30% do raio) com o corpo do inimigo (50% do raio dele)
+    const thresholdSq = (headRadius * 0.3 + targetRadius * 0.5) ** 2;
+
+    // NECK IMMUNITY: Ignora o início do pescoço (evita double-kills estranhos)
+    const startIndex = 20; // Equivalente a spacing * 4 no cliente
+
+    // 1. Checar cabeça do alvo (Só se não for nós mesmos e não estivermos no neck immunity zone)
     const dHead2 = (tipX - target.x) ** 2 + (tipY - target.y) ** 2;
-    if (dHead2 < threshold ** 2) return true;
+    if (dHead2 < thresholdSq) return true;
 
     // 2. Checar corpo (histórico)
-    for (let i = 0; i < target.history.length; i += 2) {
+    for (let i = startIndex; i < target.history.length; i += 2) {
         const seg = target.history[i];
+        if (!seg) continue;
+
+        // GHOST PREVENTER: Ignora pontos condensados de spawn
+        if (i > 50 && Math.abs(seg.x - target.x) < 2 && Math.abs(seg.y - target.y) < 2) continue;
+
         const d2 = (tipX - seg.x) ** 2 + (tipY - seg.y) ** 2;
-        if (d2 < threshold ** 2) return true;
+        if (d2 < thresholdSq) return true;
     }
     return false;
 }
@@ -310,7 +322,7 @@ setInterval(() => {
         bot.history.unshift({ x: bot.x, y: bot.y });
         if (bot.history.length > 300) bot.history.pop();
 
-        if (distToCenter > CENTER - 50) {
+        if (distToCenter > CENTER - bot.radius * 0.8) {
             killBot(bot);
         }
 

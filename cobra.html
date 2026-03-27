@@ -716,7 +716,7 @@
             SNAKE_HISTORY_SPACING: 5,
             SNAKE_BASE_SPEED: 4.0,
 
-            SNAKE_HITBOX_SIZE: 0.55, // Calibrado: mais justo para evitar mortes fantasmas
+            SNAKE_HITBOX_SIZE: 0.65, // Removido do uso de forma simples. Agora a Hitbox é dinâmica.
             SNAKE_TURN_SPEED: 0.035,
             SNAKE_TURN_SPEED_BOOST: 0.015,
 
@@ -845,7 +845,6 @@
                     if (id !== player.id) {
                         let p = data.players[id];
                         p.targetX = p.x; p.targetY = p.y; p.targetAngle = p.angle;
-                        // CORREÇÃO: Array.from garante que os pontos da memória não dão conflito (evitando mortes falsas)
                         p.history = Array.from({ length: Math.floor(p.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 1 }, () => ({ x: p.x, y: p.y }));
                         otherPlayers[id] = p;
                     }
@@ -973,18 +972,34 @@
             return { x: CENTER + Math.cos(angle) * r, y: CENTER + Math.sin(angle) * r, radius: Math.random() * 1 + 2, color: neonColors[Math.floor(Math.random() * neonColors.length)], phase: Math.random() * Math.PI * 2, floatOffset: Math.random() * Math.PI * 2, isDeathFood: false };
         }
 
+        // SISTEMA DE COLISÃO PROFISSIONAL (Hitbox Perdoável + Prevenção de Ghost Deaths)
         const checkPerfectCollision = (headX, headY, headR, headAngle, target) => {
-            // CORREÇÃO: O ponto exato da cabeça (hitbox mais precisa e justa)
-            const tipX = headX + Math.cos(headAngle) * (headR * 0.4);
-            const tipY = headY + Math.sin(headAngle) * (headR * 0.4);
+            // Recuamos o centro da hitbox da cabeça para dentro (menos fatal por "passar de raspão")
+            const tipX = headX + Math.cos(headAngle) * (headR * 0.3);
+            const tipY = headY + Math.sin(headAngle) * (headR * 0.3);
+
             const spacing = target.historySpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING;
             const maxHistoryIdx = Math.min(Math.floor(target.length) * spacing, target.history.length - 1);
 
-            for (let i = spacing; i <= maxHistoryIdx; i += spacing) {
-                const s = target.history[i]; if (!s) continue;
+            // A hitbox real agora soma a nossa cabeça (30% do raio) com o corpo do inimigo (50% do raio dele)
+            // Isto garante que o tamanho da SUA cobra importa na colisão, e não apenas uma "ponta" fininha.
+            const myHitboxR = headR * 0.3;
+            const targetHitboxR = (target.radius || GAME_CONFIG.SNAKE_INITIAL_RADIUS) * 0.5;
+            const thresholdSq = (myHitboxR + targetHitboxR) ** 2;
+
+            // NECK IMMUNITY: Ignora a cabeça e o início do pescoço do adversário (evita double-kills estranhos e lag)
+            const startIndex = spacing * 4;
+
+            for (let i = startIndex; i <= maxHistoryIdx; i += spacing) {
+                const s = target.history[i];
+                if (!s || isNaN(s.x) || isNaN(s.y)) continue;
+
+                // GHOST PREVENTER: Impede de morrer ao raspar no local onde o inimigo fez "Spawn" 
+                // Se houver pontos sobrepostos (não se moveram), ignora essa zona condensada
+                if (i > spacing * 10 && Math.abs(s.x - target.x) < 2 && Math.abs(s.y - target.y) < 2) continue;
+
                 const distSq = (tipX - s.x) ** 2 + (tipY - s.y) ** 2;
-                const threshold = (target.radius || GAME_CONFIG.SNAKE_INITIAL_RADIUS) * GAME_CONFIG.SNAKE_HITBOX_SIZE;
-                if (distSq < threshold ** 2) return true;
+                if (distSq < thresholdSq) return true;
             }
             return false;
         };
@@ -1082,7 +1097,7 @@
 
             const nowTime = performance.now();
             let dt = (nowTime - lastLoopTime) / 16.667;
-            if (dt > 5) dt = 1;
+            if (dt > 5) dt = 1; // Protege o jogo contra Freeze/Pausas de background limitando o delta time
             lastLoopTime = nowTime;
 
             for (let i = particles.length - 1; i >= 0; i--) { let p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.03; if (p.life <= 0) particles.splice(i, 1); }
@@ -1098,8 +1113,17 @@
                     ent.targetX += Math.cos(ent.targetAngle) * moveSpeed * dt;
                     ent.targetY += Math.sin(ent.targetAngle) * moveSpeed * dt;
 
-                    ent.x += (ent.targetX - ent.x) * lerpFactor;
-                    ent.y += (ent.targetY - ent.y) * lerpFactor;
+                    // CORREÇÃO DE NETCODE (Prevenção do Efeito Chicote/Whip)
+                    // Se a internet falhar e o jogador atualizar a mais de 150 pixels de distância,
+                    // fazemos um snap imediato em vez de desenhar a cobra espalhada letalmente.
+                    const distToTarget = Math.hypot(ent.targetX - ent.x, ent.targetY - ent.y);
+                    if (distToTarget > 150) {
+                        ent.x = ent.targetX;
+                        ent.y = ent.targetY;
+                    } else {
+                        ent.x += (ent.targetX - ent.x) * lerpFactor;
+                        ent.y += (ent.targetY - ent.y) * lerpFactor;
+                    }
 
                     let aDiff = ent.targetAngle - ent.angle;
                     while (aDiff < -Math.PI) aDiff += Math.PI * 2;
@@ -1174,7 +1198,9 @@
 
                 // Testes de Morte da Cobra
                 let diedThisFrame = false;
-                if (Math.sqrt((player.x - CENTER) ** 2 + (player.y - CENTER) ** 2) > CENTER - player.radius * 0.2) {
+
+                // Borda do mapa perfeitamente alinhada visualmente 
+                if (Math.sqrt((player.x - CENTER) ** 2 + (player.y - CENTER) ** 2) > CENTER - player.radius * 0.8) {
                     dropDeathFood(player); playerDie(); diedThisFrame = true;
                 }
 
