@@ -119,6 +119,26 @@ function createBot() {
     };
 }
 
+function killBot(bot) {
+    if (!bot || bot.isDead) return;
+    bot.isDead = true;
+
+    console.log(`Bot ${bot.name} (${bot.id}) morreu.`);
+    dropDeathFood(bot);
+
+    // Remover da lista de bots ativos
+    const idx = bots.indexOf(bot);
+    if (idx !== -1) {
+        bots.splice(idx, 1);
+        io.emit('botDied', { id: bot.id, x: bot.x, y: bot.y });
+    }
+
+    // Renascer um novo bot após 3 segundos
+    setTimeout(() => {
+        bots.push(createBot());
+    }, 3000);
+}
+
 // Inicialização
 for (let i = 0; i < GAME_CONFIG.NUM_BOTS; i++) bots.push(createBot());
 for (let i = 0; i < GAME_CONFIG.TOTAL_FOOD; i++) foods.push(spawnFood());
@@ -236,8 +256,7 @@ setInterval(() => {
         // Colisões (Bordas)
         if (distToCenter > CENTER - 50) {
             console.log(`Bot ${bot.name} (${bot.id}) morreu: Tocou a borda.`);
-            dropDeathFood(bot);
-            Object.assign(bot, createBot());
+            killBot(bot);
         }
 
         // Colisões (Outras Cobras usando o Grid)
@@ -251,8 +270,7 @@ setInterval(() => {
                     neighbors.forEach(other => {
                         if (other.id !== bot.id && checkCollision(bot, other)) {
                             console.log(`Bot ${bot.name} (${bot.id}) morreu: Colidiu com ${other.name || other.id}`);
-                            dropDeathFood(bot);
-                            Object.assign(bot, createBot());
+                            killBot(bot);
                         }
                     });
                 }
