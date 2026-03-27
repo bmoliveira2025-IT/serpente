@@ -727,7 +727,7 @@
             SNAKE_MAX_RADIUS: 36,             // Limite máximo de grossura
             SNAKE_HISTORY_STEP: 1,            // Precisão da física
             SNAKE_HISTORY_SPACING: 5,         // Distância visual entre as listras
-            SNAKE_BASE_SPEED: 3.0,            // Velocidade base (Corrigido)
+            SNAKE_BASE_SPEED: 3.5,            // Velocidade IGUAL para bots e players
 
             SNAKE_HITBOX_SIZE: 0.75,          // Área de colisão letal
             SNAKE_TURN_SPEED: 0.035,          // Rapidez máxima de curva
@@ -747,12 +747,12 @@
             BOOST_MIN_LENGTH: 10,             // Tamanho mínimo para usar boost
             BOOST_FRAMES_PER_DROP: 3,         // Comida expelida a cada X frames
 
-            NUM_BOTS: 10,
+            NUM_BOTS: 15,                     // Um pouco mais de bots para preencher o mapa
             SPAWN_DELAY: 100,
-            SPAWN_SAFE_RADIUS: 1200,
-            BOT_SPEED_MULTIPLIER_MOBILE: 0.75,
-            BOT_VISION_RADIUS: 800,
-            BOT_AVOID_RADIUS_MULT: 5,
+            SPAWN_SAFE_RADIUS: 2500,          // ⚠️ Aumentado drasticamente: ninguém vê o spawn
+            BOT_SPEED_MULTIPLIER_MOBILE: 1.0, // ⚠️ Removida penalidade (mesma velocidade sempre)
+            BOT_VISION_RADIUS: 1500,          // ⚠️ IA melhorada: visão ao longe para não colidir
+            BOT_AVOID_RADIUS_MULT: 8,         // ⚠️ IA foge de colisões mais depressa
 
             CAMERA_BASE_ZOOM: 1.0,            // Zoom padrão
             CAMERA_MIN_ZOOM: 0.6,             // Zoom out máximo
@@ -864,10 +864,22 @@
                     }
                     bots.push(sb);
                 } else {
-                    // Ignoramos a array history do servidor completamente! O nosso lerp local é mais suave
+                    // Atualiza alvos
                     b.targetX = sb.x; b.targetY = sb.y; b.targetAngle = sb.angle;
                     b.score = sb.score; b.length = sb.length; b.radius = sb.radius;
                     b.isBoosting = sb.isBoosting;
+
+                    // Sincronizar suavemente o histórico do servidor para que a cauda não fique desalinhada
+                    // Isso garante que a comida largada pelo servidor sobrepõe-se perfeitamente com a cobra visual!
+                    if (sb.history && b.history) {
+                        for (let i = 0; i < sb.history.length; i++) {
+                            let localIdx = i * 5; // O servidor envia o histórico a cada 5 posições
+                            if (b.history[localIdx]) {
+                                b.history[localIdx].x += (sb.history[i].x - b.history[localIdx].x) * 0.5;
+                                b.history[localIdx].y += (sb.history[i].y - b.history[localIdx].y) * 0.5;
+                            }
+                        }
+                    }
                 }
             });
             bots = bots.filter(b => serverBots.find(sb => sb.id === b.id));
@@ -908,6 +920,17 @@
             p.radius = data.radius;
             p.isBoosting = data.isBoosting;
             p.lastPacketTime = Date.now();
+
+            // Mesma sincronização de histórico para outros jogadores reais
+            if (data.history && p.history) {
+                for (let i = 0; i < data.history.length; i++) {
+                    let localIdx = i * 5;
+                    if (p.history[localIdx]) {
+                        p.history[localIdx].x += (data.history[i].x - p.history[localIdx].x) * 0.5;
+                        p.history[localIdx].y += (data.history[i].y - p.history[localIdx].y) * 0.5;
+                    }
+                }
+            }
         });
 
         socket.on('playerLeft', (id) => {
@@ -994,34 +1017,30 @@
         const foods = [];
         let bots = [];
 
-        function getSafePosition(ignoreSelf = false) {
+        function getSafePosition() {
             let attempts = 0;
-            while (attempts < 50) {
+            const safeDistance = GAME_CONFIG.SPAWN_SAFE_RADIUS; // Agora muito maior (2500)
+
+            while (attempts < 150) { // Limite estendido para garantir a procura no mapa
                 const angle = Math.random() * Math.PI * 2;
-                const r = Math.random() * (CENTER - 1000);
+                const r = Math.random() * (CENTER - 1000); // 1000px de margem da parede
                 const x = CENTER + Math.cos(angle) * r;
                 const y = CENTER + Math.sin(angle) * r;
 
                 let isSafe = true;
 
-                if (!ignoreSelf) {
-                    const distToPlayer = Math.hypot(x - player.x, y - player.y);
-                    if (distToPlayer < GAME_CONFIG.SPAWN_SAFE_RADIUS) isSafe = false;
-                }
-
-                if (isSafe) {
-                    for (let bot of bots) {
-                        if (Math.hypot(x - bot.x, y - bot.y) < GAME_CONFIG.SPAWN_SAFE_RADIUS) {
-                            isSafe = false;
-                            break;
-                        }
+                // Bloqueia se nascer na visão de um bot
+                for (let bot of bots) {
+                    if (Math.hypot(x - bot.x, y - bot.y) < safeDistance) {
+                        isSafe = false;
+                        break;
                     }
                 }
 
+                // Bloqueia se nascer na visão de um jogador
                 if (isSafe) {
                     for (let id in otherPlayers) {
-                        let op = otherPlayers[id];
-                        if (Math.hypot(x - op.x, y - op.y) < GAME_CONFIG.SPAWN_SAFE_RADIUS) {
+                        if (Math.hypot(x - otherPlayers[id].x, y - otherPlayers[id].y) < safeDistance) {
                             isSafe = false;
                             break;
                         }
@@ -1031,7 +1050,13 @@
                 if (isSafe) return { x, y };
                 attempts++;
             }
-            return { x: Math.random() * GAME_CONFIG.WORLD_SIZE, y: Math.random() * GAME_CONFIG.WORLD_SIZE };
+
+            // Fallback de emergência (caso o mapa esteja demasiado cheio)
+            const fallbackAngle = Math.random() * Math.PI * 2;
+            return {
+                x: CENTER + Math.cos(fallbackAngle) * (CENTER - 500),
+                y: CENTER + Math.sin(fallbackAngle) * (CENTER - 500)
+            };
         }
 
         function spawnFood(isDeath = false, srcX, srcY) {
@@ -1068,11 +1093,20 @@
         };
 
         const dropDeathFood = (snake) => {
-            const step = GAME_CONFIG.DEATH_FOOD_STEP;
-            const maxIdx = Math.min(Math.floor(snake.length) * snake.historySpacing, snake.history.length - 1);
-            for (let i = 0; i <= maxIdx; i += step) {
-                const pos = snake.history[i];
-                if (pos) foods.push(spawnFood(true, pos.x, pos.y));
+            const segments = Math.floor(snake.length);
+            const spacing = snake.historySpacing || GAME_CONFIG.SNAKE_HISTORY_SPACING;
+
+            for (let i = 0; i < segments; i++) {
+                const pos = i === 0 ? { x: snake.x, y: snake.y } : snake.history[i * spacing];
+                if (!pos) continue;
+
+                // Colocar uma comida exatamente no centro do segmento (garante que desenha o rasto principal)
+                foods.push(spawnFood(true, pos.x, pos.y));
+
+                // Colocar mais uma comida com um desvio aleatório, mas ESTRITAMENTE dentro do raio da cobra
+                const rOffset = Math.random() * (snake.radius * 0.6); // Máximo de 60% do raio para não sair da borda
+                const angle = Math.random() * Math.PI * 2;
+                foods.push(spawnFood(true, pos.x + Math.cos(angle) * rOffset, pos.y + Math.sin(angle) * rOffset));
             }
         };
 
@@ -1740,7 +1774,7 @@
             player.name = document.getElementById('player-name').value.trim() || 'Convidado';
             localStorage.setItem('cobraioNick', player.name);
 
-            const pos = getSafePosition(true);
+            const pos = getSafePosition();
             player.x = pos.x;
             player.y = pos.y;
 
@@ -1755,8 +1789,6 @@
             camera.x = player.x; camera.y = player.y; camera.shake = 0;
 
             foods.length = 0; particles.length = 0; floatingTexts.length = 0; sparks.length = 0;
-
-            spawnTimer = GAME_CONFIG.SPAWN_DELAY;
 
             mouseX = canvas.width / 2; mouseY = canvas.height / 2;
             isMouseDown = false;
