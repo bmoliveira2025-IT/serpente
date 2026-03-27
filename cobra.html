@@ -815,7 +815,6 @@
 
         // --- MULTIPLAYER SETUP ---
         const socket = io();
-        let myId = null;
         let lastUpdateTime = 0;
         const otherPlayers = {};
 
@@ -1417,6 +1416,10 @@
 
         // --- RENDERIZAÇÃO ---
         function drawSnake(context, entity, activeSkin, isBoosting) {
+            if (!activeSkin || !activeSkin.getBodyColor) {
+                // Safeguard: fallback skin if activeSkin is undefined
+                activeSkin = skins[0]; 
+            }
             const segments = Math.floor(entity.length);
             const isHigh = qualityOpt === 'high';
 
@@ -1650,12 +1653,14 @@
                         });
                     }
                 }
-                drawSnake(ctx, bot, skins[bot.skinIndex || 0], bot.isBoosting);
+                const skin = (bot.skinIndex !== undefined) ? skins[bot.skinIndex % skins.length] : skins[0];
+                drawSnake(ctx, bot, skin, bot.isBoosting);
             });
             Object.values(otherPlayers).forEach(p => {
-                drawSnake(ctx, p, skins[p.skinIndex || 0], p.isBoosting);
+                const skin = (p.skinIndex !== undefined) ? skins[p.skinIndex % skins.length] : skins[0];
+                drawSnake(ctx, p, skin, p.isBoosting);
             });
-            drawSnake(ctx, player, skins[currentSkinIndex], isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH);
+            drawSnake(ctx, player, skins[currentSkinIndex % skins.length], isMouseDown && player.length > GAME_CONFIG.BOOST_MIN_LENGTH);
 
             // Nomes e UI In-World
             ctx.font = 'bold 16px Outfit, sans-serif'; ctx.textAlign = 'center';

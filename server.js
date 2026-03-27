@@ -61,7 +61,7 @@ function createBot() {
         length: 26,
         radius: 20,
         history: [],
-        skinIndex: Math.floor(Math.random() * 12),
+        skinIndex: Math.floor(Math.random() * 10), // Limitado a 10 skins (0-9)
         isBoosting: false,
         aiTimer: 0,
         speed: 3.0
