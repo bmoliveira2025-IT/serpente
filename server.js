@@ -55,11 +55,35 @@ function spawnFood() {
 
 const bots = [];
 
+function getSafePosition() {
+    let attempts = 0;
+    const safeRadius = 1500; // Distância de segurança (também evita ser visto ao nascer)
+    while (attempts < 50) {
+        const x = 500 + Math.random() * (GAME_CONFIG.WORLD_SIZE - 1000);
+        const y = 500 + Math.random() * (GAME_CONFIG.WORLD_SIZE - 1000);
+        
+        let isSafe = true;
+        // Check bots
+        for (let b of bots) {
+            if (Math.hypot(x - b.x, y - b.y) < safeRadius) { isSafe = false; break; }
+        }
+        // Check players
+        if (isSafe) {
+            for (let id in players) {
+                if (Math.hypot(x - players[id].x, y - players[id].y) < safeRadius) { isSafe = false; break; }
+            }
+        }
+        if (isSafe) return { x, y };
+        attempts++;
+    }
+    // Fallback: spawn aleatório mas evitando o centro
+    return { x: Math.random() * 2000, y: Math.random() * 2000 };
+}
+
 function createBot() {
-    const angle = Math.random() * Math.PI * 2;
-    const r = Math.random() * (CENTER - 1000);
-    const x = CENTER + Math.cos(angle) * r;
-    const y = CENTER + Math.sin(angle) * r;
+    const pos = getSafePosition();
+    const x = pos.x;
+    const y = pos.y;
     const initialLen = GAME_CONFIG.SNAKE_INITIAL_LENGTH + Math.floor(Math.random() * 20);
     
     const bot = {
@@ -245,11 +269,12 @@ io.on('connection', (socket) => {
     console.log(`Player connected: ${socket.id}`);
 
     socket.on('join', (data) => {
+        const pos = getSafePosition();
         players[socket.id] = {
             id: socket.id,
             name: data.name || 'Convidado',
-            x: GAME_CONFIG.WORLD_SIZE / 2,
-            y: GAME_CONFIG.WORLD_SIZE / 2,
+            x: pos.x,
+            y: pos.y,
             angle: 0,
             score: 0,
             length: 23,
