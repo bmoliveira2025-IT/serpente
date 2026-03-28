@@ -30,19 +30,19 @@ const GAME_CONFIG = {
     SNAKE_TURN_SPEED_BOOST: 0.015,
 
     // --- PROPORÇÃO MATEMÁTICA ABSOLUTA (1.0 de Crescimento = 8.0 de Score) ---
-    GROWTH_PER_FOOD: 1.0,
-    SCORE_PER_FOOD: 8,
-    DEATH_GROWTH: 3.75,               // (30 / 8 = 3.75) Tamanho 100% proporcional aos pontos!
-    DEATH_SCORE: 30,
-
-    WIDTH_GROWTH_FACTOR: 1.5,
-    MAX_HISTORY_LENGTH: 1500,
+    GROWTH_PER_FOOD: 3.0,             
+    SCORE_PER_FOOD: 8,               
+    DEATH_GROWTH: 11.25,              // Proporcional para não quebrar rácio: (30 / 8) * 3.0
+    DEATH_SCORE: 30,                  
+    
+    WIDTH_GROWTH_FACTOR: 0.8,         
+    MAX_HISTORY_LENGTH: 3000,         
 
     // Sincronização do Boost para evitar o ecrã divergir da pontuação
-    BOOST_SPEED_MULT: 2.0,
-    BOOST_SCORE_LOSS: 2,
-    BOOST_LENGTH_LOSS: 0.25,          // (2 / 8 = 0.25)
-    BOOST_MIN_LENGTH: 35,             // CORREÇÃO 1: Limite inicial para impedir de correr mal nasce
+    BOOST_SPEED_MULT: 2.0,            
+    BOOST_SCORE_LOSS: 2,              
+    BOOST_LENGTH_LOSS: 0.75,          // (2 / 8) * 3.0
+    BOOST_MIN_LENGTH: 40,             
 
     MAGNET_STRENGTH: 0.3,
     MAGNET_RADIUS_MULT: 3.0,

@@ -735,25 +735,25 @@
             SNAKE_TURN_SPEED: 0.035,
             SNAKE_TURN_SPEED_BOOST: 0.015,
 
-            GROWTH_PER_FOOD: 1.0,
+            GROWTH_PER_FOOD: 3.0,     // Aumentado drasticamente para comprimento realçar
             SCORE_PER_FOOD: 8,
-            DEATH_GROWTH: 0.50,
+            DEATH_GROWTH: 11.25,      // Proporcional para não quebrar rácio: (30 / 8) * 3.0
             DEATH_SCORE: 30,
-            WIDTH_GROWTH_FACTOR: 1.5,
-            MAX_HISTORY_LENGTH: 1500,
+            WIDTH_GROWTH_FACTOR: 0.8, // Reduzido (cobra esguia e muito longa)
+            MAX_HISTORY_LENGTH: 3000, // Aumentado para suportar rabos de cobras colossais
 
             MAGNET_STRENGTH: 0.3,
             MAGNET_RADIUS_MULT: 3.0,
 
             BOOST_SPEED_MULT: 2.0,
             BOOST_SCORE_LOSS: 2,
-            BOOST_LENGTH_LOSS: 0.25,
-            BOOST_MIN_LENGTH: 35, // CORREÇÃO 1: Limite inicial para impedir de correr mal nasce
+            BOOST_LENGTH_LOSS: 0.75,  // (2 / 8) * 3.0
+            BOOST_MIN_LENGTH: 40,     // Limite inicial maior devido ao novo rácio de crescimento
             BOOST_FRAMES_PER_DROP: 2,
 
             CAMERA_BASE_ZOOM: 1.15,
             CAMERA_MIN_ZOOM: 0.25,
-            ZOOM_SHRINK_RATE: 0.05,
+            ZOOM_SHRINK_RATE: 0.035,  // Adaptado para não se afastar tão ridiculamente depressa com a nova fórmula
             CAMERA_LOOK_AHEAD: 2.5,
 
             DEATH_FOOD_RADIUS: 3.5,
@@ -1113,7 +1113,6 @@
             bots.forEach(updateEntityMovement);
             Object.values(otherPlayers).forEach(updateEntityMovement);
 
-            // CORREÇÃO 1: Limite restrito para poder usar o Boost (Precisa de ser maior que o tamanho inicial)
             const isBoosting = isMouseDown && player.length >= GAME_CONFIG.BOOST_MIN_LENGTH;
             let camTargetX = camera.x, camTargetY = camera.y;
 
@@ -1145,13 +1144,12 @@
                         player.targetLength = Math.max(GAME_CONFIG.SNAKE_INITIAL_LENGTH, player.targetLength - GAME_CONFIG.BOOST_LENGTH_LOSS);
                         player.score = Math.max(0, player.score - GAME_CONFIG.BOOST_SCORE_LOSS);
 
-                        // CORREÇÃO 2: Larga uma bola de tamanho/score exato ao que consumiu!
                         if (tail) {
                             const bFood = spawnFood(false, tail.x, tail.y);
                             bFood.isBoostFood = true;
                             bFood.scoreValue = GAME_CONFIG.BOOST_SCORE_LOSS;
                             bFood.growthValue = GAME_CONFIG.BOOST_LENGTH_LOSS;
-                            bFood.radius = 2.5; // Visualmente distinto (ligeiramente mais pequeno que as de morte)
+                            bFood.radius = 2.5;
                             foods.push(bFood);
                         }
                     }
@@ -1170,11 +1168,9 @@
                 if (!diedThisFrame) {
                     const enemies = [...bots, ...Object.values(otherPlayers)];
                     for (let e of enemies) {
-                        // Verifica se BATEU no inimigo
                         if (!e.isDead && checkPerfectCollision(player.x, player.y, player.radius, player.angle, e)) {
                             dropDeathFood(player); playerDie(); diedThisFrame = true; break;
                         }
-                        // CORREÇÃO 3: Feedback Imediato! Verifica se o Inimigo BATEU em nós
                         if (!e.isDead && checkPerfectCollision(e.x, e.y, e.radius, e.angle, player)) {
                             e.isDead = true;
                             dropDeathFood(e);
@@ -1211,7 +1207,6 @@
                         foods.splice(i, 1);
                         spawnParticles(f.x, f.y, f.color, f.isDeathFood ? 15 : 8);
 
-                        // Atualiza com base em se a comida é de Boost, de Morte ou Normal
                         let pts = f.isBoostFood ? f.scoreValue : (f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD);
                         let growth = f.isBoostFood ? f.growthValue : (f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD);
 
