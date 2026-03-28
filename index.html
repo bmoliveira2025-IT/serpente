@@ -772,7 +772,7 @@
             TOTAL_FOOD: 1500,           // [Geral] Quantidade máxima de "comida normal" espalhada passivamente.
 
             // 🐍 DIMENSÕES INICIAIS DA COBRA (Dinâmico por Dispositivo)
-            SNAKE_INITIAL_LENGTH: 26,   // [Tamanho] Comprimento inicial base da cobra ao nascer.
+            SNAKE_INITIAL_LENGTH: 30,   // [Tamanho] Comprimento inicial base da cobra ao nascer.
 
             // Espessura inicial separada por plataforma para melhor visualização:
             SNAKE_INITIAL_RADIUS_MOBILE: 12, // [Mobile] Cobra fina, ideal para ecrãs de telemóveis.
@@ -1386,24 +1386,28 @@
                 context.stroke(); context.restore();
             }
 
-            // Olhos
+            // Olhos Redesenhados (Com borda e reflexo estilo a imagem)
             if (activeSkin.isCyclops) {
                 const distOffset = 0.4;
                 const ex = entity.x + Math.cos(entity.angle) * radius * distOffset;
                 const ey = entity.y + Math.sin(entity.angle) * radius * distOffset;
                 const eR = radius * 0.65; // Olho maior
 
+                // Contorno escuro do olho
                 context.fillStyle = '#000';
                 context.beginPath(); context.arc(ex, ey, eR + 1.5, 0, Math.PI * 2); context.fill();
+                // Branco do olho
                 context.fillStyle = '#fff';
                 context.beginPath(); context.arc(ex, ey, eR, 0, Math.PI * 2); context.fill();
 
+                // Pupila colorida
                 const pR = eR * 0.5;
                 const px = ex + Math.cos(entity.angle) * pR * 0.3;
                 const py = ey + Math.sin(entity.angle) * pR * 0.3;
                 context.fillStyle = activeSkin.eyeColor || '#ffff00';
                 context.beginPath(); context.arc(px, py, pR, 0, Math.PI * 2); context.fill();
 
+                // Brilho do olho (Specular highlight)
                 if (isHigh) {
                     context.fillStyle = '#fff';
                     context.beginPath(); context.arc(px - pR * 0.3, py - pR * 0.3, pR * 0.3, 0, Math.PI * 2); context.fill();
@@ -1413,10 +1417,19 @@
                     const distOffset = 0.6;
                     const ex = entity.x + Math.cos(a) * radius * distOffset, ey = entity.y + Math.sin(a) * radius * distOffset;
                     const eR = radius * 0.42;
+
+                    // Contorno do olho
+                    context.fillStyle = '#000';
+                    context.beginPath(); context.arc(ex, ey, eR + 1.5, 0, Math.PI * 2); context.fill();
+
+                    // Branco do olho
                     context.fillStyle = '#fff'; context.beginPath(); context.arc(ex, ey, eR, 0, Math.PI * 2); context.fill();
 
+                    // Pupila
                     const pR = eR * 0.55, px = ex + Math.cos(entity.angle) * pR * 0.4, py = ey + Math.sin(entity.angle) * pR * 0.4;
                     context.fillStyle = activeSkin.eyeColor || '#000'; context.beginPath(); context.arc(px, py, pR, 0, Math.PI * 2); context.fill();
+
+                    // Brilho da pupila
                     if (isHigh) {
                         context.fillStyle = '#fff'; context.beginPath(); context.arc(px - pR * 0.3, py - pR * 0.3, pR * 0.3, 0, Math.PI * 2); context.fill();
                     }
@@ -1437,7 +1450,7 @@
 
         // --- DRAW LOOP (RENDERIZAÇÃO) ---
         function draw() {
-            ctx.fillStyle = '#0a101a'; // Fundo do oceano escuro
+            ctx.fillStyle = '#050914'; // Fundo oceânico muito mais escuro (gap do mosaico)
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             camera.shake *= 0.85; if (camera.shake < 0.5) camera.shake = 0;
@@ -1453,17 +1466,18 @@
             if (camera.zoom < 0.6) bgLod = 2;
             if (camera.zoom < 0.35) bgLod = 3;
 
-            // Fundo Mosaico Hexagonal Espaçado
+            // Fundo Mosaico Hexagonal MUITO MAIS ESPAÇADO
             const r = 40 * bgLod;
             const w = Math.sqrt(3) * r;
             const h = 2 * r;
             const offY = h * 0.75;
-            const hexRadius = r * 0.82; // Cria o fosso/gap escuro entre os hexágonos
+            const hexRadius = r * 0.72; // Raio menor cria GAPS LARGOS pretos entre eles
             const vW = canvas.width / camera.zoom, vH = canvas.height / camera.zoom;
 
-            ctx.fillStyle = '#14223b'; // Hexágonos destacados
-            ctx.strokeStyle = '#0e1726'; // Borda super subtil
-            ctx.lineWidth = 2 * bgLod;
+            ctx.fillStyle = '#263a66'; // Cor azul dos hexágonos idêntica à foto
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'; // Sombra preta densa para o efeito 3D
+            ctx.shadowBlur = 10 * bgLod;
+            ctx.shadowOffsetY = 4 * bgLod;
 
             ctx.beginPath();
             for (let row = Math.floor((camera.y - vH / 2) / offY) - 1; row <= Math.floor((camera.y + vH / 2) / offY) + 1; row++) {
@@ -1477,8 +1491,12 @@
                     ctx.closePath();
                 }
             }
-            ctx.fill();
-            ctx.stroke();
+            ctx.fill(); // Sem stroke, a sombra gere o contraste todo!
+
+            // Reset sombras para não aplicar nos próximos objetos
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
 
             ctx.beginPath(); ctx.arc(CENTER, CENTER, CENTER, 0, Math.PI * 2);
             let distToCenter = Math.hypot(player.x - CENTER, player.y - CENTER);
@@ -1490,23 +1508,35 @@
             const tTime = Date.now() / 1000;
             const veryZoomedOut = camera.zoom < 0.4;
 
-            // Renderização da Comida 3D leve
+            // --- NOVA RENDERIZAÇÃO DA COMIDA (3D Glossy sem Lag) ---
             foods.forEach(f => {
                 if (f.x < camera.x - vW / 2 - 30 || f.x > camera.x + vW / 2 + 30 || f.y < camera.y - vH / 2 - 30 || f.y > camera.y + vH / 2 + 30) return;
                 const phase = f.phase || 0;
-                const rAnim = f.isDeathFood ? (f.radius || 3.5) : (f.radius || 3) + Math.sin(Date.now() / 150 + phase) * 0.8;
-                const floatX = f.isDeathFood ? 0 : Math.sin(tTime * 1.5 + phase) * 4, floatY = f.isDeathFood ? 0 : Math.cos(tTime * 2.0 + phase) * 4;
+
+                // Base visual mais gordinha
+                const baseR = (f.radius || 3) * 1.5;
+                const rAnim = f.isDeathFood ? baseR * 1.2 : baseR + Math.sin(Date.now() / 150 + phase) * 1.2;
+
+                const floatX = f.isDeathFood ? 0 : Math.sin(tTime * 1.5 + phase) * 5;
+                const floatY = f.isDeathFood ? 0 : Math.cos(tTime * 2.0 + phase) * 5;
                 const dX = f.x + floatX, dY = f.y + floatY;
 
+                // Sombra 3D
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.beginPath(); ctx.arc(dX, dY + rAnim * 0.15, rAnim * 1.15, 0, Math.PI * 2); ctx.fill();
+
+                // Cor principal
                 ctx.fillStyle = f.color;
                 ctx.beginPath(); ctx.arc(dX, dY, rAnim, 0, Math.PI * 2); ctx.fill();
 
                 if (isHigh && !veryZoomedOut) {
-                    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-                    ctx.lineWidth = 1.5;
-                    ctx.stroke();
-                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                    ctx.beginPath(); ctx.arc(dX - rAnim * 0.25, dY - rAnim * 0.25, rAnim * 0.35, 0, Math.PI * 2); ctx.fill();
+                    // Reflexo glossy (topo esquerdo)
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.beginPath(); ctx.arc(dX - rAnim * 0.3, dY - rAnim * 0.3, rAnim * 0.35, 0, Math.PI * 2); ctx.fill();
+
+                    // Sub-brilho de volume
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.beginPath(); ctx.arc(dX + rAnim * 0.3, dY + rAnim * 0.3, rAnim * 0.2, 0, Math.PI * 2); ctx.fill();
                 }
             });
 
