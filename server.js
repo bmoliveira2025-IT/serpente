@@ -19,8 +19,8 @@ const GAME_CONFIG = {
     TOTAL_FOOD: 1500,                 
 
     SNAKE_INITIAL_LENGTH: 30,
-    SNAKE_INITIAL_RADIUS: 18,
-    SNAKE_MAX_RADIUS: 65,
+    SNAKE_INITIAL_RADIUS: 14,         // Cobra mais fina, ideal para ecrãs mobile
+    SNAKE_MAX_RADIUS: 45,             
     SNAKE_HISTORY_STEP: 1,
     SNAKE_HISTORY_SPACING: 5,
     SNAKE_BASE_SPEED: 4.0,
@@ -35,7 +35,7 @@ const GAME_CONFIG = {
     DEATH_GROWTH: 11.25,              // Proporcional para não quebrar rácio: (30 / 8) * 3.0
     DEATH_SCORE: 30,                  
     
-    WIDTH_GROWTH_FACTOR: 0.8,         
+    WIDTH_GROWTH_FACTOR: 0.6,         
     MAX_HISTORY_LENGTH: 3000,         
 
     // Sincronização do Boost para evitar o ecrã divergir da pontuação

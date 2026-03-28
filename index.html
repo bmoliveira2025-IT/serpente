@@ -58,7 +58,7 @@
             position: absolute;
             top: env(safe-area-inset-top, 15px);
             right: env(safe-area-inset-right, 15px);
-            width: clamp(140px, 25vw, 220px);
+            width: clamp(150px, 25vw, 240px);
             background: rgba(0, 0, 0, 0.4);
             padding: 12px;
             border-radius: 12px;
@@ -85,8 +85,8 @@
             justify-content: flex-end;
             align-items: center;
             font-size: clamp(11px, 2vw, 13px);
-            line-height: 1.5;
-            font-weight: 600;
+            line-height: 1.6;
+            font-weight: 700;
         }
 
         .rank-num {
@@ -94,6 +94,7 @@
             text-align: left;
             opacity: 0.6;
             font-size: 0.9em;
+            color: #fff;
         }
 
         .leader-name {
@@ -103,6 +104,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.8);
         }
 
         .leader-score {
@@ -110,15 +112,16 @@
             text-align: right;
             opacity: 0.9;
             font-variant-numeric: tabular-nums;
+            color: #fff;
         }
 
         .my-rank {
-            color: var(--neon-blue);
-            background: rgba(0, 221, 255, 0.1);
-            border-radius: 4px;
-            padding: 2px 4px;
-            margin-top: 6px;
-            font-weight: 800;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 4px;
+            margin-top: 8px;
+            font-weight: 900;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         /* --- Menu Inicial Premium --- */
@@ -725,8 +728,8 @@
             TOTAL_FOOD: 1500,
 
             SNAKE_INITIAL_LENGTH: 30,
-            SNAKE_INITIAL_RADIUS: 18,
-            SNAKE_MAX_RADIUS: 65,
+            SNAKE_INITIAL_RADIUS: 14, // Cobra mais fina, ideal para ecrãs mobile
+            SNAKE_MAX_RADIUS: 45,
             SNAKE_HISTORY_STEP: 1,
             SNAKE_HISTORY_SPACING: 5,
             SNAKE_BASE_SPEED: 4.0,
@@ -735,25 +738,25 @@
             SNAKE_TURN_SPEED: 0.035,
             SNAKE_TURN_SPEED_BOOST: 0.015,
 
-            GROWTH_PER_FOOD: 3.0,     // Aumentado drasticamente para comprimento realçar
+            GROWTH_PER_FOOD: 3.0,
             SCORE_PER_FOOD: 8,
-            DEATH_GROWTH: 11.25,      // Proporcional para não quebrar rácio: (30 / 8) * 3.0
+            DEATH_GROWTH: 11.25,
             DEATH_SCORE: 30,
-            WIDTH_GROWTH_FACTOR: 0.8, // Reduzido (cobra esguia e muito longa)
-            MAX_HISTORY_LENGTH: 3000, // Aumentado para suportar rabos de cobras colossais
+            WIDTH_GROWTH_FACTOR: 0.6,
+            MAX_HISTORY_LENGTH: 3000,
 
             MAGNET_STRENGTH: 0.3,
             MAGNET_RADIUS_MULT: 3.0,
 
             BOOST_SPEED_MULT: 2.0,
             BOOST_SCORE_LOSS: 2,
-            BOOST_LENGTH_LOSS: 0.75,  // (2 / 8) * 3.0
-            BOOST_MIN_LENGTH: 40,     // Limite inicial maior devido ao novo rácio de crescimento
+            BOOST_LENGTH_LOSS: 0.75,
+            BOOST_MIN_LENGTH: 40,
             BOOST_FRAMES_PER_DROP: 2,
 
             CAMERA_BASE_ZOOM: 1.15,
             CAMERA_MIN_ZOOM: 0.25,
-            ZOOM_SHRINK_RATE: 0.035,  // Adaptado para não se afastar tão ridiculamente depressa com a nova fórmula
+            ZOOM_SHRINK_RATE: 0.035,
             CAMERA_LOOK_AHEAD: 2.5,
 
             DEATH_FOOD_RADIUS: 3.5,
@@ -828,13 +831,18 @@
             { name: 'Zebra', getBodyColor: (isDark) => isDark ? ['#111111', '#000000'] : ['#ffffff', '#aaaaaa'] },
             { name: 'Galáxia', getBodyColor: (isDark) => isDark ? ['#1a0033', '#0d001a'] : ['#aa00ff', '#550088'], getTailColor: (p) => p <= 5 ? { c1: '#00ddff', c2: '#005588' } : null },
             { name: 'Lava', getBodyColor: (isDark) => isDark ? ['#880000', '#440000'] : ['#ff4400', '#aa2200'], getTailColor: (p) => p <= 4 ? { c1: '#ffdd00', c2: '#ff8800' } : null },
-            { name: 'Ciclope Mutante', isCyclops: true, eyeColor: '#ff0000', getBodyColor: (isDark) => isDark ? ['#1a3300', '#0a1a00'] : ['#88ff00', '#44aa00'] },
+            { name: 'Ciclope Mutante', isCyclops: true, eyeColor: '#ffcc00', getBodyColor: (isDark) => isDark ? ['#2b4a1a', '#182b0f'] : ['#56ab2f', '#3a7d20'] }, // Adaptado à imagem de referência (amarelo, corpo verde/azul)
             { name: 'Fantasma', eyeColor: '#00ffff', getBodyColor: (isDark) => isDark ? ['#e6ffff', '#99ccff'] : ['#ffffff', '#cce6ff'] },
             { name: 'Máquina de Guerra', isCyclops: true, eyeColor: '#ffdd00', getBodyColor: (isDark) => isDark ? ['#333333', '#111111'] : ['#888888', '#555555'], getTailColor: (p) => p <= 3 ? { c1: '#ff4400', c2: '#aa0000' } : null },
             { name: 'Dragão d\'Água', getBodyColor: (isDark) => isDark ? ['#003366', '#001133'] : ['#00ddff', '#0088cc'], getTailColor: (p) => p <= 5 ? { c1: '#ffffff', c2: '#aaddff' } : null },
             { name: 'Demoníaca', eyeColor: '#ffff00', getBodyColor: (isDark) => isDark ? ['#000000', '#000000'] : ['#ff0000', '#aa0000'] }
         ];
         let currentSkinIndex = 0;
+
+        function getSkinColor(skinIndex) {
+            const skin = skins[skinIndex % skins.length] || skins[0];
+            return skin.getBodyColor(false, 0, 1)[0];
+        }
 
         // --- MULTIPLAYER SETUP ---
         let socket;
@@ -1238,13 +1246,21 @@
             list.forEach(p => p.ref.isTop1 = false);
             if (list.length > 0) list[0].ref.isTop1 = true;
 
-            leaderList.innerHTML = list.slice(0, 10).map((p, i) => `
-                <div class="leader-item" style="color: ${p.isPlayer ? 'var(--neon-green)' : 'rgba(255,255,255,0.5)'}">
-                    <span class="rank-num">#${i + 1}</span><span class="leader-name">${p.name}</span><span class="leader-score">${Math.floor(p.score)}</span>
+            leaderList.innerHTML = list.slice(0, 10).map((p, i) => {
+                const skinColor = getSkinColor(p.ref.skinIndex);
+                return `
+                <div class="leader-item">
+                    <span class="rank-num">#${i + 1}</span>
+                    <span class="leader-name" style="color: ${skinColor};">${p.name}</span>
+                    <span class="leader-score">${Math.floor(p.score)}</span>
                 </div>
-            `).join('') + (pIdx >= 10 ? `
+            `}).join('') + (pIdx >= 10 ? `
                 <div style="text-align:center; font-size:10px; opacity:0.3; margin:2px 0;">...</div>
-                <div class="leader-item my-rank"><span class="rank-num">#${pIdx + 1}</span><span class="leader-name">${player.name}</span><span class="leader-score">${Math.floor(player.score)}</span></div>
+                <div class="leader-item my-rank">
+                    <span class="rank-num">#${pIdx + 1}</span>
+                    <span class="leader-name" style="color: ${getSkinColor(player.skinIndex)};">${player.name}</span>
+                    <span class="leader-score">${Math.floor(player.score)}</span>
+                </div>
             ` : '');
         }
 
@@ -1268,7 +1284,9 @@
             context.save(); context.lineCap = 'round'; context.lineJoin = 'round';
             if (isHigh && isBoosting) { context.shadowBlur = 10; context.shadowColor = activeSkin.getBodyColor(false, 0, segments)[0]; }
 
-            context.lineWidth = (radius * 2) + 6; context.strokeStyle = '#000000';
+            // Borda levemente mais apertada para o look "pill-shaped"
+            context.lineWidth = (radius * 2) + 4;
+            context.strokeStyle = '#000000';
             context.beginPath(); context.moveTo(entity.x, entity.y);
             for (let i = 1; i < availableSegments; i++) {
                 const pos = entity.history[i * spacing];
@@ -1300,21 +1318,41 @@
             }
 
             // Olhos
-            let eyeAngles = activeSkin.isCyclops ? [entity.angle] : [entity.angle - 0.7, entity.angle + 0.7];
-            let eyeRadiusMult = activeSkin.isCyclops ? 0.55 : 0.42;
+            if (activeSkin.isCyclops) {
+                const distOffset = 0.4;
+                const ex = entity.x + Math.cos(entity.angle) * radius * distOffset;
+                const ey = entity.y + Math.sin(entity.angle) * radius * distOffset;
+                const eR = radius * 0.65; // Olho maior
 
-            eyeAngles.forEach(a => {
-                const distOffset = activeSkin.isCyclops ? 0.5 : 0.6;
-                const ex = entity.x + Math.cos(a) * radius * distOffset, ey = entity.y + Math.sin(a) * radius * distOffset;
-                const eR = radius * eyeRadiusMult;
-                context.fillStyle = '#fff'; context.beginPath(); context.arc(ex, ey, eR, 0, Math.PI * 2); context.fill();
+                context.fillStyle = '#000';
+                context.beginPath(); context.arc(ex, ey, eR + 1.5, 0, Math.PI * 2); context.fill();
+                context.fillStyle = '#fff';
+                context.beginPath(); context.arc(ex, ey, eR, 0, Math.PI * 2); context.fill();
 
-                const pR = eR * 0.55, px = ex + Math.cos(entity.angle) * pR * 0.4, py = ey + Math.sin(entity.angle) * pR * 0.4;
-                context.fillStyle = activeSkin.eyeColor || '#000'; context.beginPath(); context.arc(px, py, pR, 0, Math.PI * 2); context.fill();
+                const pR = eR * 0.5;
+                const px = ex + Math.cos(entity.angle) * pR * 0.3;
+                const py = ey + Math.sin(entity.angle) * pR * 0.3;
+                context.fillStyle = activeSkin.eyeColor || '#ffff00';
+                context.beginPath(); context.arc(px, py, pR, 0, Math.PI * 2); context.fill();
+
                 if (isHigh) {
-                    context.fillStyle = '#fff'; context.beginPath(); context.arc(px - pR * 0.3, py - pR * 0.3, pR * 0.3, 0, Math.PI * 2); context.fill();
+                    context.fillStyle = '#fff';
+                    context.beginPath(); context.arc(px - pR * 0.3, py - pR * 0.3, pR * 0.3, 0, Math.PI * 2); context.fill();
                 }
-            });
+            } else {
+                [entity.angle - 0.7, entity.angle + 0.7].forEach(a => {
+                    const distOffset = 0.6;
+                    const ex = entity.x + Math.cos(a) * radius * distOffset, ey = entity.y + Math.sin(a) * radius * distOffset;
+                    const eR = radius * 0.42;
+                    context.fillStyle = '#fff'; context.beginPath(); context.arc(ex, ey, eR, 0, Math.PI * 2); context.fill();
+
+                    const pR = eR * 0.55, px = ex + Math.cos(entity.angle) * pR * 0.4, py = ey + Math.sin(entity.angle) * pR * 0.4;
+                    context.fillStyle = activeSkin.eyeColor || '#000'; context.beginPath(); context.arc(px, py, pR, 0, Math.PI * 2); context.fill();
+                    if (isHigh) {
+                        context.fillStyle = '#fff'; context.beginPath(); context.arc(px - pR * 0.3, py - pR * 0.3, pR * 0.3, 0, Math.PI * 2); context.fill();
+                    }
+                });
+            }
 
             if (entity.isTop1) {
                 context.save(); context.translate(entity.x, entity.y); context.rotate(entity.angle);
@@ -1330,7 +1368,8 @@
 
         // --- DRAW LOOP (RENDERIZAÇÃO) ---
         function draw() {
-            ctx.fillStyle = '#0b0e14'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0a101a'; // Fundo do oceano escuro
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             camera.shake *= 0.85; if (camera.shake < 0.5) camera.shake = 0;
             ctx.save();
@@ -1345,21 +1384,31 @@
             if (camera.zoom < 0.6) bgLod = 2;
             if (camera.zoom < 0.35) bgLod = 3;
 
-            const r = 45 * bgLod, w = Math.sqrt(3) * r, h = 2 * r, offY = h * 0.75;
+            // Fundo Mosaico Hexagonal Espaçado
+            const r = 40 * bgLod;
+            const w = Math.sqrt(3) * r;
+            const h = 2 * r;
+            const offY = h * 0.75;
+            const hexRadius = r * 0.82; // Cria o fosso/gap escuro entre os hexágonos
             const vW = canvas.width / camera.zoom, vH = canvas.height / camera.zoom;
-            ctx.strokeStyle = '#0d1116'; ctx.lineWidth = 4 * bgLod;
+
+            ctx.fillStyle = '#14223b'; // Hexágonos destacados
+            ctx.strokeStyle = '#0e1726'; // Borda super subtil
+            ctx.lineWidth = 2 * bgLod;
+
             ctx.beginPath();
             for (let row = Math.floor((camera.y - vH / 2) / offY) - 1; row <= Math.floor((camera.y + vH / 2) / offY) + 1; row++) {
                 for (let col = Math.floor((camera.x - vW / 2) / w) - 1; col <= Math.floor((camera.x + vW / 2) / w) + 1; col++) {
                     let px = col * w + (row % 2 === 0 ? 0 : w / 2), py = row * offY;
                     for (let i = 0; i < 6; i++) {
                         let a = Math.PI / 180 * (60 * i - 30);
-                        let x = px + r * 0.95 * Math.cos(a), y = py + r * 0.95 * Math.sin(a);
+                        let x = px + hexRadius * Math.cos(a), y = py + hexRadius * Math.sin(a);
                         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                     }
-                    ctx.lineTo(px + r * 0.95 * Math.cos(Math.PI / 180 * (-30)), py + r * 0.95 * Math.sin(Math.PI / 180 * (-30)));
+                    ctx.closePath();
                 }
             }
+            ctx.fill();
             ctx.stroke();
 
             ctx.beginPath(); ctx.arc(CENTER, CENTER, CENTER, 0, Math.PI * 2);
@@ -1372,6 +1421,7 @@
             const tTime = Date.now() / 1000;
             const veryZoomedOut = camera.zoom < 0.4;
 
+            // Renderização da Comida 3D leve
             foods.forEach(f => {
                 if (f.x < camera.x - vW / 2 - 30 || f.x > camera.x + vW / 2 + 30 || f.y < camera.y - vH / 2 - 30 || f.y > camera.y + vH / 2 + 30) return;
                 const phase = f.phase || 0;
@@ -1379,16 +1429,15 @@
                 const floatX = f.isDeathFood ? 0 : Math.sin(tTime * 1.5 + phase) * 4, floatY = f.isDeathFood ? 0 : Math.cos(tTime * 2.0 + phase) * 4;
                 const dX = f.x + floatX, dY = f.y + floatY;
 
+                ctx.fillStyle = f.color;
+                ctx.beginPath(); ctx.arc(dX, dY, rAnim, 0, Math.PI * 2); ctx.fill();
+
                 if (isHigh && !veryZoomedOut) {
-                    ctx.globalCompositeOperation = 'lighter';
-                    ctx.fillStyle = f.color;
-                    ctx.globalAlpha = 0.3;
-                    ctx.beginPath(); ctx.arc(dX, dY, rAnim * (f.isDeathFood ? 2.5 : 2.0), 0, Math.PI * 2); ctx.fill();
-                    ctx.globalAlpha = 1.0;
-                    ctx.beginPath(); ctx.arc(dX, dY, rAnim, 0, Math.PI * 2); ctx.fill();
-                    ctx.globalCompositeOperation = 'source-over';
-                } else {
-                    ctx.fillStyle = f.color; ctx.beginPath(); ctx.arc(dX, dY, rAnim, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    ctx.beginPath(); ctx.arc(dX - rAnim * 0.25, dY - rAnim * 0.25, rAnim * 0.35, 0, Math.PI * 2); ctx.fill();
                 }
             });
 
@@ -1425,10 +1474,27 @@
 
             ctx.restore();
 
+            // Minimapa transparente ao estilo do screenshot (Canto Superior Esquerdo)
             if (gameState === 'PLAYING') {
-                const mmR = isTouch ? 40 : 50, mmM = 20, mmX = mmM + mmR, mmY = mmM + mmR;
-                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.arc(mmX, mmY, mmR, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = 'rgba(86,171,47,0.4)'; ctx.lineWidth = 2; ctx.stroke();
+                const mmR = isTouch ? 45 : 60;
+                const safeAreaX = 15, safeAreaY = 15;
+                const mmX = safeAreaX + mmR, mmY = safeAreaY + mmR;
+
+                ctx.fillStyle = 'rgba(20, 30, 50, 0.6)';
+                ctx.beginPath(); ctx.arc(mmX, mmY, mmR, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx.lineWidth = 2; ctx.stroke();
+
+                // Grelha decorativa interior do minimapa
+                ctx.save();
+                ctx.clip();
+                ctx.beginPath();
+                for (let i = -mmR; i < mmR; i += 15) {
+                    ctx.moveTo(mmX + i, mmY - mmR); ctx.lineTo(mmX + i, mmY + mmR);
+                    ctx.moveTo(mmX - mmR, mmY + i); ctx.lineTo(mmX + mmR, mmY + i);
+                }
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.stroke();
+                ctx.restore();
 
                 bots.forEach(b => {
                     if (b.isDead) return;
@@ -1443,7 +1509,7 @@
 
                 if (!player.isDead) {
                     ctx.fillStyle = '#fff';
-                    ctx.beginPath(); ctx.arc(mmX + (player.x - CENTER) / CENTER * (mmR - 3), mmY + (player.y - CENTER) / CENTER * (mmR - 3), 3, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(mmX + (player.x - CENTER) / CENTER * (mmR - 3), mmY + (player.y - CENTER) / CENTER * (mmR - 3), 3.5, 0, Math.PI * 2); ctx.fill();
                 }
             }
         }
@@ -1471,13 +1537,10 @@
         const pCtx_ = pCanvas_.getContext('2d');
         const pSnake = { x: 120, y: 60, angle: 0, radius: 14, length: 25, history: [], historySpacing: GAME_CONFIG.SNAKE_HISTORY_SPACING, isTop1: false };
 
-        // Iniciar com uma forma coerente
         pSnake.history = Array.from({ length: 150 }, () => ({ x: 120, y: 60 }));
 
         function drawPreview() {
             if (gameState === 'PLAYING' || gameState === 'DYING') return;
-
-            // Fundo transparente para o formato arredondado fazer a sombra fluir lindamente!
             pCtx_.clearRect(0, 0, pCanvas_.width, pCanvas_.height);
 
             const w = pCanvas_.width;
@@ -1486,19 +1549,15 @@
             const oldX = pSnake.x;
             const oldY = pSnake.y;
 
-            // Movimento suave e livre de bugs em formato S (Símbolo do Infinito - Lemniscata)
             pSnake.x = (w / 2) + Math.sin(time) * 55;
             pSnake.y = (h / 2) + Math.sin(time * 2) * 20;
-
             pSnake.angle = Math.atan2(pSnake.y - oldY, pSnake.x - oldX);
 
             const distMoved = Math.hypot(pSnake.x - oldX, pSnake.y - oldY);
             pSnake.distAccum = (pSnake.distAccum || 0) + distMoved;
-
             const pVx = Math.cos(pSnake.angle);
             const pVy = Math.sin(pSnake.angle);
 
-            // Replicamos perfeitamente o motor real de física da cobra! Zero falhas na cauda.
             while (pSnake.distAccum >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
                 pSnake.distAccum -= GAME_CONFIG.SNAKE_HISTORY_STEP;
                 pSnake.history.unshift({
@@ -1527,7 +1586,6 @@
             const pos = getSafePosition();
             player.x = pos.x; player.y = pos.y;
 
-            // CORREÇÃO: Resetar também o targetLength e radius em cada vida nova.
             player.score = 0;
             player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
             player.targetLength = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
