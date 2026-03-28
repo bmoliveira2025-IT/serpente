@@ -407,6 +407,24 @@
             font-weight: 900;
         }
 
+        #offline-badge {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 85, 0.2);
+            border: 1px solid #ff0055;
+            color: #ff0055;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: none;
+            z-index: 100;
+        }
+
         /* --- CONFIGURAÇÕES (MODAL) --- */
         #settings-modal {
             display: none;
@@ -647,12 +665,10 @@
             }
 
             .desktop-tip {
-                margin-top: 10px;
-                font-size: 10px;
+                display: none;
             }
         }
 
-        /* Ocultar dica do F11 se o utilizador estiver num dispositivo touch (telemóvel/tablet) */
         @media (hover: none) and (pointer: coarse) {
             .desktop-tip {
                 display: none;
@@ -663,6 +679,8 @@
 </head>
 
 <body>
+    <div id="offline-badge">MODO OFFLINE (IA)</div>
+
     <div id="start-screen">
         <div>
             <div class="main-logo">cobra.io</div>
@@ -705,8 +723,7 @@
         </div>
 
         <div class="desktop-tip">
-            💡 <b>Dica de Visualização:</b> Pressione <span>F11</span> no computador para jogar em Tela Cheia e
-            visualizar melhor o comprimento e a largura da sua cobra no mapa.
+            💡 <b>Dica de Visualização:</b> Pressione <span>F11</span> no computador para jogar em Tela Cheia.
         </div>
     </div>
 
@@ -752,8 +769,6 @@
     <canvas id="gameCanvas"></canvas>
 
     <script>
-        // --- DETEÇÃO DO DISPOSITIVO PARA CONFIGURAÇÕES ESPECÍFICAS ---
-        // Detetamos o ecrã do jogador logo na inicialização para ajustar os gráficos.
         const getDeviceType = () => {
             const w = window.innerWidth;
             const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -764,70 +779,78 @@
         const currentDevice = getDeviceType();
 
         // =============================================================
+        // --- BLOCO DE CONFIGURAÇÃO DA IA E COMPORTAMENTO (BOTS) ---
+        // =============================================================
+        const BOT_AI_CONFIG = {
+            // Regras de Comportamento
+            TYPES: ['NATIVE', 'SCRIPT'],     // Native = Normal / Script = Aggressivo, Hacker, Coiler
+            SCRIPT_CHANCE: 0.20,             // 20% dos bots são super avançados/agressivos (Simula os Mods e Tampers)
+
+            // Scanner e Visão
+            VISION_RAY_NATIVE: 400,          // Bots nativos só veem o perigo quando está muito perto
+            VISION_RAY_SCRIPT: 800,          // Bots hackeados conseguem ver a 800px de distância e desviar cedo
+            FOOD_SENSE_RADIUS: 900,          // Raio que o Bot usa para detetar e ir atrás da comida
+
+            // Reações e Habilidades
+            COIL_CHANCE: 0.002,              // Chance de um bot iniciar a manobra de cerco (Coiling)
+            PANIC_BOOST_CHANCE: 0.30,        // Chance de usar o Boost quando foge de um perigo letal
+            FARM_BOOST_CHANCE: 0.50          // Chance de um bot script usar boost para ir roubar Death Food
+        };
+
+        // =============================================================
         // --- BLOCO DE CONFIGURAÇÃO DO JOGO (MASTER CONFIG) ---
         // =============================================================
         const GAME_CONFIG = {
-            // 🌍 MUNDO E AMBIENTE
-            WORLD_SIZE: 9000,           // [Geral] Tamanho total do mapa do jogo (em pixels).
-            TOTAL_FOOD: 1500,           // [Geral] Quantidade máxima de "comida normal" espalhada passivamente.
+            WORLD_SIZE: 9000,
+            TOTAL_FOOD: 1500,
 
-            // 🐍 DIMENSÕES INICIAIS DA COBRA (Dinâmico por Dispositivo)
-            SNAKE_INITIAL_LENGTH: 30,   // [Tamanho] Comprimento inicial base da cobra ao nascer.
-
-            // Espessura inicial separada por plataforma para melhor visualização:
-            SNAKE_INITIAL_RADIUS_MOBILE: 12, // [Mobile] Cobra fina, ideal para ecrãs de telemóveis.
-            SNAKE_INITIAL_RADIUS_TABLET: 15, // [Tablet] Cobra de espessura intermédia.
-            SNAKE_INITIAL_RADIUS_PC: 18,     // [PC] Cobra mais grossa, ideal para monitores grandes e ratos.
-
-            // Obtém o raio inicial correto baseado no dispositivo em que o jogo está a correr:
+            SNAKE_INITIAL_LENGTH: 30,
+            SNAKE_INITIAL_RADIUS_MOBILE: 12,
+            SNAKE_INITIAL_RADIUS_TABLET: 15,
+            SNAKE_INITIAL_RADIUS_PC: 18,
             get SNAKE_INITIAL_RADIUS() {
                 if (currentDevice === 'PC') return this.SNAKE_INITIAL_RADIUS_PC;
                 if (currentDevice === 'TABLET') return this.SNAKE_INITIAL_RADIUS_TABLET;
                 return this.SNAKE_INITIAL_RADIUS_MOBILE;
             },
 
-            SNAKE_MAX_RADIUS: 38,       // [Tamanho] Limite MÁXIMO absoluto de largura (Pára de engordar aos ~50k pontos).
-            WIDTH_GROWTH_FACTOR: 0.18,  // [Tamanho] Velocidade com que a cobra engorda (Curva de crescimento lenta/raiz quadrada).
-            MAX_HISTORY_LENGTH: 50000,  // [Memória] Limite máximo de pontos corporais na memória (Evita lag em cobras gigantes).
+            SNAKE_MAX_RADIUS: 38,
+            WIDTH_GROWTH_FACTOR: 0.18,
+            MAX_HISTORY_LENGTH: 50000,
 
-            // ⚙️ FÍSICA E MOVIMENTO
-            SNAKE_HISTORY_STEP: 1,      // [Física] Distância em pixels percorrida antes de guardar um ponto no rasto (Precisão).
-            SNAKE_HISTORY_SPACING: 5,   // [Visual] Espaçamento em pixels entre cada bola que forma o corpo da cobra.
-            SNAKE_BASE_SPEED: 4.0,      // [Física] Velocidade padrão de locomoção (caminhada normal).
-            SNAKE_HITBOX_SIZE: 0.75,    // [Colisão] Tamanho da Hitbox corporal (0.75 = 75% da largura visual total da cobra).
-            SNAKE_TURN_SPEED: 0.035,    // [Movimento] Grau de agilidade de curva na velocidade normal.
-            SNAKE_TURN_SPEED_BOOST: 0.015, // [Movimento] Grau de agilidade de curva ao usar o BOOST (curva mais aberta/difícil).
+            SNAKE_HISTORY_STEP: 1,
+            SNAKE_HISTORY_SPACING: 5,
+            SNAKE_BASE_SPEED: 4.0,
+            SNAKE_HITBOX_SIZE: 0.75,
+            SNAKE_TURN_SPEED: 0.035,
+            SNAKE_TURN_SPEED_BOOST: 0.015,
 
-            // 🍎 PONTUAÇÃO E CRESCIMENTO
-            GROWTH_PER_FOOD: 3.0,       // [Crescimento] Quanto a cobra CRESCE em comprimento por cada comida normal ingerida.
-            SCORE_PER_FOOD: 8,          // [Pontuação] Quantos pontos ganha por cada comida normal.
-            DEATH_GROWTH: 11.25,        // [Crescimento] Quanto cresce ao comer restos mortais (Massa de outra cobra morta).
-            DEATH_SCORE: 30,            // [Pontuação] Quantos pontos ganha ao comer restos mortais.
+            GROWTH_PER_FOOD: 3.0,
+            SCORE_PER_FOOD: 8,
+            DEATH_GROWTH: 11.25,
+            DEATH_SCORE: 30,
 
-            // 🧲 SISTEMA DE IMÃ (Atração de comida)
-            MAGNET_STRENGTH: 0.3,       // [Física] Força da gravidade que puxa a comida para a boca da cobra.
-            MAGNET_RADIUS_MULT: 3.0,    // [Física] Raio magnético (3.0x o tamanho da cabeça da cobra).
+            MAGNET_STRENGTH: 0.3,
+            MAGNET_RADIUS_MULT: 3.0,
 
-            // 🚀 SISTEMA DE BOOST (Corrida)
-            BOOST_SPEED_MULT: 2.0,      // [Boost] Multiplicador de velocidade (ex: 2.0 = o dobro da velocidade).
-            BOOST_SCORE_LOSS: 2,        // [Boost] Quantos pontos o jogador PERDE por frame ao correr.
-            BOOST_LENGTH_LOSS: 0.75,    // [Boost] Quanto comprimento a cobra PERDE por frame ao correr.
-            BOOST_MIN_LENGTH: 40,       // [Boost] Tamanho mínimo obrigatório para ter permissão de correr.
-            BOOST_FRAMES_PER_DROP: 2,   // [Boost] Larga uma bolinha de comida no mapa a cada 'X' frames a correr.
+            BOOST_SPEED_MULT: 2.0,
+            BOOST_SCORE_LOSS: 2,
+            BOOST_LENGTH_LOSS: 0.75,
+            BOOST_MIN_LENGTH: 40,
+            BOOST_FRAMES_PER_DROP: 2,
 
-            // 🎥 CÂMERA CINEMÁTICA E VISÃO
-            CAMERA_BASE_ZOOM: 1.15,     // [Câmera] Nível de Zoom IN inicial quando a cobra nasce.
-            CAMERA_MIN_ZOOM: 0.25,      // [Câmera] Nível de Zoom OUT máximo (afastamento total quando está gigante).
-            ZOOM_SHRINK_RATE: 0.035,    // [Câmera] Suavidade com que a câmera se afasta à medida que a cobra cresce.
-            CAMERA_LOOK_AHEAD: 2.5,     // [Câmera] Distância que a câmera antecipa para a frente da cabeça para melhor visão.
+            CAMERA_BASE_ZOOM: 1.15,
+            CAMERA_MIN_ZOOM: 0.25,
+            ZOOM_SHRINK_RATE: 0.035,
+            CAMERA_LOOK_AHEAD: 2.5,
 
-            // ✨ ESTÉTICA DA COMIDA E BRILHOS
-            DEATH_FOOD_RADIUS: 3.5,     // [Visual] Tamanho base físico da comida largada por cobras mortas.
-            FOOD_GLOW_MULT_NORMAL: 3.5, // [Visual] Intensidade do brilho (Glow 3D) para comida normal (apenas modo Alta Qualidade).
-            FOOD_GLOW_MULT_DEATH: 2.0   // [Visual] Intensidade do brilho (Glow 3D) para comida de restos mortais.
+            DEATH_FOOD_RADIUS: 3.5,
+            FOOD_GLOW_MULT_NORMAL: 3.5,
+            FOOD_GLOW_MULT_DEATH: 2.0
         };
 
         let CENTER = GAME_CONFIG.WORLD_SIZE / 2;
+        let isOfflineMode = false; // Flag ativada se o servidor falhar
 
         function getEntityRadius(length) {
             const lenDiff = Math.max(0, length - GAME_CONFIG.SNAKE_INITIAL_LENGTH);
@@ -837,7 +860,6 @@
         // --- SISTEMA DE UI & SETTINGS ---
         let qualityOpt = localStorage.getItem('cobraioQuality') || 'high';
         let controlOpt = localStorage.getItem('cobraioControl') || 'joystick';
-        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
         function applySettingsUI() {
             document.getElementById('q-high').classList.toggle('active', qualityOpt === 'high');
@@ -907,10 +929,146 @@
             return skin.getBodyColor(false, 0, 1)[0];
         }
 
+        // --- SISTEMAS DE OFFLINE BOTS & IA ---
+        const localBotNames = ['[BOT] Sweeper', 'Slither.mod', 'Viper', 'Apex', 'CobraQueen', 'Titan', 'Zilla', 'Racer', 'Venom', 'AutoPlay.js'];
+
+        function createLocalBot() {
+            const pos = getSafePosition();
+            const type = Math.random() < BOT_AI_CONFIG.SCRIPT_CHANCE ? 'SCRIPT' : 'NATIVE';
+            const isBoss = Math.random() < 0.25;
+
+            const initialScore = isBoss ? 500 + Math.random() * 1500 : 50 + Math.random() * 100;
+            const initialLength = GAME_CONFIG.SNAKE_INITIAL_LENGTH + (initialScore * (GAME_CONFIG.GROWTH_PER_FOOD / GAME_CONFIG.SCORE_PER_FOOD));
+            const initialRadius = getEntityRadius(initialLength);
+
+            return {
+                id: 'bot-' + Math.random().toString(36).substr(2, 9),
+                name: localBotNames[Math.floor(Math.random() * localBotNames.length)],
+                botType: type,
+                x: pos.x, y: pos.y, angle: Math.random() * Math.PI * 2, targetAngle: Math.random() * Math.PI * 2,
+                score: initialScore, length: initialLength, radius: initialRadius,
+                history: Array.from({ length: Math.min(GAME_CONFIG.MAX_HISTORY_LENGTH, Math.floor(initialLength * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 10) }, () => ({ x: pos.x, y: pos.y })),
+                skinIndex: Math.floor(Math.random() * skins.length),
+                aiState: 'WANDER', aiTimer: 0, speed: GAME_CONFIG.SNAKE_BASE_SPEED, isDead: false, distAccum: 0
+            };
+        }
+
+        // MOTOR DE INTELIGÊNCIA ARTIFICIAL (Nativo vs Script)
+        function processBotAI(bot, dt) {
+            if (bot.isDead) return;
+
+            bot.aiTimer = (bot.aiTimer || 0) - dt;
+            bot.isBoosting = false; // Reset padrão
+
+            // 1. Scanner de Perigo (Radar Raycast à frente da cabeça)
+            let danger = false;
+            let dangerAngle = 0;
+            const rayDist = bot.botType === 'SCRIPT' ? BOT_AI_CONFIG.VISION_RAY_SCRIPT : BOT_AI_CONFIG.VISION_RAY_NATIVE;
+            const headX = bot.x + Math.cos(bot.angle) * rayDist;
+            const headY = bot.y + Math.sin(bot.angle) * rayDist;
+
+            // O bot checa apenas o jogador para performance em offline mode
+            if (!player.isDead) {
+                let distToPlayer = Math.hypot(headX - player.x, headY - player.y);
+                if (distToPlayer < player.radius * 2 + 50) {
+                    danger = true;
+                    dangerAngle = Math.atan2(player.y - bot.y, player.x - bot.x);
+                }
+            }
+
+            // Ações de Bot Script vs Bot Nativo
+            if (danger) {
+                if (bot.botType === 'SCRIPT' && bot.length > player.length * 1.5) {
+                    // Bot Hacker Agressivo: Em vez de fugir, tenta cercar se for muito maior! (Coiling)
+                    bot.aiState = 'COIL';
+                    bot.coilDir = Math.sign(Math.sin(bot.angle - dangerAngle)) || 1;
+                    bot.aiTimer = 100;
+                } else {
+                    // Bot Nativo ou Menor: Foge (Pânico)
+                    bot.targetAngle = dangerAngle + Math.PI + (Math.random() - 0.5);
+                    if (Math.random() < BOT_AI_CONFIG.PANIC_BOOST_CHANCE && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) {
+                        bot.isBoosting = true;
+                    }
+                    bot.aiState = 'FLEE';
+                    bot.aiTimer = 15;
+                }
+                return;
+            }
+
+            // Manobra de Cerco Circular (Coiling Aleatório para proteção de rasto)
+            if (bot.botType === 'SCRIPT' && bot.length > 100 && Math.random() < BOT_AI_CONFIG.COIL_CHANCE && bot.aiState !== 'COIL') {
+                bot.aiState = 'COIL';
+                bot.aiTimer = 200; // Tempo a fazer o círculo
+                bot.coilDir = Math.random() < 0.5 ? 1 : -1;
+            }
+
+            if (bot.aiState === 'COIL') {
+                bot.targetAngle += 0.08 * bot.coilDir * dt;
+                if (bot.aiTimer <= 0) bot.aiState = 'WANDER';
+                return;
+            }
+
+            // Farming: Procura de Comida
+            if (bot.aiTimer <= 0) {
+                let bestFood = null;
+                let bestScore = -1;
+
+                for (let f of foods) {
+                    let dist = Math.hypot(bot.x - f.x, bot.y - f.y);
+                    if (dist < BOT_AI_CONFIG.FOOD_SENSE_RADIUS) {
+                        // Prioriza restos mortais 10x mais que comida normal
+                        let value = f.isDeathFood ? 50 : 1;
+                        let score = value / Math.max(1, dist);
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestFood = f;
+                        }
+                    }
+                }
+
+                if (bestFood) {
+                    bot.targetAngle = Math.atan2(bestFood.y - bot.y, bestFood.x - bot.x);
+                    bot.aiState = 'FARMING';
+
+                    // Bots de script ativam corrida para roubar comida morta
+                    if (bot.botType === 'SCRIPT' && bestFood.isDeathFood && Math.random() < BOT_AI_CONFIG.FARM_BOOST_CHANCE && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) {
+                        bot.isBoosting = true;
+                    }
+                } else {
+                    bot.aiState = 'WANDER';
+                    bot.targetAngle += (Math.random() - 0.5) * 1.5; // Movimento suave e ligeiramente curvo (Nativo)
+                }
+                bot.aiTimer = 15 + Math.random() * 20;
+            }
+        }
+
         // --- MULTIPLAYER SETUP ---
         let socket;
-        try { socket = io(); } catch (e) { console.warn("Modo Local/Offline"); socket = { on: () => { }, emit: () => { } }; }
+        try {
+            socket = io();
+            // Deteção de Servidor Fallback
+            socket.on('connect_error', () => {
+                if (!isOfflineMode && gameState === 'START') {
+                    console.log("Servidor indisponível. A ativar IA Offline Local.");
+                    isOfflineMode = true;
+                    document.getElementById('offline-badge').style.display = 'block';
+                }
+            });
+        } catch (e) {
+            console.warn("Modo Local/Offline");
+            socket = { on: () => { }, emit: () => { } };
+            isOfflineMode = true;
+            document.getElementById('offline-badge').style.display = 'block';
+        }
         let lastUpdateTime = 0;
+
+        // Executar fallback imediato se Socket IO não carregar atempadamente
+        setTimeout(() => {
+            if (lastUpdateTime === 0 && !isOfflineMode && gameState === 'START') {
+                isOfflineMode = true;
+                document.getElementById('offline-badge').style.display = 'block';
+            }
+        }, 1500);
 
         socket.on('init', (data) => {
             if (data.id) player.id = data.id;
@@ -927,7 +1085,6 @@
                 });
             }
             foods.length = 0; if (data.foods) foods.push(...data.foods);
-            // Só assumimos a config do servidor em propriedades que NÃO são métodos (ignora o nosso getter)
             if (data.config) {
                 Object.keys(data.config).forEach(k => {
                     if (k !== 'SNAKE_INITIAL_RADIUS') GAME_CONFIG[k] = data.config[k];
@@ -943,9 +1100,11 @@
                 });
             }
             updateLeaderboard();
+            lastUpdateTime = Date.now();
         });
 
         socket.on('botsUpdated', (serverBots) => {
+            lastUpdateTime = Date.now();
             serverBots.forEach(sb => {
                 let b = bots.find(x => x.id === sb.id);
                 if (b) {
@@ -1149,9 +1308,67 @@
 
             const lerpFactor = Math.min(1, 0.2 * dt);
 
-            const updateEntityMovement = (ent) => {
+            // MOTOR FÍSICO COM SUPORTE A IA OFFLINE
+            const updateEntityMovement = (ent, isBotOffline = false) => {
                 if (ent.isDead) return;
-                if (ent.targetX !== undefined) {
+
+                if (isBotOffline) {
+                    // Bot em Modo Local -> Corre a IA Completa!
+                    processBotAI(ent, dt);
+
+                    let diff = ent.targetAngle - ent.angle;
+                    while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
+                    ent.angle += diff * 0.1 * dt; // Suavização de IA
+
+                    const moveSpeed = ent.isBoosting ? GAME_CONFIG.SNAKE_BASE_SPEED * GAME_CONFIG.BOOST_SPEED_MULT : GAME_CONFIG.SNAKE_BASE_SPEED;
+                    ent.x += Math.cos(ent.angle) * moveSpeed * dt;
+                    ent.y += Math.sin(ent.angle) * moveSpeed * dt;
+
+                    // Colisão de Parede para o Bot
+                    if (Math.hypot(ent.x - CENTER, ent.y - CENTER) > CENTER - ent.radius * 0.8) {
+                        ent.isDead = true; dropDeathFood(ent);
+                        // Respawn offline bot
+                        const idx = bots.indexOf(ent);
+                        if (idx !== -1) { bots.splice(idx, 1); setTimeout(() => { bots.push(createLocalBot()); }, 500); }
+                        return;
+                    }
+
+                    // Colisões do Bot (contra jogador ou outros bots)
+                    let hit = false;
+                    if (!player.isDead && checkPerfectCollision(ent.x, ent.y, ent.radius, ent.angle, player)) hit = true;
+                    for (let other of bots) {
+                        if (other !== ent && !other.isDead && checkPerfectCollision(ent.x, ent.y, ent.radius, ent.angle, other)) hit = true;
+                    }
+                    if (hit) {
+                        ent.isDead = true; dropDeathFood(ent);
+                        const idx = bots.indexOf(ent);
+                        if (idx !== -1) { bots.splice(idx, 1); setTimeout(() => { bots.push(createLocalBot()); }, 500); }
+                        return;
+                    }
+
+                    // Comer Comida (Local)
+                    for (let i = foods.length - 1; i >= 0; i--) {
+                        const f = foods[i];
+                        if (Math.hypot(ent.x - f.x, ent.y - f.y) < ent.radius + (f.radius || 2)) {
+                            foods.splice(i, 1);
+                            ent.score += f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD;
+                            ent.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH + (ent.score * (GAME_CONFIG.GROWTH_PER_FOOD / GAME_CONFIG.SCORE_PER_FOOD));
+                            if (foods.length < GAME_CONFIG.TOTAL_FOOD) foods.push(spawnFood());
+                        }
+                    }
+
+                    // Histórico (Local)
+                    const pVx = Math.cos(ent.angle), pVy = Math.sin(ent.angle);
+                    ent.distAccum = (ent.distAccum || 0) + moveSpeed * dt;
+                    while (ent.distAccum >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
+                        ent.distAccum -= GAME_CONFIG.SNAKE_HISTORY_STEP;
+                        ent.history.unshift({ x: ent.x - pVx * ent.distAccum, y: ent.y - pVy * ent.distAccum });
+                    }
+                    const targetLen = Math.min(GAME_CONFIG.MAX_HISTORY_LENGTH, Math.floor(ent.length * GAME_CONFIG.SNAKE_HISTORY_SPACING) + 1);
+                    if (ent.history.length > targetLen) ent.history.length = targetLen;
+
+                } else if (ent.targetX !== undefined) {
+                    // Bot ou Inimigo Sincronizado do Servidor -> Lerp
                     const moveSpeed = ent.isBoosting ? GAME_CONFIG.SNAKE_BASE_SPEED * GAME_CONFIG.BOOST_SPEED_MULT : GAME_CONFIG.SNAKE_BASE_SPEED;
                     ent.targetX += Math.cos(ent.targetAngle) * moveSpeed * dt;
                     ent.targetY += Math.sin(ent.targetAngle) * moveSpeed * dt;
@@ -1187,8 +1404,9 @@
                 ent.radius = getEntityRadius(ent.length);
             };
 
-            bots.forEach(updateEntityMovement);
-            Object.values(otherPlayers).forEach(updateEntityMovement);
+            // Diferencia entre processamento Local (IA) e Servidor (Lerp)
+            bots.forEach(b => updateEntityMovement(b, isOfflineMode));
+            Object.values(otherPlayers).forEach(p => updateEntityMovement(p, false));
 
             const isBoosting = isMouseDown && player.length >= GAME_CONFIG.BOOST_MIN_LENGTH;
             let camTargetX = camera.x, camTargetY = camera.y;
@@ -1295,13 +1513,13 @@
                             highScore = player.score; highScoreHomeElement.innerText = Math.floor(highScore);
                             localStorage.setItem('cobraioHighScore', highScore);
                         }
-                        socket.emit('eatFood', f.id);
+                        if (!isOfflineMode) socket.emit('eatFood', f.id);
+                        if (isOfflineMode && foods.length < GAME_CONFIG.TOTAL_FOOD) foods.push(spawnFood());
                     } else if (d < magnet) { f.x += (player.x - f.x) * GAME_CONFIG.MAGNET_STRENGTH; f.y += (player.y - f.y) * GAME_CONFIG.MAGNET_STRENGTH; }
                 }
 
-                const now = Date.now();
-                if (now - lastUpdateTime > 50) {
-                    lastUpdateTime = now;
+                if (!isOfflineMode && Date.now() - lastUpdateTime > 50) {
+                    lastUpdateTime = Date.now();
                     socket.emit('update', { x: player.x, y: player.y, angle: player.angle, score: player.score, length: player.length, radius: player.radius, isBoosting: isBoosting });
                 }
             }
@@ -1626,7 +1844,7 @@
 
         function playerDie() {
             if (player.isDead || gameState === 'GAME_OVER') return;
-            socket.emit('playerDied');
+            if (!isOfflineMode) socket.emit('playerDied');
             player.isDead = true; gameState = 'DYING'; camera.shake = 15;
             setTimeout(() => { gameOver(); }, 2500);
         }
@@ -1688,8 +1906,6 @@
             player.score = 0;
             player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
             player.targetLength = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
-
-            // O RAIO É AGORA CALCULADO DINAMICAMENTE NO INÍCIO PELO GETTER DO DISPOSITIVO
             player.radius = GAME_CONFIG.SNAKE_INITIAL_RADIUS;
 
             player.distAccum = 0;
@@ -1701,7 +1917,14 @@
             mouseX = canvas.width / 2; mouseY = canvas.height / 2; isMouseDown = false;
 
             gameState = 'PLAYING';
-            socket.emit('join', { name: player.name, skinIndex: currentSkinIndex });
+
+            if (isOfflineMode) {
+                // Se offline, garantir a povoação local
+                if (foods.length === 0) for (let i = 0; i < GAME_CONFIG.TOTAL_FOOD; i++) foods.push(spawnFood());
+                if (bots.length === 0) for (let i = 0; i < GAME_CONFIG.NUM_BOTS; i++) bots.push(createLocalBot());
+            } else {
+                socket.emit('join', { name: player.name, skinIndex: currentSkinIndex });
+            }
 
             startScreen.style.display = 'none'; leaderboardContainer.style.display = 'block';
             if (isTouch) document.getElementById('mobile-controls').style.display = 'block';
