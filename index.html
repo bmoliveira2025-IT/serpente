@@ -752,48 +752,79 @@
     <canvas id="gameCanvas"></canvas>
 
     <script>
+        // --- DETEÇÃO DO DISPOSITIVO PARA CONFIGURAÇÕES ESPECÍFICAS ---
+        // Detetamos o ecrã do jogador logo na inicialização para ajustar os gráficos.
+        const getDeviceType = () => {
+            const w = window.innerWidth;
+            const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            if (!isTouch && w > 1024) return 'PC';
+            if (w >= 768 && w <= 1024) return 'TABLET';
+            return 'MOBILE';
+        };
+        const currentDevice = getDeviceType();
+
         // =============================================================
-        // --- BLOCO DE CONFIGURAÇÃO DO JOGO (AJUSTE AQUI) ---
+        // --- BLOCO DE CONFIGURAÇÃO DO JOGO (MASTER CONFIG) ---
         // =============================================================
         const GAME_CONFIG = {
-            WORLD_SIZE: 9000,
-            TOTAL_FOOD: 1500,
+            // 🌍 MUNDO E AMBIENTE
+            WORLD_SIZE: 9000,           // [Geral] Tamanho total do mapa do jogo (em pixels).
+            TOTAL_FOOD: 1500,           // [Geral] Quantidade máxima de "comida normal" espalhada passivamente.
 
-            SNAKE_INITIAL_LENGTH: 30,
-            SNAKE_INITIAL_RADIUS: 12,
-            SNAKE_MAX_RADIUS: 38,
-            SNAKE_HISTORY_STEP: 1,
-            SNAKE_HISTORY_SPACING: 5,
-            SNAKE_BASE_SPEED: 4.0,
+            // 🐍 DIMENSÕES INICIAIS DA COBRA (Dinâmico por Dispositivo)
+            SNAKE_INITIAL_LENGTH: 26,   // [Tamanho] Comprimento inicial base da cobra ao nascer.
 
-            SNAKE_HITBOX_SIZE: 0.75,
-            SNAKE_TURN_SPEED: 0.035,
-            SNAKE_TURN_SPEED_BOOST: 0.015,
+            // Espessura inicial separada por plataforma para melhor visualização:
+            SNAKE_INITIAL_RADIUS_MOBILE: 12, // [Mobile] Cobra fina, ideal para ecrãs de telemóveis.
+            SNAKE_INITIAL_RADIUS_TABLET: 15, // [Tablet] Cobra de espessura intermédia.
+            SNAKE_INITIAL_RADIUS_PC: 18,     // [PC] Cobra mais grossa, ideal para monitores grandes e ratos.
 
-            GROWTH_PER_FOOD: 3.0,
-            SCORE_PER_FOOD: 8,
-            DEATH_GROWTH: 11.25,
-            DEATH_SCORE: 30,
-            WIDTH_GROWTH_FACTOR: 0.18,
-            MAX_HISTORY_LENGTH: 50000,
+            // Obtém o raio inicial correto baseado no dispositivo em que o jogo está a correr:
+            get SNAKE_INITIAL_RADIUS() {
+                if (currentDevice === 'PC') return this.SNAKE_INITIAL_RADIUS_PC;
+                if (currentDevice === 'TABLET') return this.SNAKE_INITIAL_RADIUS_TABLET;
+                return this.SNAKE_INITIAL_RADIUS_MOBILE;
+            },
 
-            MAGNET_STRENGTH: 0.3,
-            MAGNET_RADIUS_MULT: 3.0,
+            SNAKE_MAX_RADIUS: 38,       // [Tamanho] Limite MÁXIMO absoluto de largura (Pára de engordar aos ~50k pontos).
+            WIDTH_GROWTH_FACTOR: 0.18,  // [Tamanho] Velocidade com que a cobra engorda (Curva de crescimento lenta/raiz quadrada).
+            MAX_HISTORY_LENGTH: 50000,  // [Memória] Limite máximo de pontos corporais na memória (Evita lag em cobras gigantes).
 
-            BOOST_SPEED_MULT: 2.0,
-            BOOST_SCORE_LOSS: 2,
-            BOOST_LENGTH_LOSS: 0.75,
-            BOOST_MIN_LENGTH: 40,
-            BOOST_FRAMES_PER_DROP: 2,
+            // ⚙️ FÍSICA E MOVIMENTO
+            SNAKE_HISTORY_STEP: 1,      // [Física] Distância em pixels percorrida antes de guardar um ponto no rasto (Precisão).
+            SNAKE_HISTORY_SPACING: 5,   // [Visual] Espaçamento em pixels entre cada bola que forma o corpo da cobra.
+            SNAKE_BASE_SPEED: 4.0,      // [Física] Velocidade padrão de locomoção (caminhada normal).
+            SNAKE_HITBOX_SIZE: 0.75,    // [Colisão] Tamanho da Hitbox corporal (0.75 = 75% da largura visual total da cobra).
+            SNAKE_TURN_SPEED: 0.035,    // [Movimento] Grau de agilidade de curva na velocidade normal.
+            SNAKE_TURN_SPEED_BOOST: 0.015, // [Movimento] Grau de agilidade de curva ao usar o BOOST (curva mais aberta/difícil).
 
-            CAMERA_BASE_ZOOM: 1.15,
-            CAMERA_MIN_ZOOM: 0.25,
-            ZOOM_SHRINK_RATE: 0.035,
-            CAMERA_LOOK_AHEAD: 2.5,
+            // 🍎 PONTUAÇÃO E CRESCIMENTO
+            GROWTH_PER_FOOD: 3.0,       // [Crescimento] Quanto a cobra CRESCE em comprimento por cada comida normal ingerida.
+            SCORE_PER_FOOD: 8,          // [Pontuação] Quantos pontos ganha por cada comida normal.
+            DEATH_GROWTH: 11.25,        // [Crescimento] Quanto cresce ao comer restos mortais (Massa de outra cobra morta).
+            DEATH_SCORE: 30,            // [Pontuação] Quantos pontos ganha ao comer restos mortais.
 
-            DEATH_FOOD_RADIUS: 3.5,
-            FOOD_GLOW_MULT_NORMAL: 3.5,
-            FOOD_GLOW_MULT_DEATH: 2.0
+            // 🧲 SISTEMA DE IMÃ (Atração de comida)
+            MAGNET_STRENGTH: 0.3,       // [Física] Força da gravidade que puxa a comida para a boca da cobra.
+            MAGNET_RADIUS_MULT: 3.0,    // [Física] Raio magnético (3.0x o tamanho da cabeça da cobra).
+
+            // 🚀 SISTEMA DE BOOST (Corrida)
+            BOOST_SPEED_MULT: 2.0,      // [Boost] Multiplicador de velocidade (ex: 2.0 = o dobro da velocidade).
+            BOOST_SCORE_LOSS: 2,        // [Boost] Quantos pontos o jogador PERDE por frame ao correr.
+            BOOST_LENGTH_LOSS: 0.75,    // [Boost] Quanto comprimento a cobra PERDE por frame ao correr.
+            BOOST_MIN_LENGTH: 40,       // [Boost] Tamanho mínimo obrigatório para ter permissão de correr.
+            BOOST_FRAMES_PER_DROP: 2,   // [Boost] Larga uma bolinha de comida no mapa a cada 'X' frames a correr.
+
+            // 🎥 CÂMERA CINEMÁTICA E VISÃO
+            CAMERA_BASE_ZOOM: 1.15,     // [Câmera] Nível de Zoom IN inicial quando a cobra nasce.
+            CAMERA_MIN_ZOOM: 0.25,      // [Câmera] Nível de Zoom OUT máximo (afastamento total quando está gigante).
+            ZOOM_SHRINK_RATE: 0.035,    // [Câmera] Suavidade com que a câmera se afasta à medida que a cobra cresce.
+            CAMERA_LOOK_AHEAD: 2.5,     // [Câmera] Distância que a câmera antecipa para a frente da cabeça para melhor visão.
+
+            // ✨ ESTÉTICA DA COMIDA E BRILHOS
+            DEATH_FOOD_RADIUS: 3.5,     // [Visual] Tamanho base físico da comida largada por cobras mortas.
+            FOOD_GLOW_MULT_NORMAL: 3.5, // [Visual] Intensidade do brilho (Glow 3D) para comida normal (apenas modo Alta Qualidade).
+            FOOD_GLOW_MULT_DEATH: 2.0   // [Visual] Intensidade do brilho (Glow 3D) para comida de restos mortais.
         };
 
         let CENTER = GAME_CONFIG.WORLD_SIZE / 2;
@@ -896,7 +927,13 @@
                 });
             }
             foods.length = 0; if (data.foods) foods.push(...data.foods);
-            if (data.config) { Object.assign(GAME_CONFIG, data.config); CENTER = GAME_CONFIG.WORLD_SIZE / 2; }
+            // Só assumimos a config do servidor em propriedades que NÃO são métodos (ignora o nosso getter)
+            if (data.config) {
+                Object.keys(data.config).forEach(k => {
+                    if (k !== 'SNAKE_INITIAL_RADIUS') GAME_CONFIG[k] = data.config[k];
+                });
+                CENTER = GAME_CONFIG.WORLD_SIZE / 2;
+            }
             if (data.bots) {
                 bots = data.bots.map(b => {
                     b.targetX = b.x; b.targetY = b.y; b.targetAngle = b.angle;
@@ -1621,6 +1658,8 @@
             player.score = 0;
             player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
             player.targetLength = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
+
+            // O RAIO É AGORA CALCULADO DINAMICAMENTE NO INÍCIO PELO GETTER DO DISPOSITIVO
             player.radius = GAME_CONFIG.SNAKE_INITIAL_RADIUS;
 
             player.distAccum = 0;

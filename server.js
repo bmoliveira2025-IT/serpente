@@ -18,9 +18,17 @@ const GAME_CONFIG = {
     WORLD_SIZE: 9000,                 
     TOTAL_FOOD: 1500,                 
 
-    SNAKE_INITIAL_LENGTH: 30,
-    SNAKE_INITIAL_RADIUS: 12,         // Cobra bem fina, perfeita para mobile e para parecer gigante depois
-    SNAKE_MAX_RADIUS: 38,             // O crescimento de espessura pára aqui (atingido por volta dos 40k-60k pontos)
+    SNAKE_INITIAL_LENGTH: 30,         
+
+    // Espessura inicial separada por plataforma:
+    SNAKE_INITIAL_RADIUS_MOBILE: 12,
+    SNAKE_INITIAL_RADIUS_TABLET: 15,
+    SNAKE_INITIAL_RADIUS_PC: 18,
+
+    // O servidor usa o rádio de PC como padrão para os Bots:
+    get SNAKE_INITIAL_RADIUS() { return this.SNAKE_INITIAL_RADIUS_PC; },
+
+    SNAKE_MAX_RADIUS: 38,             
     SNAKE_HISTORY_STEP: 1,
     SNAKE_HISTORY_SPACING: 5,
     SNAKE_BASE_SPEED: 4.0,
