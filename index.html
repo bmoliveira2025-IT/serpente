@@ -128,7 +128,6 @@
         #start-screen {
             position: absolute;
             inset: 0;
-            /* Fundo Dinâmico Moderno */
             background: linear-gradient(-45deg, #0b0e14, #141c2b, #0b0e14, #0d1e18);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
@@ -398,7 +397,7 @@
             color: rgba(255, 255, 255, 0.5);
             text-align: center;
             max-width: 380px;
-            line-height: 1.5;
+            line-height: 1.6;
             letter-spacing: 0.5px;
         }
 
@@ -723,7 +722,9 @@
         </div>
 
         <div class="desktop-tip">
-            💡 <b>Dica de Visualização:</b> Pressione <span>F11</span> no computador para jogar em Tela Cheia.
+            💡 <b>Dica PRO:</b> Pressione <span>F11</span> para Tela Cheia. Use o <span>Scroll</span> do rato para
+            controlar o Zoom. Pressione <span>TAB</span> para ocultar a interface. Pressione <span>R</span> ou
+            <span>~</span> para redefinir a câmera.
         </div>
     </div>
 
@@ -739,6 +740,15 @@
                     <button class="opt-btn" id="q-low" onclick="setOpt('quality', 'low')">Baixa</button>
                 </div>
             </div>
+
+            <div class="settings-group">
+                <label>Visão Antecipada (Look Ahead)</label>
+                <div class="settings-options">
+                    <button class="opt-btn" id="l-on" onclick="setOpt('lookAhead', 'on')">Ligado</button>
+                    <button class="opt-btn" id="l-off" onclick="setOpt('lookAhead', 'off')">Desligado</button>
+                </div>
+            </div>
+
             <div class="settings-group" id="controls-group" style="display:none;">
                 <label>Tipo de Controlo (Mobile)</label>
                 <div class="settings-options">
@@ -782,19 +792,14 @@
         // --- BLOCO DE CONFIGURAÇÃO DA IA E COMPORTAMENTO (BOTS) ---
         // =============================================================
         const BOT_AI_CONFIG = {
-            // Regras de Comportamento
-            TYPES: ['NATIVE', 'SCRIPT'],     // Native = Normal / Script = Aggressivo, Hacker, Coiler
-            SCRIPT_CHANCE: 0.20,             // 20% dos bots são super avançados/agressivos (Simula os Mods e Tampers)
-
-            // Scanner e Visão
-            VISION_RAY_NATIVE: 400,          // Bots nativos só veem o perigo quando está muito perto
-            VISION_RAY_SCRIPT: 800,          // Bots hackeados conseguem ver a 800px de distância e desviar cedo
-            FOOD_SENSE_RADIUS: 900,          // Raio que o Bot usa para detetar e ir atrás da comida
-
-            // Reações e Habilidades
-            COIL_CHANCE: 0.002,              // Chance de um bot iniciar a manobra de cerco (Coiling)
-            PANIC_BOOST_CHANCE: 0.30,        // Chance de usar o Boost quando foge de um perigo letal
-            FARM_BOOST_CHANCE: 0.50          // Chance de um bot script usar boost para ir roubar Death Food
+            TYPES: ['NATIVE', 'SCRIPT'],
+            SCRIPT_CHANCE: 0.20,
+            VISION_RAY_NATIVE: 400,
+            VISION_RAY_SCRIPT: 800,
+            FOOD_SENSE_RADIUS: 900,
+            COIL_CHANCE: 0.002,
+            PANIC_BOOST_CHANCE: 0.30,
+            FARM_BOOST_CHANCE: 0.50
         };
 
         // =============================================================
@@ -850,31 +855,40 @@
         };
 
         let CENTER = GAME_CONFIG.WORLD_SIZE / 2;
-        let isOfflineMode = false; // Flag ativada se o servidor falhar
+        let isOfflineMode = false;
 
         function getEntityRadius(length) {
             const lenDiff = Math.max(0, length - GAME_CONFIG.SNAKE_INITIAL_LENGTH);
             return Math.min(GAME_CONFIG.SNAKE_MAX_RADIUS, GAME_CONFIG.SNAKE_INITIAL_RADIUS + Math.sqrt(lenDiff) * GAME_CONFIG.WIDTH_GROWTH_FACTOR);
         }
 
-        // --- SISTEMA DE UI & SETTINGS ---
+        // --- SISTEMA DE UI, SETTINGS & MODS ---
         let qualityOpt = localStorage.getItem('cobraioQuality') || 'high';
         let controlOpt = localStorage.getItem('cobraioControl') || 'joystick';
+        let lookAheadOpt = localStorage.getItem('cobraioLookAhead') || 'on';
+
+        // Variáveis de Mod de Câmera (Scroll & HUD)
+        let manualZoomMultiplier = 1.0;
+        let hudVisible = true;
 
         function applySettingsUI() {
             document.getElementById('q-high').classList.toggle('active', qualityOpt === 'high');
             document.getElementById('q-low').classList.toggle('active', qualityOpt === 'low');
-            document.getElementById('c-joystick').classList.toggle('active', controlOpt === 'joystick');
-            document.getElementById('c-touch').classList.toggle('active', controlOpt === 'touch');
+            document.getElementById('l-on').classList.toggle('active', lookAheadOpt === 'on');
+            document.getElementById('l-off').classList.toggle('active', lookAheadOpt === 'off');
+
             const jBase = document.getElementById('joystick-base');
             if (isTouch) {
                 document.getElementById('controls-group').style.display = 'block';
+                document.getElementById('c-joystick').classList.toggle('active', controlOpt === 'joystick');
+                document.getElementById('c-touch').classList.toggle('active', controlOpt === 'touch');
                 jBase.style.display = controlOpt === 'joystick' ? 'block' : 'none';
             }
         }
         function setOpt(type, val) {
             if (type === 'quality') { qualityOpt = val; localStorage.setItem('cobraioQuality', val); }
             if (type === 'control') { controlOpt = val; localStorage.setItem('cobraioControl', val); }
+            if (type === 'lookAhead') { lookAheadOpt = val; localStorage.setItem('cobraioLookAhead', val); }
             applySettingsUI();
         }
         document.getElementById('settings-open-btn').onclick = () => { applySettingsUI(); document.getElementById('settings-modal').style.display = 'flex'; };
@@ -953,21 +967,18 @@
             };
         }
 
-        // MOTOR DE INTELIGÊNCIA ARTIFICIAL (Nativo vs Script)
         function processBotAI(bot, dt) {
             if (bot.isDead) return;
 
             bot.aiTimer = (bot.aiTimer || 0) - dt;
-            bot.isBoosting = false; // Reset padrão
+            bot.isBoosting = false;
 
-            // 1. Scanner de Perigo (Radar Raycast à frente da cabeça)
             let danger = false;
             let dangerAngle = 0;
             const rayDist = bot.botType === 'SCRIPT' ? BOT_AI_CONFIG.VISION_RAY_SCRIPT : BOT_AI_CONFIG.VISION_RAY_NATIVE;
             const headX = bot.x + Math.cos(bot.angle) * rayDist;
             const headY = bot.y + Math.sin(bot.angle) * rayDist;
 
-            // O bot checa apenas o jogador para performance em offline mode
             if (!player.isDead) {
                 let distToPlayer = Math.hypot(headX - player.x, headY - player.y);
                 if (distToPlayer < player.radius * 2 + 50) {
@@ -976,15 +987,12 @@
                 }
             }
 
-            // Ações de Bot Script vs Bot Nativo
             if (danger) {
                 if (bot.botType === 'SCRIPT' && bot.length > player.length * 1.5) {
-                    // Bot Hacker Agressivo: Em vez de fugir, tenta cercar se for muito maior! (Coiling)
                     bot.aiState = 'COIL';
                     bot.coilDir = Math.sign(Math.sin(bot.angle - dangerAngle)) || 1;
                     bot.aiTimer = 100;
                 } else {
-                    // Bot Nativo ou Menor: Foge (Pânico)
                     bot.targetAngle = dangerAngle + Math.PI + (Math.random() - 0.5);
                     if (Math.random() < BOT_AI_CONFIG.PANIC_BOOST_CHANCE && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) {
                         bot.isBoosting = true;
@@ -995,10 +1003,9 @@
                 return;
             }
 
-            // Manobra de Cerco Circular (Coiling Aleatório para proteção de rasto)
             if (bot.botType === 'SCRIPT' && bot.length > 100 && Math.random() < BOT_AI_CONFIG.COIL_CHANCE && bot.aiState !== 'COIL') {
                 bot.aiState = 'COIL';
-                bot.aiTimer = 200; // Tempo a fazer o círculo
+                bot.aiTimer = 200;
                 bot.coilDir = Math.random() < 0.5 ? 1 : -1;
             }
 
@@ -1008,7 +1015,6 @@
                 return;
             }
 
-            // Farming: Procura de Comida
             if (bot.aiTimer <= 0) {
                 let bestFood = null;
                 let bestScore = -1;
@@ -1016,7 +1022,6 @@
                 for (let f of foods) {
                     let dist = Math.hypot(bot.x - f.x, bot.y - f.y);
                     if (dist < BOT_AI_CONFIG.FOOD_SENSE_RADIUS) {
-                        // Prioriza restos mortais 10x mais que comida normal
                         let value = f.isDeathFood ? 50 : 1;
                         let score = value / Math.max(1, dist);
                         if (score > bestScore) {
@@ -1030,13 +1035,12 @@
                     bot.targetAngle = Math.atan2(bestFood.y - bot.y, bestFood.x - bot.x);
                     bot.aiState = 'FARMING';
 
-                    // Bots de script ativam corrida para roubar comida morta
                     if (bot.botType === 'SCRIPT' && bestFood.isDeathFood && Math.random() < BOT_AI_CONFIG.FARM_BOOST_CHANCE && bot.length > GAME_CONFIG.BOOST_MIN_LENGTH) {
                         bot.isBoosting = true;
                     }
                 } else {
                     bot.aiState = 'WANDER';
-                    bot.targetAngle += (Math.random() - 0.5) * 1.5; // Movimento suave e ligeiramente curvo (Nativo)
+                    bot.targetAngle += (Math.random() - 0.5) * 1.5;
                 }
                 bot.aiTimer = 15 + Math.random() * 20;
             }
@@ -1046,7 +1050,6 @@
         let socket;
         try {
             socket = io();
-            // Deteção de Servidor Fallback
             socket.on('connect_error', () => {
                 if (!isOfflineMode && gameState === 'START') {
                     console.log("Servidor indisponível. A ativar IA Offline Local.");
@@ -1062,7 +1065,6 @@
         }
         let lastUpdateTime = 0;
 
-        // Executar fallback imediato se Socket IO não carregar atempadamente
         setTimeout(() => {
             if (lastUpdateTime === 0 && !isOfflineMode && gameState === 'START') {
                 isOfflineMode = true;
@@ -1174,7 +1176,6 @@
             sparks.push({ x, y, vx: -Math.cos(angle) * (Math.random() * 3 + 1) + (Math.random() - 0.5) * 2, vy: -Math.sin(angle) * (Math.random() * 3 + 1) + (Math.random() - 0.5) * 2, life: 1, color: sparkColors[Math.floor(Math.random() * sparkColors.length)] });
         }
 
-        // --- SISTEMAS DE SPAWN E COLISÃO ---
         function getSafePosition() {
             const safeDist = GAME_CONFIG.SPAWN_SAFE_RADIUS;
             for (let attempts = 0; attempts < 100; attempts++) {
@@ -1231,8 +1232,9 @@
             }
         };
 
-        // --- INPUT & RESIZE ---
+        // --- INPUT, RESIZE & MOD CONTROLS ---
         let mouseX = 0, mouseY = 0, isMouseDown = false;
+
         window.addEventListener('resize', resize);
         function resize() {
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -1244,6 +1246,29 @@
         window.addEventListener('mousemove', (e) => { if (!isTouch) { mouseX = e.clientX; mouseY = e.clientY; } });
         window.addEventListener('mousedown', () => { if (!isTouch) isMouseDown = true; });
         window.addEventListener('mouseup', () => { if (!isTouch) isMouseDown = false; });
+
+        // MODS DE TECLADO / SCROLL (Apenas PC)
+        window.addEventListener('wheel', (e) => {
+            if (gameState === 'PLAYING' && currentDevice === 'PC') {
+                if (e.deltaY > 0) manualZoomMultiplier *= 0.9;
+                else manualZoomMultiplier *= 1.1;
+                manualZoomMultiplier = Math.max(0.4, Math.min(manualZoomMultiplier, 2.5));
+            }
+        }, { passive: false });
+
+        window.addEventListener('keydown', (e) => {
+            if (gameState === 'PLAYING') {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    hudVisible = !hudVisible;
+                    document.getElementById('leaderboard').style.display = hudVisible ? 'block' : 'none';
+                    document.getElementById('mobile-controls').style.display = (hudVisible && isTouch) ? 'block' : 'none';
+                }
+                if (e.key === '~' || e.key === '´' || e.key === '`' || e.key.toLowerCase() === 'r') {
+                    manualZoomMultiplier = 1.0;
+                }
+            }
+        });
 
         const joystickBase = document.getElementById('joystick-base'); const joystickStick = document.getElementById('joystick-stick');
         let joystickTouchId = null, joyX = 0, joyY = 0;
@@ -1308,32 +1333,26 @@
 
             const lerpFactor = Math.min(1, 0.2 * dt);
 
-            // MOTOR FÍSICO COM SUPORTE A IA OFFLINE
             const updateEntityMovement = (ent, isBotOffline = false) => {
                 if (ent.isDead) return;
 
                 if (isBotOffline) {
-                    // Bot em Modo Local -> Corre a IA Completa!
                     processBotAI(ent, dt);
-
                     let diff = ent.targetAngle - ent.angle;
                     while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                    ent.angle += diff * 0.1 * dt; // Suavização de IA
+                    ent.angle += diff * 0.1 * dt;
 
                     const moveSpeed = ent.isBoosting ? GAME_CONFIG.SNAKE_BASE_SPEED * GAME_CONFIG.BOOST_SPEED_MULT : GAME_CONFIG.SNAKE_BASE_SPEED;
                     ent.x += Math.cos(ent.angle) * moveSpeed * dt;
                     ent.y += Math.sin(ent.angle) * moveSpeed * dt;
 
-                    // Colisão de Parede para o Bot
                     if (Math.hypot(ent.x - CENTER, ent.y - CENTER) > CENTER - ent.radius * 0.8) {
                         ent.isDead = true; dropDeathFood(ent);
-                        // Respawn offline bot
                         const idx = bots.indexOf(ent);
                         if (idx !== -1) { bots.splice(idx, 1); setTimeout(() => { bots.push(createLocalBot()); }, 500); }
                         return;
                     }
 
-                    // Colisões do Bot (contra jogador ou outros bots)
                     let hit = false;
                     if (!player.isDead && checkPerfectCollision(ent.x, ent.y, ent.radius, ent.angle, player)) hit = true;
                     for (let other of bots) {
@@ -1346,7 +1365,6 @@
                         return;
                     }
 
-                    // Comer Comida (Local)
                     for (let i = foods.length - 1; i >= 0; i--) {
                         const f = foods[i];
                         if (Math.hypot(ent.x - f.x, ent.y - f.y) < ent.radius + (f.radius || 2)) {
@@ -1357,7 +1375,6 @@
                         }
                     }
 
-                    // Histórico (Local)
                     const pVx = Math.cos(ent.angle), pVy = Math.sin(ent.angle);
                     ent.distAccum = (ent.distAccum || 0) + moveSpeed * dt;
                     while (ent.distAccum >= GAME_CONFIG.SNAKE_HISTORY_STEP) {
@@ -1368,7 +1385,6 @@
                     if (ent.history.length > targetLen) ent.history.length = targetLen;
 
                 } else if (ent.targetX !== undefined) {
-                    // Bot ou Inimigo Sincronizado do Servidor -> Lerp
                     const moveSpeed = ent.isBoosting ? GAME_CONFIG.SNAKE_BASE_SPEED * GAME_CONFIG.BOOST_SPEED_MULT : GAME_CONFIG.SNAKE_BASE_SPEED;
                     ent.targetX += Math.cos(ent.targetAngle) * moveSpeed * dt;
                     ent.targetY += Math.sin(ent.targetAngle) * moveSpeed * dt;
@@ -1404,19 +1420,21 @@
                 ent.radius = getEntityRadius(ent.length);
             };
 
-            // Diferencia entre processamento Local (IA) e Servidor (Lerp)
             bots.forEach(b => updateEntityMovement(b, isOfflineMode));
             Object.values(otherPlayers).forEach(p => updateEntityMovement(p, false));
 
             const isBoosting = isMouseDown && player.length >= GAME_CONFIG.BOOST_MIN_LENGTH;
             let camTargetX = camera.x, camTargetY = camera.y;
 
-            // --- LÓGICA DO JOGADOR ---
+            // --- LÓGICA DO JOGADOR E CÂMERA MODDED ---
             if (!player.isDead) {
                 player.radius = getEntityRadius(player.length);
 
+                // Cálculo Dinâmico de Zoom com suporte ao Mod de Rato
                 const zoomFactor = 1 + Math.sqrt(Math.max(0, player.length - GAME_CONFIG.SNAKE_INITIAL_LENGTH)) * GAME_CONFIG.ZOOM_SHRINK_RATE;
-                const targetZoom = Math.max(GAME_CONFIG.CAMERA_MIN_ZOOM, GAME_CONFIG.CAMERA_BASE_ZOOM / zoomFactor - (isBoosting ? 0.08 : 0));
+                const autoZoom = Math.max(GAME_CONFIG.CAMERA_MIN_ZOOM, GAME_CONFIG.CAMERA_BASE_ZOOM / zoomFactor - (isBoosting ? 0.08 : 0));
+
+                const targetZoom = autoZoom * manualZoomMultiplier;
                 camera.zoom += (targetZoom - camera.zoom) * 0.04 * dt;
 
                 player.length += (player.targetLength - player.length) * 0.1 * dt;
@@ -1463,11 +1481,9 @@
                 if (!diedThisFrame) {
                     const enemies = [...bots, ...Object.values(otherPlayers)];
                     for (let e of enemies) {
-                        // Verifica se BATEU no inimigo
                         if (!e.isDead && checkPerfectCollision(player.x, player.y, player.radius, player.angle, e)) {
                             dropDeathFood(player); playerDie(); diedThisFrame = true; break;
                         }
-                        // CORREÇÃO 3: Feedback Imediato! Verifica se o Inimigo BATEU em nós
                         if (!e.isDead && checkPerfectCollision(e.x, e.y, e.radius, e.angle, player)) {
                             e.isDead = true;
                             dropDeathFood(e);
@@ -1484,7 +1500,11 @@
                     }
                     player.history.length = Math.min(GAME_CONFIG.MAX_HISTORY_LENGTH, Math.floor(player.length * player.historySpacing) + 1);
 
-                    let lookDist = player.radius * GAME_CONFIG.CAMERA_LOOK_AHEAD * (isBoosting ? 1.8 : 1.0);
+                    // Configuração de Look Ahead Inteligente
+                    let lookDist = 0;
+                    if (lookAheadOpt === 'on') {
+                        lookDist = player.radius * GAME_CONFIG.CAMERA_LOOK_AHEAD * (isBoosting ? 1.8 : 1.0);
+                    }
                     camTargetX = player.x + Math.cos(player.angle) * lookDist;
                     camTargetY = player.y + Math.sin(player.angle) * lookDist;
                 } else {
@@ -1504,7 +1524,6 @@
                         foods.splice(i, 1);
                         spawnParticles(f.x, f.y, f.color, f.isDeathFood ? 15 : 8);
 
-                        // Atualiza com base em se a comida é de Boost, de Morte ou Normal
                         let pts = f.isBoostFood ? f.scoreValue : (f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD);
                         let growth = f.isBoostFood ? f.growthValue : (f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD);
 
@@ -1574,7 +1593,6 @@
             context.save(); context.lineCap = 'round'; context.lineJoin = 'round';
             if (isHigh && isBoosting) { context.shadowBlur = 10; context.shadowColor = activeSkin.getBodyColor(false, 0, segments)[0]; }
 
-            // Borda levemente mais apertada para o look "pill-shaped"
             context.lineWidth = (radius * 2) + 4;
             context.strokeStyle = '#000000';
             context.beginPath(); context.moveTo(entity.x, entity.y);
@@ -1607,28 +1625,23 @@
                 context.stroke(); context.restore();
             }
 
-            // Olhos Redesenhados (Com borda e reflexo estilo a imagem)
             if (activeSkin.isCyclops) {
                 const distOffset = 0.4;
                 const ex = entity.x + Math.cos(entity.angle) * radius * distOffset;
                 const ey = entity.y + Math.sin(entity.angle) * radius * distOffset;
-                const eR = radius * 0.65; // Olho maior
+                const eR = radius * 0.65;
 
-                // Contorno escuro do olho
                 context.fillStyle = '#000';
                 context.beginPath(); context.arc(ex, ey, eR + 1.5, 0, Math.PI * 2); context.fill();
-                // Branco do olho
                 context.fillStyle = '#fff';
                 context.beginPath(); context.arc(ex, ey, eR, 0, Math.PI * 2); context.fill();
 
-                // Pupila colorida
                 const pR = eR * 0.5;
                 const px = ex + Math.cos(entity.angle) * pR * 0.3;
                 const py = ey + Math.sin(entity.angle) * pR * 0.3;
                 context.fillStyle = activeSkin.eyeColor || '#ffff00';
                 context.beginPath(); context.arc(px, py, pR, 0, Math.PI * 2); context.fill();
 
-                // Brilho do olho (Specular highlight)
                 if (isHigh) {
                     context.fillStyle = '#fff';
                     context.beginPath(); context.arc(px - pR * 0.3, py - pR * 0.3, pR * 0.3, 0, Math.PI * 2); context.fill();
@@ -1639,18 +1652,14 @@
                     const ex = entity.x + Math.cos(a) * radius * distOffset, ey = entity.y + Math.sin(a) * radius * distOffset;
                     const eR = radius * 0.42;
 
-                    // Contorno do olho
                     context.fillStyle = '#000';
                     context.beginPath(); context.arc(ex, ey, eR + 1.5, 0, Math.PI * 2); context.fill();
 
-                    // Branco do olho
                     context.fillStyle = '#fff'; context.beginPath(); context.arc(ex, ey, eR, 0, Math.PI * 2); context.fill();
 
-                    // Pupila
                     const pR = eR * 0.55, px = ex + Math.cos(entity.angle) * pR * 0.4, py = ey + Math.sin(entity.angle) * pR * 0.4;
                     context.fillStyle = activeSkin.eyeColor || '#000'; context.beginPath(); context.arc(px, py, pR, 0, Math.PI * 2); context.fill();
 
-                    // Brilho da pupila
                     if (isHigh) {
                         context.fillStyle = '#fff'; context.beginPath(); context.arc(px - pR * 0.3, py - pR * 0.3, pR * 0.3, 0, Math.PI * 2); context.fill();
                     }
@@ -1671,7 +1680,7 @@
 
         // --- DRAW LOOP (RENDERIZAÇÃO) ---
         function draw() {
-            ctx.fillStyle = '#050914'; // Fundo oceânico muito mais escuro (gap do mosaico)
+            ctx.fillStyle = '#050914';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             camera.shake *= 0.85; if (camera.shake < 0.5) camera.shake = 0;
@@ -1687,16 +1696,15 @@
             if (camera.zoom < 0.6) bgLod = 2;
             if (camera.zoom < 0.35) bgLod = 3;
 
-            // Fundo Mosaico Hexagonal MUITO MAIS ESPAÇADO
             const r = 40 * bgLod;
             const w = Math.sqrt(3) * r;
             const h = 2 * r;
             const offY = h * 0.75;
-            const hexRadius = r * 0.72; // Raio menor cria GAPS LARGOS pretos entre eles
+            const hexRadius = r * 0.72;
             const vW = canvas.width / camera.zoom, vH = canvas.height / camera.zoom;
 
-            ctx.fillStyle = '#263a66'; // Cor azul dos hexágonos idêntica à foto
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'; // Sombra preta densa para o efeito 3D
+            ctx.fillStyle = '#263a66';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
             ctx.shadowBlur = 10 * bgLod;
             ctx.shadowOffsetY = 4 * bgLod;
 
@@ -1712,9 +1720,8 @@
                     ctx.closePath();
                 }
             }
-            ctx.fill(); // Sem stroke, a sombra gere o contraste todo!
+            ctx.fill();
 
-            // Reset sombras para não aplicar nos próximos objetos
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
             ctx.shadowOffsetY = 0;
@@ -1729,12 +1736,10 @@
             const tTime = Date.now() / 1000;
             const veryZoomedOut = camera.zoom < 0.4;
 
-            // --- NOVA RENDERIZAÇÃO DA COMIDA (3D Glossy sem Lag) ---
             foods.forEach(f => {
                 if (f.x < camera.x - vW / 2 - 30 || f.x > camera.x + vW / 2 + 30 || f.y < camera.y - vH / 2 - 30 || f.y > camera.y + vH / 2 + 30) return;
                 const phase = f.phase || 0;
 
-                // Base visual mais gordinha
                 const baseR = (f.radius || 3) * 1.5;
                 const rAnim = f.isDeathFood ? baseR * 1.2 : baseR + Math.sin(Date.now() / 150 + phase) * 1.2;
 
@@ -1742,20 +1747,16 @@
                 const floatY = f.isDeathFood ? 0 : Math.cos(tTime * 2.0 + phase) * 5;
                 const dX = f.x + floatX, dY = f.y + floatY;
 
-                // Sombra 3D
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
                 ctx.beginPath(); ctx.arc(dX, dY + rAnim * 0.15, rAnim * 1.15, 0, Math.PI * 2); ctx.fill();
 
-                // Cor principal
                 ctx.fillStyle = f.color;
                 ctx.beginPath(); ctx.arc(dX, dY, rAnim, 0, Math.PI * 2); ctx.fill();
 
                 if (isHigh && !veryZoomedOut) {
-                    // Reflexo glossy (topo esquerdo)
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
                     ctx.beginPath(); ctx.arc(dX - rAnim * 0.3, dY - rAnim * 0.3, rAnim * 0.35, 0, Math.PI * 2); ctx.fill();
 
-                    // Sub-brilho de volume
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
                     ctx.beginPath(); ctx.arc(dX + rAnim * 0.3, dY + rAnim * 0.3, rAnim * 0.2, 0, Math.PI * 2); ctx.fill();
                 }
@@ -1773,29 +1774,37 @@
 
             if (!player.isDead) {
                 drawSnake(ctx, player, skins[currentSkinIndex % skins.length], isBoostingAtivo);
-                ctx.font = 'bold 16px Outfit, sans-serif'; ctx.textAlign = 'center';
-                ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillText(player.name, player.x, player.y - player.radius - 15);
+                // Apenas mostrar nome próprio se HUD estiver visível
+                if (hudVisible) {
+                    ctx.font = 'bold 16px Outfit, sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillText(player.name, player.x, player.y - player.radius - 15);
+                }
             }
 
-            ctx.font = 'bold 16px Outfit, sans-serif'; ctx.textAlign = 'center';
-            bots.forEach(bot => {
-                if (!bot.isDead && bot.x > camera.x - vW / 2 && bot.x < camera.x + vW / 2 && bot.y > camera.y - vH / 2 && bot.y < camera.y + vH / 2) {
-                    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText(bot.name, bot.x, bot.y - bot.radius - 15);
-                }
-            });
+            if (hudVisible) {
+                ctx.font = 'bold 16px Outfit, sans-serif'; ctx.textAlign = 'center';
+                bots.forEach(bot => {
+                    if (!bot.isDead && bot.x > camera.x - vW / 2 && bot.x < camera.x + vW / 2 && bot.y > camera.y - vH / 2 && bot.y < camera.y + vH / 2) {
+                        ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText(bot.name, bot.x, bot.y - bot.radius - 15);
+                    }
+                });
+            }
 
             if (!veryZoomedOut) {
                 particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life); ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); });
                 ctx.globalAlpha = 1.0;
-                ctx.font = '900 14px Outfit, sans-serif';
-                floatingTexts.forEach(ft => { ctx.fillStyle = ft.color; ctx.globalAlpha = Math.max(0, ft.life); ctx.fillText(ft.text, ft.x, ft.y); });
+
+                if (hudVisible) {
+                    ctx.font = '900 14px Outfit, sans-serif';
+                    floatingTexts.forEach(ft => { ctx.fillStyle = ft.color; ctx.globalAlpha = Math.max(0, ft.life); ctx.fillText(ft.text, ft.x, ft.y); });
+                }
                 ctx.globalAlpha = 1.0;
             }
 
             ctx.restore();
 
-            // Minimapa transparente ao estilo do screenshot (Canto Superior Esquerdo)
-            if (gameState === 'PLAYING') {
+            // Renderizar Minimapa apenas se o HUD estiver visível
+            if (gameState === 'PLAYING' && hudVisible) {
                 const mmR = isTouch ? 45 : 60;
                 const safeAreaX = 15, safeAreaY = 15;
                 const mmX = safeAreaX + mmR, mmY = safeAreaY + mmR;
@@ -1805,7 +1814,6 @@
                 ctx.strokeStyle = 'rgba(255,255,255,0.2)';
                 ctx.lineWidth = 2; ctx.stroke();
 
-                // Grelha decorativa interior do minimapa
                 ctx.save();
                 ctx.clip();
                 ctx.beginPath();
@@ -1847,12 +1855,11 @@
 
         function playerDie() {
             if (player.isDead || gameState === 'GAME_OVER') return;
-            socket.emit('playerDied');
+            if (!isOfflineMode) socket.emit('playerDied');
             player.isDead = true; gameState = 'DYING'; camera.shake = 15;
             setTimeout(() => { gameOver(); }, 2500);
         }
 
-        // --- SISTEMA DA PRÉ-VISUALIZAÇÃO AAA ---
         const pCanvas_ = document.getElementById('preview-canvas');
         const pCtx_ = pCanvas_.getContext('2d');
         const pSnake = { x: 120, y: 60, angle: 0, radius: 14, length: 25, history: [], historySpacing: GAME_CONFIG.SNAKE_HISTORY_SPACING, isTop1: false };
@@ -1909,30 +1916,31 @@
             player.score = 0;
             player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
             player.targetLength = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
-
-            // O RAIO É AGORA CALCULADO DINAMICAMENTE NO INÍCIO PELO GETTER DO DISPOSITIVO
             player.radius = GAME_CONFIG.SNAKE_INITIAL_RADIUS;
 
             player.distAccum = 0;
             player.isDead = false;
             player.history = Array.from({ length: GAME_CONFIG.SNAKE_INITIAL_LENGTH * GAME_CONFIG.SNAKE_HISTORY_SPACING + 1 }, () => ({ x: player.x, y: player.y }));
 
+            // Reset da Câmera no Início
             camera.x = player.x; camera.y = player.y; camera.shake = 0;
+            manualZoomMultiplier = 1.0;
+
             foods.length = 0; particles.length = 0; floatingTexts.length = 0; sparks.length = 0;
             mouseX = canvas.width / 2; mouseY = canvas.height / 2; isMouseDown = false;
 
             gameState = 'PLAYING';
 
             if (isOfflineMode) {
-                // Se offline, garantir a povoação local
                 if (foods.length === 0) for (let i = 0; i < GAME_CONFIG.TOTAL_FOOD; i++) foods.push(spawnFood());
                 if (bots.length === 0) for (let i = 0; i < GAME_CONFIG.NUM_BOTS; i++) bots.push(createLocalBot());
             } else {
                 socket.emit('join', { name: player.name, skinIndex: currentSkinIndex });
             }
 
-            startScreen.style.display = 'none'; leaderboardContainer.style.display = 'block';
-            if (isTouch) document.getElementById('mobile-controls').style.display = 'block';
+            startScreen.style.display = 'none';
+            if (hudVisible) leaderboardContainer.style.display = 'block';
+            if (isTouch && hudVisible) document.getElementById('mobile-controls').style.display = 'block';
             lastLoopTime = performance.now();
             updateLeaderboard();
         };
