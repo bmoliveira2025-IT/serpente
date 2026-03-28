@@ -29,8 +29,8 @@ const BOT_AI_CONFIG = {
 // --- CONFIGURAÇÕES DO JOGO (Sincronizadas com o Front-end) ---
 // =================================================================
 const GAME_CONFIG = {
-    WORLD_SIZE: 9000,
-    TOTAL_FOOD: 2000,
+    WORLD_SIZE: 6000,
+    TOTAL_FOOD: 1200,
 
     SNAKE_INITIAL_LENGTH: 30,
     SNAKE_INITIAL_RADIUS: 18, // Fallback para servidor
@@ -43,17 +43,18 @@ const GAME_CONFIG = {
     SNAKE_TURN_SPEED: 0.035,
     SNAKE_TURN_SPEED_BOOST: 0.015,
 
-    GROWTH_PER_FOOD: 1.5,
-    SCORE_PER_FOOD: 8,
-    DEATH_GROWTH: 5.625,
-    DEATH_SCORE: 30,
+    // BALANÇO v2.4 (Crescimento mais lento e estratégico)
+    GROWTH_PER_FOOD: 0.8,
+    SCORE_PER_FOOD: 5,
+    DEATH_GROWTH: 3.2,
+    DEATH_SCORE: 20,
 
     WIDTH_GROWTH_FACTOR: 0.15,
     MAX_HISTORY_LENGTH: 50000,
 
     BOOST_SPEED_MULT: 2.0,
     BOOST_SCORE_LOSS: 2,
-    BOOST_LENGTH_LOSS: 0.375,
+    BOOST_LENGTH_LOSS: 0.32,
     BOOST_MIN_LENGTH: 40,
     BOOST_FRAMES_PER_DROP: 2,
 
@@ -61,7 +62,7 @@ const GAME_CONFIG = {
     MAGNET_RADIUS_MULT: 3.0,
 
     NUM_BOTS: 30,
-    SPAWN_SAFE_RADIUS: 2500,
+    SPAWN_SAFE_RADIUS: 1000,
     BOT_VISION_RADIUS: 1500,
 
     SERVER_TICK_RATE: 25,
@@ -69,7 +70,7 @@ const GAME_CONFIG = {
 
     // ECOSSISTEMA DE COMIDA
     FIREFLY_SCORE: 75,
-    DEATH_FOOD_RADIUS: 5.0,
+    DEATH_FOOD_RADIUS: 6.0,
     DEATH_DROP_PERCENTAGE: 0.22
 };
 
@@ -100,29 +101,30 @@ function spawnFood(type = 'NORMAL', srcX, srcY, customScore = 0) {
 
     if (type === 'NORMAL' || type === 'FIREFLY') {
         const angle = Math.random() * Math.PI * 2;
-        // Elevado ao quadrado (2) para forçar uma densidade muito maior no centro da arena
-        const r = Math.pow(Math.random(), 2) * (CENTER - 50);
+        // Exponente 0.6 para espalhar os orbes por toda a arena (Paridade v2.4)
+        const r = Math.pow(Math.random(), 0.6) * (CENTER - 50);
         x = CENTER + Math.cos(angle) * r;
         y = CENTER + Math.sin(angle) * r;
     }
 
-    let radius = 2;
+    let radius = 3.5 + Math.random() * 2; // Bolas base maiores e gordinhas (Era 2)
     let scoreValue = GAME_CONFIG.SCORE_PER_FOOD;
     let growthValue = GAME_CONFIG.GROWTH_PER_FOOD;
 
     if (type === 'FIREFLY') {
-        radius = 6 + Math.random() * 2;
+        radius = 8 + Math.random() * 3; // Super orbes voadoras
         scoreValue = GAME_CONFIG.FIREFLY_SCORE + (Math.random() * 25);
         growthValue = scoreValue * (GAME_CONFIG.GROWTH_PER_FOOD / GAME_CONFIG.SCORE_PER_FOOD);
     } else if (type === 'DEATH') {
-        radius = GAME_CONFIG.DEATH_FOOD_RADIUS + Math.random() * 2.5;
+        radius = GAME_CONFIG.DEATH_FOOD_RADIUS + Math.random() * 3.5;
         scoreValue = customScore;
         growthValue = customScore * (GAME_CONFIG.GROWTH_PER_FOOD / GAME_CONFIG.SCORE_PER_FOOD);
     } else if (type === 'BOOST') {
-        radius = 2.5;
+        radius = 3.0;
         scoreValue = GAME_CONFIG.BOOST_SCORE_LOSS;
         growthValue = GAME_CONFIG.BOOST_LENGTH_LOSS;
     }
+
 
     return {
         id: Math.random().toString(36).substr(2, 9),
