@@ -912,7 +912,7 @@
         let camera = { x: CENTER, y: CENTER, zoom: GAME_CONFIG.CAMERA_BASE_ZOOM, shake: 0 };
         const neonColors = ['#ff0055', '#00ffaa', '#00ddff', '#ffdd00', '#ff6600', '#aa00ff', '#e0e0ff', '#ff00aa'];
 
-        const particles = []; const floatingTexts = []; const sparks = []; const foods = []; let bots = []; const otherPlayers = {};
+        const sparks = []; const foods = []; let bots = []; const otherPlayers = {};
 
         const player = {
             id: null, x: CENTER, y: CENTER, angle: 0, speed: GAME_CONFIG.SNAKE_BASE_SPEED,
@@ -1157,22 +1157,12 @@
         socket.on('foodEaten', (data) => {
             const index = foods.findIndex(f => f && f.id === data.foodId);
             if (index !== -1) {
-                const f = foods[index];
-                if (f) spawnParticles(f.x, f.y, f.color, f.type === 'DEATH' ? 15 : 8);
                 foods.splice(index, 1);
             }
             if (data.newFood) foods.push(data.newFood);
         });
 
         // --- SISTEMAS DE EFEITOS (VFX) ---
-        function spawnParticles(x, y, color, amount = 8) {
-            if (qualityOpt === 'low') return;
-            for (let i = 0; i < amount; i++) {
-                const speed = Math.random() * 6 + 2, angle = Math.random() * Math.PI * 2;
-                particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1, color });
-            }
-        }
-        function spawnFloatingText(x, y, text, color) { floatingTexts.push({ x, y, text, color, life: 1, vy: -1.5 }); }
         function spawnSpark(x, y, angle) {
             if (qualityOpt === 'low') return;
             const sparkColors = ['#ffffff', '#00ddff', '#aaddff'];
@@ -1390,8 +1380,6 @@
             if (dt > 5) dt = 1;
             lastLoopTime = nowTime;
 
-            for (let i = particles.length - 1; i >= 0; i--) { let p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.03; if (p.life <= 0) particles.splice(i, 1); }
-            for (let i = floatingTexts.length - 1; i >= 0; i--) { let ft = floatingTexts[i]; ft.y += ft.vy; ft.life -= 0.02; if (ft.life <= 0) floatingTexts.splice(i, 1); }
             for (let i = sparks.length - 1; i >= 0; i--) { let s = sparks[i]; s.x += s.vx; s.y += s.vy; s.life -= 0.05; if (s.life <= 0) sparks.splice(i, 1); }
 
             const lerpFactor = Math.min(1, 0.2 * dt);
@@ -1642,12 +1630,10 @@
                     const f = foods[i], d = Math.sqrt((player.x - f.x) ** 2 + (player.y - f.y) ** 2);
                     if (d < player.radius + (f.radius || 3)) {
                         foods.splice(i, 1);
-                        spawnParticles(f.x, f.y, f.color, f.type === 'DEATH' ? 15 : 8);
 
                         let pts = f.scoreValue;
                         let growth = f.growthValue;
 
-                        spawnFloatingText(f.x, f.y, `+${Math.round(pts)}`, f.color);
                         player.targetLength += growth;
                         player.score += pts;
 
@@ -1977,17 +1963,6 @@
                 });
             }
 
-            if (!veryZoomedOut) {
-                particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life); ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); });
-                ctx.globalAlpha = 1.0;
-
-                if (hudVisible) {
-                    ctx.font = '900 14px Outfit, sans-serif';
-                    floatingTexts.forEach(ft => { ctx.fillStyle = ft.color; ctx.globalAlpha = Math.max(0, ft.life); ctx.fillText(ft.text, ft.x, ft.y); });
-                }
-                ctx.globalAlpha = 1.0;
-            }
-
             ctx.restore();
 
             if (gameState === 'PLAYING' && hudVisible) {
@@ -2115,7 +2090,7 @@
             camera.x = player.x; camera.y = player.y; camera.shake = 0;
             manualZoomMultiplier = 1.0;
 
-            foods.length = 0; particles.length = 0; floatingTexts.length = 0; sparks.length = 0;
+            foods.length = 0; sparks.length = 0;
             mouseX = canvas.width / 2; mouseY = canvas.height / 2; isMouseDown = false;
 
             gameState = 'PLAYING';
