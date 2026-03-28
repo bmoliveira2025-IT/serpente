@@ -769,9 +769,9 @@
     <canvas id="gameCanvas"></canvas>
 
     <script>
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         const getDeviceType = () => {
             const w = window.innerWidth;
-            const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
             if (!isTouch && w > 1024) return 'PC';
             if (w >= 768 && w <= 1024) return 'TABLET';
             return 'MOBILE';
@@ -1463,9 +1463,11 @@
                 if (!diedThisFrame) {
                     const enemies = [...bots, ...Object.values(otherPlayers)];
                     for (let e of enemies) {
+                        // Verifica se BATEU no inimigo
                         if (!e.isDead && checkPerfectCollision(player.x, player.y, player.radius, player.angle, e)) {
                             dropDeathFood(player); playerDie(); diedThisFrame = true; break;
                         }
+                        // CORREÇÃO 3: Feedback Imediato! Verifica se o Inimigo BATEU em nós
                         if (!e.isDead && checkPerfectCollision(e.x, e.y, e.radius, e.angle, player)) {
                             e.isDead = true;
                             dropDeathFood(e);
@@ -1502,6 +1504,7 @@
                         foods.splice(i, 1);
                         spawnParticles(f.x, f.y, f.color, f.isDeathFood ? 15 : 8);
 
+                        // Atualiza com base em se a comida é de Boost, de Morte ou Normal
                         let pts = f.isBoostFood ? f.scoreValue : (f.isDeathFood ? GAME_CONFIG.DEATH_SCORE : GAME_CONFIG.SCORE_PER_FOOD);
                         let growth = f.isBoostFood ? f.growthValue : (f.isDeathFood ? GAME_CONFIG.DEATH_GROWTH : GAME_CONFIG.GROWTH_PER_FOOD);
 
@@ -1844,7 +1847,7 @@
 
         function playerDie() {
             if (player.isDead || gameState === 'GAME_OVER') return;
-            if (!isOfflineMode) socket.emit('playerDied');
+            socket.emit('playerDied');
             player.isDead = true; gameState = 'DYING'; camera.shake = 15;
             setTimeout(() => { gameOver(); }, 2500);
         }
@@ -1906,6 +1909,8 @@
             player.score = 0;
             player.length = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
             player.targetLength = GAME_CONFIG.SNAKE_INITIAL_LENGTH;
+
+            // O RAIO É AGORA CALCULADO DINAMICAMENTE NO INÍCIO PELO GETTER DO DISPOSITIVO
             player.radius = GAME_CONFIG.SNAKE_INITIAL_RADIUS;
 
             player.distAccum = 0;
