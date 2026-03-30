@@ -174,6 +174,40 @@
             }
         }
 
+        #quality-btn {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            cursor: pointer;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            z-index: 50;
+        }
+
+        #quality-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #quality-btn span {
+            font-weight: 700;
+            color: #ffdf00;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px black;
+        }
+
+        @media (max-width: 1024px) {
+            #quality-btn {
+                bottom: 12px;
+                left: 15px;
+                transform: scale(0.75);
+            }
+        }
+
         #start-menu,
         #death-screen {
             position: absolute;
@@ -391,6 +425,9 @@
             <div id="skins-btn">
                 <div style="font-size:30px; margin-bottom:5px;">🐍</div><span>MUDAR ESCAMAS</span>
             </div>
+            <div id="quality-btn">
+                <div style="font-size:30px; margin-bottom:5px;">⚙️</div><span>QUALIDADE: <span id="quality-val" style="color:#00ff88; text-shadow:none;">ALTA</span></span>
+            </div>
         </div>
 
         <div id="skin-preview-ui" class="hidden">
@@ -453,7 +490,7 @@
                 },
                 mobile: {
                     espessuraInicial: 10,       // Grossura da cobra ao nascer (Mobile)
-                    espessuraMaxima: 20,        // Limite máximo de grossura (Mobile)
+                    espessuraMaxima: 18,        // Limite máximo de grossura (Mobile)
                     comprimentoMaximo: 350,     // Limite máximo de gomos do corpo (Mobile)
                     velocidadeBase: 3.2,        // Velocidade normal ao andar (Mobile)
                     velocidadeTurbo: 8.5        // Velocidade máxima ao usar o botão Turbo (Mobile)
@@ -461,8 +498,8 @@
                 // Comum a ambos os dispositivos:
                 comprimentoInicial: 25,         // Quantos gomos (pontos) a cobra tem ao começar o jogo
                 distanciaGomos: 0.22,           // Espaço/sobreposição entre cada gomo do corpo (0 a 1)
-                pontosParaEngrossar: 140,       // Abundância necessária para alargar a cobra em 1 pixel
-                pontosParaCrescer: 6,          // Abundância necessária para ganhar 1 gomo extra
+                pontosParaEngrossar: 130,       // Abundância necessária para alargar a cobra em 1 pixel
+                pontosParaCrescer: 7,          // Abundância necessária para ganhar 1 gomo extra
                 custoDoTurbo: 2.5               // Quantidade de pontos perdidos por instante ao usar o turbo
             },
 
@@ -485,7 +522,7 @@
                 tamanhoRaio: 8500,              // Tamanho total da arena circular (A fronteira de Rubi)
                 quantidadeBots: 85,             // Quantos inimigos de IA andam pelo mapa simultaneamente
                 quantidadeComida: 10000,         // Número máximo de orbs de comida espalhados pelo chão
-                tamanhoComidaMin: 4.5,          // Tamanho mínimo que uma orb pode ter
+                tamanhoComidaMin: 5.5,          // Tamanho mínimo que uma orb pode ter
                 tamanhoComidaMax: 9.5,          // Tamanho máximo que uma orb pode ter
                 forcaAtracao: 30,               // Força do íman (Raio em pixeis que "suga" a comida para a cobra)
                 corGrade: 'rgba(255,255,255,0.03)', // Cor das linhas do mosaico hexagonal (Branco quase invisível)
@@ -526,6 +563,7 @@
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
         let joystickActive = false, joystickAngle = 0, skinIndex = 0;
+        let isHighQuality = !IS_MOBILE_CLIENT;
 
         // Elementos DOM (Garantidos)
         const gameCanvasElement = document.getElementById('gameCanvas');
@@ -536,6 +574,7 @@
         const UI = {
             start: document.getElementById('start-menu'), play: document.getElementById('play-btn'), nick: document.getElementById('nickname'),
             skins: document.getElementById('skins-btn'), preview: document.getElementById('skin-preview-ui'), ok: document.getElementById('skin-ok-btn'),
+            quality: document.getElementById('quality-btn'), qualityVal: document.getElementById('quality-val'),
             left: document.getElementById('left-arrow'), right: document.getElementById('right-arrow'),
             lb: document.getElementById('leaderboard'), lbList: document.getElementById('lb-list'),
             status: document.getElementById('hud-status'), score: document.getElementById('score-display'), rank: document.getElementById('rank-display'), total: document.getElementById('total-display'),
@@ -808,9 +847,11 @@
 
         function drawGrid(ctx, camX, camY, zoom) {
             ctx.fillStyle = CONFIG.mundo.corFundo; ctx.fillRect(camX - (window.innerWidth / zoom) / 2, camY - (window.innerHeight / zoom) / 2, window.innerWidth / zoom, window.innerHeight / zoom);
-            let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, 0, WORLD_CENTER, WORLD_CENTER, WORLD_CENTER);
-            grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, WORLD_CENTER * 2, WORLD_CENTER * 2);
+            if (isHighQuality) {
+                let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, 0, WORLD_CENTER, WORLD_CENTER, WORLD_CENTER);
+                grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, WORLD_CENTER * 2, WORLD_CENTER * 2);
+            }
 
             const size = IS_MOBILE_CLIENT ? CONFIG.mundo.tamanhoHexagono.mobile : CONFIG.mundo.tamanhoHexagono.pc; const h = size * Math.sqrt(3); const w = size * 1.5;
             let sC = Math.floor((camX - (window.innerWidth / zoom) / 2) / w) - 1; let eC = Math.ceil((camX + (window.innerWidth / zoom) / 2) / w) + 1;
@@ -831,10 +872,12 @@
             mainCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
             if (gameState === 'menu') {
                 mainCtx.fillStyle = CONFIG.mundo.corFundo; mainCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-                for (let ff of fireflies) { ff.update(); ff.draw(mainCtx, time); }
-                let grad = mainCtx.createRadialGradient(window.innerWidth / 2, window.innerHeight / 2, 0, window.innerWidth / 2, window.innerHeight / 2, window.innerWidth);
-                grad.addColorStop(0, 'rgba(255,255,255,0.05)'); grad.addColorStop(1, 'rgba(0,0,0,0.9)');
-                mainCtx.fillStyle = grad; mainCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+                if (isHighQuality) {
+                    for (let ff of fireflies) { ff.update(); ff.draw(mainCtx, time); }
+                    let grad = mainCtx.createRadialGradient(window.innerWidth / 2, window.innerHeight / 2, 0, window.innerWidth / 2, window.innerHeight / 2, window.innerWidth);
+                    grad.addColorStop(0, 'rgba(255,255,255,0.05)'); grad.addColorStop(1, 'rgba(0,0,0,0.9)');
+                    mainCtx.fillStyle = grad; mainCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+                }
             }
             else if (gameState === 'skin-menu') {
                 mainCtx.fillStyle = CONFIG.mundo.corFundo; mainCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
@@ -875,13 +918,15 @@
                 const vh2 = (window.innerHeight / camera.zoom) / 2 + pad;
                 const camX = camera.x; const camY = camera.y;
 
-                for (let ff of fireflies) { if (Math.abs(ff.x - camX) < vw2 && Math.abs(ff.y - camY) < vh2) ff.draw(mainCtx, time); }
+                if (isHighQuality) {
+                    for (let ff of fireflies) { if (Math.abs(ff.x - camX) < vw2 && Math.abs(ff.y - camY) < vh2) ff.draw(mainCtx, time); }
+                    for (let p of particles) { if (Math.abs(p.x - camX) < vw2 && Math.abs(p.y - camY) < vh2) p.draw(mainCtx); }
+                }
                 for (let f of foods) { if (Math.abs(f.x - camX) < vw2 && Math.abs(f.y - camY) < vh2) f.draw(mainCtx, time); }
-                for (let p of particles) { if (Math.abs(p.x - camX) < vw2 && Math.abs(p.y - camY) < vh2) p.draw(mainCtx); }
-                let dL = [...snakes].sort((a, b) => a.score - b.score); 
-                for (let s of dL) { 
+                let dL = [...snakes].sort((a, b) => a.score - b.score);
+                for (let s of dL) {
                     let sReach = s.radius * CONFIG.cobra.distanciaGomos * s.segments.length + s.radius;
-                    if (Math.abs(s.x - camX) < vw2 + sReach && Math.abs(s.y - camY) < vh2 + sReach) s.draw(mainCtx); 
+                    if (Math.abs(s.x - camX) < vw2 + sReach && Math.abs(s.y - camY) < vh2 + sReach) s.draw(mainCtx);
                 }
                 mainCtx.restore();
                 if (frameCount % 10 === 0) updateHUD(); frameCount++;
@@ -907,6 +952,14 @@
         });
 
         UI.skins.addEventListener('click', () => { gameState = 'skin-menu'; UI.start.style.display = 'none'; UI.preview.classList.remove('hidden'); UI.skinName.innerText = SKIN_NAMES[skinIndex]; });
+        
+        UI.quality.addEventListener('click', () => {
+            isHighQuality = !isHighQuality;
+            UI.qualityVal.innerText = isHighQuality ? "ALTA" : "BAIXA";
+            UI.qualityVal.style.color = isHighQuality ? "#00ff88" : "#ff5555";
+        });
+        UI.qualityVal.innerText = isHighQuality ? "ALTA" : "BAIXA";
+        UI.qualityVal.style.color = isHighQuality ? "#00ff88" : "#ff5555";
         UI.ok.addEventListener('click', () => { UI.preview.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
         UI.left.addEventListener('click', () => { skinIndex = (skinIndex - 1 + SKINS.length) % SKINS.length; UI.skinName.innerText = SKIN_NAMES[skinIndex]; });
         UI.right.addEventListener('click', () => { skinIndex = (skinIndex + 1) % SKINS.length; UI.skinName.innerText = SKIN_NAMES[skinIndex]; });
