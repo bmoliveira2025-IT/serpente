@@ -486,8 +486,8 @@
                     espessuraInicial: 18,       // Grossura da cobra ao nascer (PC)
                     espessuraMaxima: 30,        // Limite máximo de grossura (PC)
                     comprimentoMaximo: 400,     // Limite máximo de gomos do corpo (PC)
-                    velocidadeBase: 3.7,        // Velocidade normal ao andar (PC)
-                    velocidadeTurbo: 7.8        // Velocidade máxima ao pressionar o clique do rato (PC)
+                    velocidadeBase: 3.5,        // Velocidade normal ao andar (PC)
+                    velocidadeTurbo: 7.0       // Velocidade máxima ao pressionar o clique do rato (PC)
                 },
                 mobile: {
                     espessuraInicial: 10,       // Grossura da cobra ao nascer (Mobile)
@@ -520,10 +520,13 @@
 
             // 🌍 3. CONFIGURAÇÕES DO MAPA E UNIVERSO
             mundo: {
-                tamanhoRaio: 8500,              // Tamanho total da arena circular (A fronteira de Rubi)
-                quantidadeBots: 85,             // Quantos inimigos de IA andam pelo mapa simultaneamente
-                quantidadeComida: 10000,         // Número máximo de orbs de comida espalhados pelo chão
-                tamanhoComidaMin: 5.5,          // Tamanho mínimo que uma orb pode ter
+                tamanhoRaio: 8000,              // Tamanho total da arena circular (A fronteira de Rubi)
+                quantidadeBots: {
+                    pc: 400,                     // Quantos inimigos de IA andam pelo mapa simultaneamente (PC)
+                    mobile: 150                  // Quantos inimigos de IA andam pelo mapa simultaneamente (Mobile)
+                },
+                quantidadeComida: 15000,         // Número máximo de orbs de comida espalhados pelo chão
+                tamanhoComidaMin: 5.0,          // Tamanho mínimo que uma orb pode ter
                 tamanhoComidaMax: 9.5,          // Tamanho máximo que uma orb pode ter
                 forcaAtracao: 40,               // Força do íman (Raio em pixeis que "suga" a comida para a cobra)
                 corGrade: 'rgba(255,255,255,0.03)', // Cor das linhas do mosaico hexagonal (Branco quase invisível)
@@ -536,10 +539,10 @@
 
             // ✨ 4. CONFIGURAÇÕES VISUAIS E EFEITOS AMBIENTAIS
             visual: {
-                balancoComida: 5.0,             // Efeito de tremor/vibração flutuante das orbs no mapa
-                velocidadeAnimacaoComida: 0.003,// Velocidade com que as orbs vibram
+                balancoComida: 4.8,             // Efeito de tremor/vibração flutuante das orbs no mapa
+                velocidadeAnimacaoComida: 0.002,// Velocidade com que as orbs vibram
                 quantidadeVagalumes: 100,       // Número de luzes brancas flutuantes na arena
-                distanciaFugaVagalumes: 280     // Distância a que o vagalume sente o perigo de uma cobra e foge
+                distanciaFugaVagalumes: 180     // Distância a que o vagalume sente o perigo de uma cobra e foge
             }
         };
 
@@ -550,8 +553,27 @@
          */
 
         const WORLD_CENTER = CONFIG.mundo.tamanhoRaio;
-        const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã", "Colosso", "Víbora", "Devorador", "Espectro", "Caçador", "Fera"];
+        const BOT_NAMES = [
+            "Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião",
+            "Fantasma", "Lenda", "Titã", "Colosso", "Víbora", "Devorador", "Espectro", "Caçador", "Fera",
+            "Bolsonaro", "Lulaladrão", "Neymar", "Cristiano", "Messi", "Elon Musk", "Zuckerberg", "Silvio Santos",
+            "Faustão", "Gugu", "Pelé", "Maradona", "Ronaldinho", "Ronaldo", "Rivaldo", "Gita", "Lucas", "Miguel",
+            "Arthur", "Gabriel", "Heitor", "Davi", "Bernardo", "Samuel", "João", "Pedro", "Alice", "Laura",
+            "Maria", "Sophia", "Júlia", "Luísa", "Valentina", "Isabella", "Heloísa", "Manuela", "Vitória",
+            "Rafael", "Matheus", "Enzo", "Nicolas", "Gustavo", "Guilherme", "Felipe", "Antônio", "Carlos",
+            "Ricardo", "Paulo", "Fernando", "Roberto", "Marcos", "Francisco", "Afonso", "Tiago", "Diogo",
+            "Hugo", "Bruno", "Rui", "Nuno", "André", "Catarina", "Inês", "Mariana", "Ana", "Margarida",
+            "Beatriz", "Carolina", "Rita", "Joana", "Sofia", "Diana", "Teresa", "Clara", "Lara", "Sara",
+            "Tiringa", "Whindersson", "Luccas Neto", "Felipe Neto", "Rezende", "Everson Zoio"
+        ];
         const PALETTE_COLORS = ['#ffdf00', '#ffffff', '#aaaaaa', '#666666', '#ffaa00', '#cccccc', '#ffcc00', '#dddddd', '#888888'];
+
+        function getAvailableBotName() {
+            let usedNames = snakes.filter(s => s.alive || s.isPlayer).map(s => s.name);
+            let availableNames = BOT_NAMES.filter(n => !usedNames.includes(n));
+            if (availableNames.length === 0) return BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+            return availableNames[Math.floor(Math.random() * availableNames.length)];
+        }
 
         const SKINS = [
             ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#002776', '#002776'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222']
@@ -891,7 +913,8 @@
             }
             else if (gameState === 'playing' || gameState === 'dead') {
                 if (player && player.alive) player.isBoosting = isMouseDown;
-                if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
+                let maxBots = IS_MOBILE_CLIENT ? CONFIG.mundo.quantidadeBots.mobile : CONFIG.mundo.quantidadeBots.pc;
+                if (snakes.filter(s => s.alive).length < maxBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), getAvailableBotName(), Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
                 if (foods.length < CONFIG.mundo.quantidadeComida) spawnFood(15);
                 for (let s of snakes) s.update();
                 for (let i = 0; i < snakes.length; i++) {
@@ -945,7 +968,8 @@
             await enterFullscreen();
             snakes = []; foods = []; fireflies = []; particles = []; playerKills = 0;
             player = new Snake(WORLD_CENTER, WORLD_CENTER, UI.nick.value.trim() || "LENDA", skinIndex, true); snakes.push(player);
-            for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
+            let maxBots = IS_MOBILE_CLIENT ? CONFIG.mundo.quantidadeBots.mobile : CONFIG.mundo.quantidadeBots.pc;
+            for (let i = 0; i < maxBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), getAvailableBotName(), Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
             spawnFood(CONFIG.mundo.quantidadeComida); for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
             gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
             UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
