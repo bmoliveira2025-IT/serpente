@@ -695,7 +695,7 @@
         function spawnFood(count) {
             for (let i = 0; i < count; i++) {
                 let p = getRandomPosInCircle(20);
-                foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)]));
+                foods.push(getFoodObj(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)]));
             }
         }
 
@@ -777,6 +777,22 @@
                 ctx.drawImage(img, dx - this.radius, dy - this.radius, this.radius * 2, this.radius * 2);
             }
         }
+
+        // --- OBJECT POOLING OTIMIZADO ---
+        const foodPool = [];
+        function getFoodObj(x, y, r, c, isD = false, eV = 2) {
+            let f = foodPool.length > 0 ? foodPool.pop() : new Food(0, 0, 0, '', false, 0);
+            f.x = x; f.y = y; f.radius = r; f.color = c; f.isDropped = isD; f.value = eV; f.wO = Math.random() * Math.PI * 2;
+            return f;
+        }
+
+        function removeFood(index) {
+            foodPool.push(foods[index]);
+            // O(1) Array Removal (Swap-and-Pop) para performance sem Re-indexing
+            foods[index] = foods[foods.length - 1];
+            foods.pop();
+        }
+        // --------------------------------
 
         class Firefly {
             constructor() {
@@ -888,23 +904,47 @@
                     if (Math.abs(this.x - f.x) > attrFast || Math.abs(this.y - f.y) > attrFast) continue;
                     let d2 = (this.x - f.x) ** 2 + (this.y - f.y) ** 2;
                     if (d2 < (CONFIG.mundo.forcaAtracao) ** 2) { let d = Math.sqrt(d2); f.x += (this.x - f.x) / d * 8; f.y += (this.y - f.y) / d * 8; }
-                    if (d2 < (this.radius + f.radius) ** 2) { this.score += f.value; foods.splice(i, 1); }
+                    if (d2 < (this.radius + f.radius) ** 2) { this.score += f.value; removeFood(i); }
                 }
             }
             die(dropFood = true) {
                 this.alive = false; createExplosion(this.x, this.y, this.mainColor, 35); if (this.isPlayer) camera.shake = 25;
                 if (dropFood) {
                     let step = 5, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num;
-                    for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; foods.push(new Food(s.x + (Math.random() * 20 - 10), s.y + (Math.random() * 20 - 10), 9 + Math.min(10, val / 30), this.skin[i % this.skin.length], true, val)); }
+                    for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; foods.push(getFoodObj(s.x + (Math.random() * 20 - 10), s.y + (Math.random() * 20 - 10), 9 + Math.min(10, val / 30), this.skin[i % this.skin.length], true, val)); }
                 }
                 if (this.isPlayer) { gameState = 'dead'; setTimeout(() => { UI.deathLen.innerText = Math.floor(this.score).toLocaleString(); UI.deathKills.innerText = playerKills; UI.death.classList.remove('hidden'); UI.lb.style.display = 'none'; UI.status.style.display = 'none'; UI.mini.style.display = 'none'; UI.ctrls.style.display = 'none'; }, 1500); }
             }
             draw(ctx) {
                 if (!this.alive) return;
-                for (let i = this.segments.length - 1; i >= 0; i--) ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), this.segments[i].x - this.radius, this.segments[i].y - this.radius, this.radius * 2, this.radius * 2);
-                ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
-                let look = (joystickActive && this.isPlayer) ? joystickAngle : this.angle;
-                drawStandardEyes(ctx, this.x, this.y, this.radius, this.angle, look, this.skinId);
+                
+                // AAA Optimization: Distance-based LOD (Level Of Detail)
+                let distToCam = Math.hypot(this.x - camera.x, this.y - camera.y);
+                
+                if (distToCam > 2800) {
+                    // LOD Muito Baixo (Billboard): Apenas um círculo indicativo para evitar centenas de Draw Calls
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius * 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = this.mainColor;
+                    ctx.fill();
+                    return; 
+                } 
+                else if (distToCam > 1400) {
+                    // LOD Intermédio: Culling de detalhe desnecessário, desenha 1 em cada 3/4 gomos
+                    let step = Math.min(this.segments.length, 3);
+                    for (let i = this.segments.length - 1; i >= 0; i -= step) 
+                        ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), this.segments[i].x - this.radius, this.segments[i].y - this.radius, this.radius * 2, this.radius * 2);
+                    ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+                } 
+                else {
+                    // LOD Max (Alta Fidelidade Gráfica AAA): 100% dos gomos + Sombras + Olhos Dinâmicos
+                    for (let i = this.segments.length - 1; i >= 0; i--) 
+                        ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), this.segments[i].x - this.radius, this.segments[i].y - this.radius, this.radius * 2, this.radius * 2);
+                    
+                    ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+                    let look = (joystickActive && this.isPlayer) ? joystickAngle : this.angle;
+                    drawStandardEyes(ctx, this.x, this.y, this.radius, this.angle, look, this.skinId);
+                }
             }
         }
 
