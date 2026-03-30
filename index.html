@@ -966,23 +966,60 @@
         UI.right.addEventListener('click', () => { skinIndex = (skinIndex + 1) % SKINS.length; UI.skinName.innerText = SKIN_NAMES[skinIndex]; });
         UI.again.addEventListener('click', () => { UI.death.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
 
+        let joystickTouchId = null;
+        
         UI.joyB.addEventListener('touchstart', (e) => {
-            joystickActive = true; const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2;
-            joystickAngle = Math.atan2(e.touches[0].clientY - cY, e.touches[0].clientX - cX);
+            if (joystickTouchId !== null) return;
+            const touch = e.changedTouches[0];
+            joystickTouchId = touch.identifier;
+            joystickActive = true; 
+            const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2;
+            joystickAngle = Math.atan2(touch.clientY - cY, touch.clientX - cX);
         }, { passive: false });
 
         window.addEventListener('touchmove', (e) => {
-            if (joystickActive) {
-                const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2;
-                const dx = e.touches[0].clientX - cX, dy = e.touches[0].clientY - cY, dist = Math.hypot(dx, dy), maxD = r.width / 2;
-                joystickAngle = Math.atan2(dy, dx); const capD = Math.min(dist, maxD);
-                UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`; e.preventDefault();
+            if (joystickActive && joystickTouchId !== null) {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    if (touch.identifier === joystickTouchId) {
+                        const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2;
+                        const dx = touch.clientX - cX, dy = touch.clientY - cY, dist = Math.hypot(dx, dy), maxD = r.width / 2;
+                        joystickAngle = Math.atan2(dy, dx); const capD = Math.min(dist, maxD);
+                        UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`; 
+                        if (e.cancelable) e.preventDefault();
+                        break;
+                    }
+                }
             }
         }, { passive: false });
 
-        window.addEventListener('touchend', () => { joystickActive = false; UI.joyH.style.transform = 'translate(-50%, -50%)'; });
-        UI.boost.addEventListener('touchstart', (e) => { isMouseDown = true; e.preventDefault(); });
-        UI.boost.addEventListener('touchend', (e) => { isMouseDown = false; e.preventDefault(); });
+        window.addEventListener('touchend', (e) => { 
+            if (joystickActive && joystickTouchId !== null) {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === joystickTouchId) {
+                        joystickActive = false; joystickTouchId = null;
+                        UI.joyH.style.transform = 'translate(-50%, -50%)'; 
+                        break;
+                    }
+                }
+            }
+        });
+        
+        window.addEventListener('touchcancel', (e) => { 
+            if (joystickActive && joystickTouchId !== null) {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === joystickTouchId) {
+                        joystickActive = false; joystickTouchId = null;
+                        UI.joyH.style.transform = 'translate(-50%, -50%)'; 
+                        break;
+                    }
+                }
+            }
+        });
+
+        UI.boost.addEventListener('touchstart', (e) => { isMouseDown = true; if(e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
+        UI.boost.addEventListener('touchend', (e) => { isMouseDown = false; if(e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
+        UI.boost.addEventListener('touchcancel', (e) => { isMouseDown = false; if(e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
 
         resize();
         spawnFood(10);
