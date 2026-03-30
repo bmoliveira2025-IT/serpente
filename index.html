@@ -266,8 +266,15 @@
         }
 
         @keyframes floatCrown {
-            0%, 100% { transform: translateY(0) rotate(-8deg) scale(1.0); }
-            50% { transform: translateY(-12px) rotate(8deg) scale(1.1); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-8deg) scale(1.0);
+            }
+
+            50% {
+                transform: translateY(-12px) rotate(8deg) scale(1.1);
+            }
         }
 
         .subtitle {
@@ -317,7 +324,7 @@
             box-shadow: 0 0 25px rgba(255, 223, 0, 0.3);
             transform: scale(1.05);
         }
-        
+
         #nickname::placeholder {
             color: rgba(255, 255, 255, 0.3);
             font-weight: 400;
@@ -488,7 +495,7 @@
                 <div class="crown-icon">👑</div><span class="slither-text">Serpente</span>
             </div>
             <div class="subtitle">O CONTO DA COROA DOURADA</div>
-            
+
             <div class="input-group">
                 <input type="text" id="nickname" placeholder="NOME DA LENDA" maxlength="16" autocomplete="off">
             </div>
@@ -557,8 +564,8 @@
                     espessuraInicial: 18,       // Grossura da cobra ao nascer (PC)
                     espessuraMaxima: 30,        // Limite máximo de grossura (PC)
                     comprimentoMaximo: 400,     // Limite máximo de gomos do corpo (PC)
-                    velocidadeBase: 3.5,        // Velocidade normal ao andar (PC)
-                    velocidadeTurbo: 7.0       // Velocidade máxima ao pressionar o clique do rato (PC)
+                    velocidadeBase: 7.5,        // Velocidade normal ao andar (PC)
+                    velocidadeTurbo: 8.0       // Velocidade máxima ao pressionar o clique do rato (PC)
                 },
                 mobile: {
                     espessuraInicial: 10,       // Grossura da cobra ao nascer (Mobile)
@@ -841,26 +848,26 @@
 
             updateFromServer(serverData) {
                 if (!this.alive) return;
-                
+
                 // Em vez de teletransportar a cobra duramente (Tick de 20hz), 
                 // Guardamos as Coordenadas-Alvo para animá-las aos poucos no ecrã (60hz V-Sync)
                 this.serverX = serverData.x;
                 this.serverY = serverData.y;
-                
+
                 // Previne voltas completas invulgares
                 let diff = serverData.a - this.angle;
                 while (diff < -Math.PI) diff += Math.PI * 2;
                 while (diff > Math.PI) diff -= Math.PI * 2;
                 this.serverAngle = this.angle + diff;
-                
+
                 this.score = serverData.s;
-                
+
                 // Se estiver muito longe do alvo (ex: Spawn inicial), teleporta-se imediatamente
                 if (Math.hypot(this.serverX - this.x, this.serverY - this.y) > 200) {
                     this.x = this.serverX;
                     this.y = this.serverY;
                 }
-                
+
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(CONFIG.cobra.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 if (this.segments.length < this.targetLength) this.segments.push({ x: this.segments[this.segments.length - 1].x, y: this.segments[this.segments.length - 1].y });
@@ -868,7 +875,7 @@
 
             lerpUpdate() {
                 if (!this.alive) return;
-                
+
                 // LERP: Move o visual 30% da distância rumo ao verdadeiro valor da nuvem todos os frames
                 if (this.serverX !== undefined && this.serverY !== undefined) {
                     this.x += (this.serverX - this.x) * 0.25;
@@ -878,38 +885,38 @@
 
                 // Efeito Cinético (Anima os gomos rastejando mecanicamente pelo chão seguindo a cabeça)
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
-                for (let i = 0; i < this.segments.length; i++) { 
-                    let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); 
-                    if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } 
-                    pX = s.x; pY = s.y; 
+                for (let i = 0; i < this.segments.length; i++) {
+                    let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy);
+                    if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; }
+                    pX = s.x; pY = s.y;
                 }
             }
             draw(ctx) {
                 if (!this.alive) return;
-                
+
                 // AAA Optimization: Distance-based LOD (Level Of Detail)
                 let distToCam = Math.hypot(this.x - camera.x, this.y - camera.y);
-                
+
                 if (distToCam > 2800) {
                     // LOD Muito Baixo (Billboard): Apenas um círculo indicativo para evitar centenas de Draw Calls
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.radius * 2.5, 0, Math.PI * 2);
                     ctx.fillStyle = this.mainColor;
                     ctx.fill();
-                    return; 
-                } 
+                    return;
+                }
                 else if (distToCam > 1400) {
                     // LOD Intermédio: Culling de detalhe desnecessário, desenha 1 em cada 3/4 gomos
                     let step = Math.min(this.segments.length, 3);
-                    for (let i = this.segments.length - 1; i >= 0; i -= step) 
+                    for (let i = this.segments.length - 1; i >= 0; i -= step)
                         ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), this.segments[i].x - this.radius, this.segments[i].y - this.radius, this.radius * 2, this.radius * 2);
                     ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
-                } 
+                }
                 else {
                     // LOD Max (Alta Fidelidade Gráfica AAA): 100% dos gomos + Sombras + Olhos Dinâmicos
-                    for (let i = this.segments.length - 1; i >= 0; i--) 
+                    for (let i = this.segments.length - 1; i >= 0; i--)
                         ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), this.segments[i].x - this.radius, this.segments[i].y - this.radius, this.radius * 2, this.radius * 2);
-                    
+
                     ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
                     let look = (joystickActive && this.isPlayer) ? joystickAngle : this.angle;
                     drawStandardEyes(ctx, this.x, this.y, this.radius, this.angle, look, this.skinId);
@@ -998,12 +1005,12 @@
             }
             else if (gameState === 'playing' || gameState === 'dead') {
                 // Multiplayer MMO Engine: No local Bot/Food Spawning or Collision Physics O(N^2)
-                
+
                 // Em vez disso, envia inputs crus do jogador para a Nuvem
                 if (player && player.alive) {
                     if (joystickActive) player.targetAngle = joystickAngle;
                     else if (!IS_MOBILE_CLIENT) player.targetAngle = Math.atan2((mouseY - window.innerHeight / 2) / camera.zoom, (mouseX - window.innerWidth / 2) / camera.zoom);
-                    
+
                     if (typeof socket !== 'undefined' && socket) {
                         socket.emit('input', { angle: player.targetAngle, isBoosting: isMouseDown || player.isBoosting });
                     }
@@ -1049,11 +1056,11 @@
             socketGlob.on('match_found', (data) => {
                 myPlayerId = data.playerState.id;
                 console.log("Conectado ao Motor da Nuvem! Arena:", data.arenaId);
-                
-                player = new Snake(data.playerState.x, data.playerState.y, UI.nick.value.trim() || "LENDA", skinIndex, true, data.playerState.score); 
+
+                player = new Snake(data.playerState.x, data.playerState.y, UI.nick.value.trim() || "LENDA", skinIndex, true, data.playerState.score);
                 player.id = myPlayerId;
                 snakes = [player];
-                
+
                 gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
                 UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
                 if (IS_MOBILE_CLIENT) UI.ctrls.style.display = 'block';
@@ -1061,14 +1068,14 @@
 
             socketGlob.on('tick', (snapshot) => {
                 if (gameState !== 'playing') return;
-                
+
                 // Mapear Snakes Atuais
                 let activeIds = new Set();
-                
+
                 for (let s of snapshot.p) {
                     activeIds.add(s.id);
                     let existing = snakes.find(sn => sn.id === s.id);
-                    
+
                     if (existing) {
                         existing.updateFromServer(s);
                     } else {
@@ -1078,7 +1085,7 @@
                         snakes.push(nS);
                     }
                 }
-                
+
                 // Culling de cobras que morreram no servidor
                 snakes = snakes.filter(s => activeIds.has(s.id));
             });
@@ -1090,7 +1097,7 @@
                 }
             }, 50); // Manda o input 20x por segundo independentemente da renderização visual
         }
-        
+
         // Listeners Locais
         let myPlayerId = null;
         window.addEventListener('resize', resize);
@@ -1101,14 +1108,14 @@
         async function startGame() {
             await enterFullscreen();
             snakes = []; foods = []; fireflies = []; particles = []; playerKills = 0;
-            
+
             // Avisa o servidor que queremos jogar (O motor fará Matchmaking)
             if (socketGlob) {
-                socketGlob.emit('join', { name: UI.nick.value.trim() || 'LENDA', skinId: skinIndex });
+                socketGlob.emit('join', { name: UI.nick.value.trim() || 'LENDA', skinId: skinIndex, isMobile: IS_MOBILE_CLIENT });
             } else {
                 alert("Servidor Multiplayer Inacessível.");
             }
-            
+
             for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
         }
 
