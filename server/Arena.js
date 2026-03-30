@@ -115,15 +115,20 @@ class Arena {
 
     spawnFood() {
         let p = getRandomPosInCircle(20);
-        this.foods.push({
+        let food = {
+            id: 'f_' + Math.random().toString(36).substr(2, 9),
             x: p.x, y: p.y,
             radius: CONFIG.mundo.tamanhoComidaMin + Math.random() * 4,
             value: 2
-        });
+        };
+        this.foods.push(food);
+        return food;
     }
 
     tick() {
         this.frameCount++;
+        let eatenFoods = [];
+        let newFoods = [];
 
         let allSnakes = Object.values(this.players).concat(this.bots);
 
@@ -160,6 +165,18 @@ class Arena {
                 continue;
             }
 
+            // Colisão com Comida (Nutrição)
+            for (let i = this.foods.length - 1; i >= 0; i--) {
+                const f = this.foods[i];
+                if (Math.hypot(s.x - f.x, s.y - f.y) < s.radius + f.radius) {
+                    s.score += f.value;
+                    eatenFoods.push(f.id);
+                    this.foods.splice(i, 1);
+                    // Repõe comida imediatamente para manter o balanceamento do mundo constante
+                    newFoods.push(this.spawnFood()); 
+                }
+            }
+
             // Move os gomos traseiros em fila india (Sincronizado Mestre)
             let pX = s.x, pY = s.y, spc = s.radius * s.conf.distanciaGomos;
             for (let i = 0; i < s.segments.length; i++) {
@@ -174,6 +191,48 @@ class Arena {
             }
         }
 
+        // Inteligência Artificial Complexa (Nuvem)
+        for (let b of this.bots) {
+            if (!b.alive) continue;
+            
+            let closestFood = null;
+            let closestFoodDist = 500; // Raio de visão do bot para comida
+            let danger = false;
+
+            // Fuga de Predadores
+            for (let other of allSnakes) {
+                if (!other.alive || other.id === b.id) continue;
+                let d = Math.hypot(b.x - other.x, b.y - other.y);
+                if (d < 300 && other.score > b.score) {
+                    // Predador por perto! Foge na direção oposta e dá Turbo!
+                    b.targetAngle = Math.atan2(b.y - other.y, b.x - other.x);
+                    b.isBoosting = true;
+                    danger = true;
+                    break;
+                }
+            }
+
+            // Caso não esteja em perigo, busca comida
+            if (!danger) {
+                b.isBoosting = false;
+                // Procura a comida mais próxima
+                for (let f of this.foods) {
+                    let d = Math.hypot(b.x - f.x, b.y - f.y);
+                    if (d < closestFoodDist) {
+                        closestFoodDist = d;
+                        closestFood = f;
+                    }
+                }
+                if (closestFood) {
+                    // Direciona levemente para a comida
+                    b.targetAngle = Math.atan2(closestFood.y - b.y, closestFood.x - b.x);
+                } else {
+                    // Caminhada errante se não ver nada
+                    if (Math.random() < 0.05) b.targetAngle += (Math.random() - 0.5) * 1.5;
+                }
+            }
+        }
+
         // --- Network Delta Broadcast ---
         // Sending full array of segments is heavily bandwidth intensive. 
         // We will send only the head positions and angle. Clients can interpolate.
@@ -181,11 +240,29 @@ class Arena {
             p: allSnakes.filter(s => s.alive).map(s => ({
                 id: s.id, x: Math.round(s.x), y: Math.round(s.y), a: parseFloat(s.angle.toFixed(2)), s: Math.round(s.score)
             })),
-            f: this.foods // Temporário: Numa versão final isto seria culling espacial
+            fE: eatenFoods, // Apenas IDs das comidas comidas neste exato microsegundo
+            fN: newFoods    // Apenas Novas Comidas nascidas neste exato microsegundo
         };
 
         this.io.to(this.id).emit('tick', snapshot);
     }
 }
+
+Arena.getConfig = () => CONFIG;
+
+Arena.updateConfig = (newConf) => {
+    // Mutação por referência (Deep Merge). Isto afeta todos os s.conf automaticamente, sem reiniciar bots!
+    const merge = (target, source) => {
+        for (let key in source) {
+            if (typeof source[key] === 'object' && source[key] !== null) {
+                if (!target[key]) target[key] = {};
+                merge(target[key], source[key]);
+            } else {
+                target[key] = source[key];
+            }
+        }
+    };
+    merge(CONFIG, newConf);
+};
 
 module.exports = Arena;

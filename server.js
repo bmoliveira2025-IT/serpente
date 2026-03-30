@@ -49,6 +49,9 @@ io.on('connection', (socket) => {
             population: Object.keys(arena.players).length
         });
         
+        // Envia o mundo inteiro de comida uma única vez (Economia de Banda Larga)
+        socket.emit('init_foods', arena.foods);
+        
         console.log(`[Matchmaker] Sent player ${data.name} to ${arenaId}`);
     });
 
@@ -60,6 +63,18 @@ io.on('connection', (socket) => {
                 break;
             }
         }
+    });
+
+    // --- Admin / Moderation Events ---
+    socket.on('admin_get_config', () => {
+        socket.emit('admin_config_data', Arena.getConfig());
+    });
+
+    socket.on('admin_update_config', (newConf) => {
+        console.log(`[Admin] Usuário ${socket.id} alterou as Físicas da Máquina!`);
+        Arena.updateConfig(newConf);
+        // Atualiza a visualização de todos os admins
+        io.emit('admin_config_data', Arena.getConfig());
     });
 
     socket.on('disconnect', () => {

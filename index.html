@@ -490,7 +490,23 @@
             <div id="mobile-boost-btn">TURBO</div>
         </div>
 
+        <!-- MODAL ADMIN -->
+        <div id="admin-panel" class="hidden" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(10,12,16,0.95); border:1px solid #00ffff; border-radius:16px; padding:20px; box-shadow:0 0 30px rgba(0,255,255,0.2); z-index:9999; max-width:90%; width:400px; max-height:90vh; overflow-y:auto;">
+            <div style="text-align:center; font-family:'Outfit', sans-serif;">
+                <div style="font-size:2rem; filter:drop-shadow(0 0 10px #ff0055);">⚙️ OCI NUVEM</div>
+                <div style="color:#ff0055; font-weight:bold; margin-bottom:15px;">Acesso Restrito às Físicas</div>
+            </div>
+            
+            <div id="admin-fields" style="display:flex; flex-direction:column; gap:8px; font-family:'Inter', sans-serif; text-align:left;">
+                <div style="color:gray; font-size:12px; text-align:center;">A Ligar à Máquina...</div>
+            </div>
+
+            <button id="btn-save-admin" class="btn-aaa" style="margin-top:20px; padding:15px; background:linear-gradient(135deg, #ff0055, #aa00ff);">APLICAR NA NUVEM</button>
+            <button id="btn-close-admin" class="btn-aaa" style="margin-top:10px; padding:15px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); box-shadow:none;">SAIR DO COFRE</button>
+        </div>
+
         <div id="start-menu">
+            <div id="btn-open-admin" style="position:absolute; right:20px; top:20px; font-size:24px; cursor:pointer; opacity:0.1; transition:0.3s;" title="Administração OCI">⚙️</div>
             <div class="logo-container">
                 <div class="crown-icon">👑</div><span class="slither-text">Serpente</span>
             </div>
@@ -1066,12 +1082,24 @@
                 if (IS_MOBILE_CLIENT) UI.ctrls.style.display = 'block';
             });
 
+            socketGlob.on('init_foods', (serverFoods) => {
+                // Instancia as comidas iniciais providenciadas pelo servidor
+                foods = [];
+                for (let f of serverFoods) {
+                    let cF = getFoodObj(f.x, f.y, f.radius, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)], false, f.value);
+                    cF.id = f.id; // Precisa do ID da nuvem para o Culling
+                    foods.push(cF);
+                }
+                console.log(`[Culling] Carregadas ${foods.length} Orbs Mestre.`);
+            });
+
             socketGlob.on('tick', (snapshot) => {
                 if (gameState !== 'playing') return;
 
                 // Mapear Snakes Atuais
                 let activeIds = new Set();
 
+                // 1. Atualiza Snakes
                 for (let s of snapshot.p) {
                     activeIds.add(s.id);
                     let existing = snakes.find(sn => sn.id === s.id);
@@ -1088,6 +1116,24 @@
 
                 // Culling de cobras que morreram no servidor
                 snakes = snakes.filter(s => activeIds.has(s.id));
+
+                // 2. Atualiza Culling Diferencial das Orbs (Banda Larga Ultra-Leve)
+                if (snapshot.fE && snapshot.fE.length > 0) {
+                    // Remove as comidas comidas
+                    let eatenSet = new Set(snapshot.fE);
+                    for (let i = foods.length - 1; i >= 0; i--) {
+                        if (eatenSet.has(foods[i].id)) removeFood(i);
+                    }
+                }
+
+                if (snapshot.fN && snapshot.fN.length > 0) {
+                    // Adiciona as novas comidas spawnadas
+                    for (let f of snapshot.fN) {
+                        let cF = getFoodObj(f.x, f.y, f.radius, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)], false, f.value);
+                        cF.id = f.id;
+                        foods.push(cF);
+                    }
+                }
             });
 
             // Sync Inputs
@@ -1118,6 +1164,77 @@
 
             for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
         }
+
+        // --- ADMIN PANEL LOGIC ---
+        const btnOpenAdmin = document.getElementById('btn-open-admin');
+        const btnCloseAdmin = document.getElementById('btn-close-admin');
+        const btnSaveAdmin = document.getElementById('btn-save-admin');
+        const adminPanel = document.getElementById('admin-panel');
+        const adminFields = document.getElementById('admin-fields');
+        let currentAdminConfig = null;
+
+        btnOpenAdmin.addEventListener('click', () => {
+            if (socketGlob) {
+                socketGlob.emit('admin_get_config');
+                adminPanel.classList.remove('hidden');
+                UI.start.classList.add('hidden');
+            } else {
+                alert("Ligue o servidor primeiro! (Socket offline)");
+            }
+        });
+
+        btnCloseAdmin.addEventListener('click', () => {
+            adminPanel.classList.add('hidden');
+            UI.start.classList.remove('hidden');
+        });
+
+        function buildAdminInputs(obj, parentKey = '', container) {
+            for (let key in obj) {
+                if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    let sectionTitle = document.createElement('div');
+                    sectionTitle.innerHTML = `<br><span style="color:#00ffff; font-weight:bold; font-size:14px; text-transform:uppercase;">[Grupo: ${parentKey ? parentKey + '.' : ''}${key}]</span><hr style="border-color:rgba(0,255,255,0.2);">`;
+                    container.appendChild(sectionTitle);
+                    buildAdminInputs(obj[key], parentKey ? parentKey + '.' + key : key, container);
+                } else if (typeof obj[key] === 'number') {
+                    let w = document.createElement('div');
+                    w.style = "display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px;";
+                    w.innerHTML = `
+                        <label style="color:#fff; font-size:13px; font-weight:500;">${key}</label>
+                        <input type="number" step="any" data-key="${parentKey ? parentKey + '.' + key : key}" value="${obj[key]}" style="width:80px; text-align:right; background:rgba(0,0,0,0.8); border:1px solid #00ffff; color:#00ffff; border-radius:4px; padding:4px;">
+                    `;
+                    container.appendChild(w);
+                }
+            }
+        }
+
+        // Delay para garantir que socketGlob foi inicializado
+        setTimeout(() => {
+            if (socketGlob) {
+                socketGlob.on('admin_config_data', (config) => {
+                    currentAdminConfig = config;
+                    adminFields.innerHTML = '';
+                    buildAdminInputs(config, '', adminFields);
+                });
+            }
+        }, 1000);
+
+        btnSaveAdmin.addEventListener('click', () => {
+            if (!currentAdminConfig || !socketGlob) return;
+            
+            // Build new config from inputs
+            let inputs = adminFields.querySelectorAll('input');
+            let newConfig = JSON.parse(JSON.stringify(currentAdminConfig)); // clone
+            
+            inputs.forEach(inp => {
+                let keys = inp.getAttribute('data-key').split('.');
+                let ref = newConfig;
+                for (let i = 0; i < keys.length - 1; i++) ref = ref[keys[i]];
+                ref[keys[keys.length - 1]] = parseFloat(inp.value);
+            });
+
+            socketGlob.emit('admin_update_config', newConfig);
+            alert("✅ Novos parâmetros enviados à Nuvem OCI com sucesso!");
+        });
 
         UI.play.addEventListener('click', startGame);
 
