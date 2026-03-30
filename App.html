@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Serpente - O Conto do Rei</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #050505;
+            font-family: 'Poppins', sans-serif; touch-action: none;
+            user-select: none; -webkit-user-select: none;
+        }
+        
+        #gameCanvas { display: block; width: 100%; height: 100%; }
+
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+
+        /* Estilo Vidro AAA */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: white;
+            pointer-events: auto;
+        }
+
+        /* HUD - PADRÃO PC (Rodapé Esquerdo) */
+        #hud-status {
+            position: absolute; bottom: 25px; left: 25px;
+            display: none; flex-direction: column; gap: 5px; padding: 15px 30px;
+            border-radius: 15px; z-index: 50;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .hud-stat { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; }
+        .hud-stat span { color: #ffdf00; font-size: 20px; font-weight: 800; text-shadow: 2px 2px 4px black; margin-left: 5px; }
+
+        /* HUD - VERSÃO MOBILE (Centro inferior, ultra-compacto) */
+        @media (max-width: 1024px) {
+            #hud-status {
+                bottom: 12px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                flex-direction: row !important;
+                gap: 15px !important;
+                padding: 6px 18px !important;
+                border-radius: 50px !important;
+                white-space: nowrap;
+                background: rgba(0, 0, 0, 0.6) !important;
+                border-color: rgba(255,255,255,0.1) !important;
+            }
+            .hud-stat { font-size: 7px !important; display: flex; align-items: center; gap: 4px; }
+            .hud-stat span { font-size: 15px !important; margin-left: 0 !important; }
+        }
+
+        /* TOP 10 COMPACTO */
+        #leaderboard {
+            position: absolute; top: 15px; right: 15px; width: 170px; padding: 10px; border-radius: 10px;
+            display: none; font-size: 10px; background: rgba(0, 0, 0, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.03); backdrop-filter: blur(5px);
+        }
+        #lb-list { display: flex; flex-direction: column; gap: 2px; }
+        .lb-entry { display: flex; justify-content: space-between; color: rgba(255, 255, 255, 0.6); }
+        .lb-entry.is-me { color: #ffdf00 !important; font-weight: 800; }
+
+        /* SKINS RODAPÉ DIREITO */
+        #skins-btn {
+            position: absolute; bottom: 25px; right: 25px;
+            cursor: pointer; pointer-events: auto;
+            display: flex; flex-direction: column; align-items: center;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center; z-index: 50;
+        }
+        #skins-btn:hover { transform: scale(1.1); }
+        #skins-btn span { font-weight: 700; color: #ffdf00; font-size: 11px; letter-spacing: 1px; text-shadow: 0 2px 4px black; }
+
+        @media (max-width: 1024px) {
+            #skins-btn { bottom: 12px; right: 15px; transform: scale(0.75); }
+        }
+
+        #start-menu, #death-screen {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at center, rgba(5, 5, 5, 0.8) 0%, #000 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            pointer-events: auto; z-index: 100;
+        }
+
+        #death-screen h2 { color: #ffdf00 !important; font-size: clamp(35px, 8vw, 70px); font-weight: 800; text-shadow: 0 0 30px rgba(255, 223, 0, 0.4); text-transform: uppercase; }
+
+        .logo-container { font-size: clamp(45px, 12vw, 100px); font-weight: 800; display: flex; align-items: center; gap: 20px; }
+        .slither-text { color: #ffdf00; animation: goldenShine 5s linear infinite; }
+        @keyframes goldenShine { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3) drop-shadow(0 0 20px #ffdf00); } }
+
+        .btn-aaa {
+            padding: 18px 70px; font-size: 20px; font-weight: 800; border-radius: 50px; border: none;
+            background: linear-gradient(145deg, #ffdf00 0%, #ccaa00 100%); color: #000; cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto;
+        }
+        .btn-aaa:hover { transform: scale(1.05); }
+
+        #minimap-wrapper { position: absolute; top: 15px; left: 15px; display: none; z-index: 60; }
+        #minimap-container { width: 100px; height: 100px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; background: rgba(0,0,0,0.5); }
+
+        #mobile-controls { position: absolute; inset: 0; pointer-events: none; display: none; }
+        #joystick-base { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); pointer-events: auto; z-index: 1000; }
+        #joystick-handle { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.6); transform: translate(-50%, -50%); }
+        #mobile-boost-btn { position: absolute; bottom: 60px; right: 50px; width: 90px; height: 90px; border-radius: 50%; background: rgba(255, 223, 0, 0.1); border: 2px solid #ffdf00; color: #ffdf00; display: flex; align-items: center; justify-content: center; font-weight: 900; pointer-events: auto; z-index: 1000; }
+
+        #skin-preview-ui { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 101; pointer-events: auto; background: rgba(0,0,0,0.7); }
+        .arrow-btn { position: absolute; top: 50%; transform: translateY(-50%); cursor: pointer; pointer-events: auto; z-index: 105; }
+        
+        #orientation-overlay { position: fixed; inset: 0; background: #050505; color: white; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer">
+        <div id="hud-status" class="glass-panel">
+            <div class="hud-stat">ABUNDÂNCIA <span id="score-display">0</span></div>
+            <div class="hud-stat">RANK <span id="rank-display">0</span> / <span id="total-display">0</span></div>
+        </div>
+
+        <div id="leaderboard" class="glass-panel"><div id="lb-list"></div></div>
+        <div id="minimap-wrapper"><div id="minimap-container" class="glass-panel"><canvas id="minimap"></canvas></div></div>
+
+        <div id="mobile-controls">
+            <div id="joystick-base"><div id="joystick-handle"></div></div>
+            <div id="mobile-boost-btn">TURBO</div>
+        </div>
+
+        <div id="start-menu">
+            <div class="logo-container"><div>👑</div><span class="slither-text">Serpente</span></div>
+            <div class="subtitle" style="margin-top:10px; font-size:12px; letter-spacing:5px; opacity:0.3; color:#fff;">O CONTO DA COROA DOURADA</div>
+            <input type="text" id="nickname" placeholder="NOME DA LENDA" maxlength="16" style="background:rgba(255,255,255,0.03); border-radius:50px; padding:12px 25px; border:1px solid rgba(255,255,255,0.1); color:white; text-align:center; outline:none; margin-bottom:20px; width:220px; font-family:inherit;">
+            <button id="play-btn" class="btn-aaa">INICIAR JORNADA</button>
+            <div id="skins-btn"><div style="font-size:30px; margin-bottom:5px;">🐍</div><span>MUDAR ESCAMAS</span></div>
+        </div>
+
+        <div id="skin-preview-ui" class="hidden">
+            <div id="skin-name-display" style="position:absolute; top:12%; left:50%; transform:translateX(-50%); color:#ffdf00; font-weight:800; font-size:30px;">PELE ORIGINAL</div>
+            <div id="left-arrow" class="arrow-btn" style="left:8%;"><svg width="80" height="80" viewBox="0 0 24 24" fill="#ffdf00"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+            <div id="right-arrow" class="arrow-btn" style="right:8%;"><svg width="80" height="80" viewBox="0 0 24 24" fill="#ffdf00"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>
+            <button id="skin-ok-btn" class="btn-aaa" style="background: #ffdf00; color: #000; position:absolute; bottom:15%; left:50%; transform:translateX(-50%); z-index: 110;">OK</button>
+        </div>
+
+        <div id="death-screen" class="hidden">
+            <h2>A LENDA TERMINOU</h2>
+            <div class="glass-panel" style="padding: 30px 60px; border-radius: 30px; margin-bottom: 30px; text-align: center; border-color:#ffdf00; background:rgba(0,0,0,0.8);">
+                <p style="margin: 0; color: rgba(255,255,255,0.4); font-weight: 600; font-size:12px; letter-spacing:2px;">ABUNDÂNCIA RECOLHIDA</p>
+                <div id="death-length" style="font-size: 60px; font-weight: 800; color: #ffdf00; text-shadow: 0 0 20px rgba(255,223,0,0.5);">0</div>
+                <p style="margin-top:10px; font-weight:600; color:rgba(255,255,255,0.8);">INIMIGOS VENCIDOS: <span id="death-kills" style="color:#ffdf00">0</span></p>
+            </div>
+            <button id="play-again-btn" class="btn-aaa">RECOMEÇAR</button>
+        </div>
+
+        <div id="orientation-overlay">
+            <div style="font-size: 50px;">📱</div>
+            <h2>RODE O APARELHO</h2>
+            <p>Jogue em modo horizontal.</p>
+        </div>
+    </div>
+
+<script>
+/**
+ * =========================================================================================
+ * ⚙️ PAINEL DE CONFIGURAÇÕES (MODO FÁCIL PARA EDIÇÃO)
+ * Altere os valores abaixo para modificar o comportamento do jogo no PC e Mobile.
+ * =========================================================================================
+ */
+const IS_MOBILE_CLIENT = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024;
+
+const CONFIG = {
+    // 🐍 1. CONFIGURAÇÕES DA SERPENTE
+    cobra: {
+        pc: {
+            espessuraInicial: 18,       // Grossura da cobra ao nascer (PC)
+            espessuraMaxima: 36,        // Limite máximo de grossura (PC)
+            comprimentoMaximo: 500,     // Limite máximo de gomos do corpo (PC)
+            velocidadeBase: 3.6,        // Velocidade normal ao andar (PC)
+            velocidadeTurbo: 9.8        // Velocidade máxima ao pressionar o clique do rato (PC)
+        },
+        mobile: {
+            espessuraInicial: 16,       // Grossura da cobra ao nascer (Mobile)
+            espessuraMaxima: 28,        // Limite máximo de grossura (Mobile)
+            comprimentoMaximo: 380,     // Limite máximo de gomos do corpo (Mobile)
+            velocidadeBase: 3.4,        // Velocidade normal ao andar (Mobile)
+            velocidadeTurbo: 8.5        // Velocidade máxima ao usar o botão Turbo (Mobile)
+        },
+        // Comum a ambos os dispositivos:
+        comprimentoInicial: 25,         // Quantos gomos (pontos) a cobra tem ao começar o jogo
+        distanciaGomos: 0.22,           // Espaço/sobreposição entre cada gomo do corpo (0 a 1)
+        pontosParaEngrossar: 140,       // Abundância necessária para alargar a cobra em 1 pixel
+        pontosParaCrescer: 12,          // Abundância necessária para ganhar 1 gomo extra
+        custoDoTurbo: 2.5               // Quantidade de pontos perdidos por instante ao usar o turbo
+    },
+
+    // 🔍 2. CONFIGURAÇÕES DE CÂMARA E ZOOM
+    zoom: {
+        pc: {
+            inicial: 1.30,              // Zoom inicial (PC) - Valores maiores aproximam mais
+            minimo: 0.85,               // Distância máxima que a câmara afasta quando se fica gigante (PC)
+            fatorAfastamento: 0.015     // O quão rápido a câmara recua conforme se ganha pontos (PC)
+        },
+        mobile: {
+            inicial: 0.85,              // Zoom inicial (Mobile) - Começa mais afastado para ver mais área
+            minimo: 0.30,               // Distância máxima de afastamento (Mobile)
+            fatorAfastamento: 0.012     // O quão rápido a câmara recua (Mobile)
+        }
+    },
+
+    // 🌍 3. CONFIGURAÇÕES DO MAPA E UNIVERSO
+    mundo: {
+        tamanhoRaio: 8500,              // Tamanho total da arena circular (A fronteira de Rubi)
+        quantidadeBots: 85,             // Quantos inimigos de IA andam pelo mapa simultaneamente
+        quantidadeComida: 8500,         // Número máximo de orbs de comida espalhados pelo chão
+        tamanhoComidaMin: 4.5,          // Tamanho mínimo que uma orb pode ter
+        tamanhoComidaMax: 9.5,          // Tamanho máximo que uma orb pode ter
+        forcaAtracao: 85,               // Força do íman (Raio em pixeis que "suga" a comida para a cobra)
+        corGrade: 'rgba(255,255,255,0.03)', // Cor das linhas do mosaico hexagonal (Branco quase invisível)
+        corFundo: '#050505',            // Cor do fundo escuro do mapa (Preto AAA)
+        tamanhoHexagono: 55             // Escala de cada célula do mosaico cinza no chão
+    },
+
+    // ✨ 4. CONFIGURAÇÕES VISUAIS E EFEITOS AMBIENTAIS
+    visual: {
+        balancoComida: 4.5,             // Efeito de tremor/vibração flutuante das orbs no mapa
+        velocidadeAnimacaoComida: 0.003,// Velocidade com que as orbs vibram
+        quantidadeVagalumes: 100,       // Número de luzes brancas flutuantes na arena
+        distanciaFugaVagalumes: 280     // Distância a que o vagalume sente o perigo de uma cobra e foge
+    }
+};
+
+/**
+ * =========================================================================================
+ * FIM DAS CONFIGURAÇÕES (Abaixo está o Motor de Jogo - Não alterar sem conhecimento técnico)
+ * =========================================================================================
+ */
+
+const WORLD_CENTER = CONFIG.mundo.tamanhoRaio;
+const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã"];
+const PALETTE_COLORS = ['#ffdf00', '#ffffff', '#aaaaaa', '#666666', '#ffaa00', '#cccccc', '#ffcc00', '#dddddd', '#888888'];
+
+const SKINS = [
+    ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#002776', '#002776'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222'] 
+];
+
+const SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados"];
+
+// Referências Globais
+let snakes = [], foods = [], fireflies = [], particles = [], player = null;
+let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
+let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
+let joystickActive = false, joystickAngle = 0, skinIndex = 0;
+
+// Elementos DOM (Garantidos)
+const gameCanvasElement = document.getElementById('gameCanvas');
+const mainCtx = gameCanvasElement.getContext('2d', { alpha: false });
+const minimapCanvasElement = document.getElementById('minimap');
+const mCtxElement = minimapCanvasElement.getContext('2d');
+
+const UI = {
+    start: document.getElementById('start-menu'), play: document.getElementById('play-btn'), nick: document.getElementById('nickname'),
+    skins: document.getElementById('skins-btn'), preview: document.getElementById('skin-preview-ui'), ok: document.getElementById('skin-ok-btn'),
+    left: document.getElementById('left-arrow'), right: document.getElementById('right-arrow'),
+    lb: document.getElementById('leaderboard'), lbList: document.getElementById('lb-list'),
+    status: document.getElementById('hud-status'), score: document.getElementById('score-display'), rank: document.getElementById('rank-display'), total: document.getElementById('total-display'),
+    death: document.getElementById('death-screen'), deathLen: document.getElementById('death-length'), deathKills: document.getElementById('death-kills'),
+    again: document.getElementById('play-again-btn'), skinName: document.getElementById('skin-name-display'), orient: document.getElementById('orientation-overlay'),
+    ctrls: document.getElementById('mobile-controls'), joyB: document.getElementById('joystick-base'), joyH: document.getElementById('joystick-handle'), boost: document.getElementById('mobile-boost-btn'),
+    mini: document.getElementById('minimap-wrapper')
+};
+
+/**
+ * FUNÇÕES UTILITÁRIAS
+ */
+
+function getRandomPosInCircle(p = 50) { 
+    let r = Math.sqrt(Math.random()) * (WORLD_CENTER - p), t = Math.random() * 2 * Math.PI; 
+    return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) }; 
+}
+
+function getSafeSpawnPos(minD) { 
+    let p, safe = false, att = 0; 
+    while (!safe && att < 50) { p = getRandomPosInCircle(300); safe = true; if (player && player.alive && Math.hypot(player.x - p.x, player.y - p.y) < minD) safe = false; att++; } 
+    return p; 
+}
+
+function spawnFood(count) { 
+    for (let i = 0; i < count; i++) { 
+        let p = getRandomPosInCircle(20); 
+        foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random()*PALETTE_COLORS.length)])); 
+    } 
+}
+
+function createExplosion(x, y, color, amount) { for(let i=0; i<amount; i++) particles.push(new Particle(x, y, color, Math.random()*5 + 2)); }
+
+const TextureManager = {
+    cache: {},
+    getSegment: function(color) {
+        if(this.cache[color]) return this.cache[color];
+        const c = document.createElement('canvas'); c.width = 128; c.height = 128; const cx = c.getContext('2d'); const r = 64;
+        cx.beginPath(); cx.arc(r, r, r - 2, 0, Math.PI * 2); cx.fillStyle = color; cx.fill();
+        const grad = cx.createRadialGradient(r-r*0.2, r-r*0.2, r*0.1, r, r, r); grad.addColorStop(0, 'rgba(255,255,255,0.2)'); grad.addColorStop(1, 'rgba(0,0,0,0.4)'); 
+        cx.fillStyle = grad; cx.fill(); this.cache[color] = c; return c;
+    },
+    getFood: function(color) {
+        let key = 'food_' + color; if(this.cache[key]) return this.cache[key];
+        const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const r = 32;
+        const gG = cx.createRadialGradient(r, r, r*0.1, r, r, r); gG.addColorStop(0, color); gG.addColorStop(1, 'rgba(0,0,0,0)');
+        cx.fillStyle = gG; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI*2); cx.fill();
+        cx.beginPath(); cx.arc(r, r, r*0.4, 0, Math.PI*2); cx.fillStyle = color; cx.fill();
+        cx.beginPath(); cx.arc(r-4, r-4, 4, 0, Math.PI*2); cx.fillStyle = 'rgba(255,255,255,0.8)'; cx.fill();
+        this.cache[key] = c; return c;
+    },
+    getDroppedFood: function(color) {
+        let key = 'drop_' + color; if(this.cache[key]) return this.cache[key];
+        const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const r = 32;
+        const gG = cx.createRadialGradient(r, r, r*0.15, r, r, r); gG.addColorStop(0, 'white'); gG.addColorStop(0.4, color); gG.addColorStop(1, 'rgba(0,0,0,0)');
+        cx.fillStyle = gG; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI*2); cx.fill();
+        cx.beginPath(); cx.arc(r, r, r*0.45, 0, Math.PI*2); cx.fillStyle = 'white'; cx.fill();
+        this.cache[key] = c; return c;
+    }
+};
+
+function drawStandardEyes(ctx, x, y, radius, angle, lookAngle, skinId) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    let oD = radius * 0.55, aO = Math.PI / 3.5, pO = radius * 0.15, eR = radius * 0.4, pR = eR * 0.6;
+    ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = 'white';
+    if (skinId === 18) { 
+        ctx.beginPath(); ctx.arc(radius * 0.25, 0, eR*1.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(radius * 0.25 + Math.cos(lookAngle-angle)*pO, Math.sin(lookAngle-angle)*pO, pR*1.1, 0, Math.PI * 2); ctx.fillStyle = '#111'; ctx.fill();
+    } else {
+        let e1x = Math.cos(-aO) * oD, e1y = Math.sin(-aO) * oD;
+        ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        let e2x = Math.cos(aO) * oD, e2y = Math.sin(aO) * oD;
+        ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#111';
+        ctx.beginPath(); ctx.arc(e1x + Math.cos(lookAngle-angle)*pO, e1y + Math.sin(lookAngle-angle)*pO, pR, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(e2x + Math.cos(lookAngle-angle)*pO, e2y + Math.sin(lookAngle-angle)*pO, pR, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+}
+
+/**
+ * ==========================================
+ * 🐍 CLASSES DE ENTIDADES
+ * ==========================================
+ */
+
+class Particle {
+    constructor(x, y, color, s) { this.x = x; this.y = y; this.color = color; let a = Math.random() * Math.PI * 2; this.vx = Math.cos(a) * s; this.vy = Math.sin(a) * s; this.life = 1.0; this.decay = 0.02 + Math.random() * 0.02; this.size = 2 + Math.random() * 3; }
+    update() { this.x += this.vx; this.y += this.vy; this.life -= this.decay; }
+    draw(ctx) { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1; }
+}
+
+class Food {
+    constructor(x, y, r, c, isD = false, eV = 2) { this.x = x; this.y = y; this.radius = r; this.color = c; this.isDropped = isD; this.value = eV; this.wO = Math.random() * Math.PI * 2; }
+    draw(ctx, time) { 
+        let dx = this.x + Math.cos(time * CONFIG.visual.velocidadeAnimacaoComida + this.wO) * CONFIG.visual.balancoComida;
+        let dy = this.y + Math.sin(time * CONFIG.visual.velocidadeAnimacaoComida + this.wO) * CONFIG.visual.balancoComida; 
+        let img = this.isDropped ? TextureManager.getDroppedFood(this.color) : TextureManager.getFood(this.color); 
+        ctx.drawImage(img, dx - this.radius, dy - this.radius, this.radius * 2, this.radius * 2); 
+    }
+}
+
+class Firefly {
+    constructor() { 
+        let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * 2 * Math.PI; 
+        this.x = WORLD_CENTER + r * Math.cos(t); this.y = WORLD_CENTER + r * Math.sin(t); 
+        this.radius = 3 + Math.random() * 3; this.angle = Math.random() * Math.PI * 2; 
+        this.speed = 1.0; this.color = '#fff'; 
+        this.offset = Math.random() * 100; 
+    }
+    update() { 
+        let dX = 0, dY = 0, count = 0;
+        for(let s of snakes) {
+            if(!s.alive) continue;
+            let d = Math.hypot(s.x - this.x, s.y - this.y);
+            if(d < CONFIG.visual.distanciaFugaVagalumes) { dX += s.x; dY += s.y; count++; }
+        }
+        if(count > 0) {
+            let away = Math.atan2(this.y - (dY/count), this.x - (dX/count));
+            let diff = away - this.angle;
+            while(diff < -Math.PI) diff += Math.PI * 2; while(diff > Math.PI) diff -= Math.PI * 2;
+            this.angle += diff * 0.15; this.speed = 4.5;
+        } else { this.angle += (Math.random() - 0.5) * 0.1; this.speed = 1.2; }
+        this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
+        if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); 
+    }
+    draw(ctx, time) { 
+        let p = Math.sin(time * 0.003 + this.offset), cR = Math.max(1, this.radius + p); 
+        ctx.beginPath(); ctx.arc(this.x, this.y, cR*4, 0, Math.PI * 2); 
+        let g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, cR*4); 
+        g.addColorStop(0, 'rgba(255,255,255,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); 
+        ctx.fillStyle = g; ctx.fill(); 
+    }
+}
+
+class Snake {
+    constructor(x, y, n, sI, isP = false) {
+        this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
+        this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle; this.conf = IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc;
+        this.speed = this.conf.velocidadeBase; this.isBoosting = false; this.score = 40; this.radius = this.conf.espessuraInicial; this.segments = []; this.targetLength = CONFIG.cobra.comprimentoInicial;
+        for (let i = 0; i < this.targetLength; i++) this.segments.push({ x: x, y: y });
+    }
+    updateAI() {
+        let danger = false, evadeAngle = 0;
+        for (let other of snakes) {
+            if (other === this || !other.alive) continue;
+            if (Math.hypot(other.x - this.x, other.y - this.y) < this.radius * 12) {
+                for (let k = 0; k < other.segments.length; k += 10) {
+                    if (Math.hypot(other.segments[k].x - this.x, other.segments[k].y - this.y) < this.radius * 6) {
+                        danger = true; evadeAngle = Math.atan2(this.y - other.segments[k].y, this.x - other.segments[k].x); break;
+                    }
+                }
+            }
+            if (danger) break;
+        }
+        if (danger) { this.targetAngle = evadeAngle; this.isBoosting = true; } 
+        else {
+            this.isBoosting = false;
+            if (frameCount % 30 === 0) {
+                let nearest = null, minDist = 700;
+                for (let f of foods) { let d = Math.hypot(f.x-this.x, f.y-this.y); if(d<minDist) { minDist=d; nearest=f; } }
+                if (nearest) this.targetAngle = Math.atan2(nearest.y - this.y, nearest.x - this.x);
+                else if (Math.random() < 0.2) this.targetAngle += (Math.random() - 0.5) * 2;
+            }
+        }
+        if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER - 600) this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
+    }
+    update() {
+        if (!this.alive) return;
+        this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima); 
+        this.targetLength = Math.min(CONFIG.cobra.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo); 
+        if (this.segments.length < this.targetLength) this.segments.push({ x: this.segments[this.segments.length - 1].x, y: this.segments[this.segments.length - 1].y });
+        
+        if (this.isBoosting && this.score > 50) {
+            this.speed = this.conf.velocidadeTurbo; 
+            if (Math.random() < 0.3) { 
+                this.score -= CONFIG.cobra.custoDoTurbo; 
+                let t = this.segments[this.segments.length - 1]; 
+                foods.push(new Food(t.x+(Math.random()*10-5), t.y+(Math.random()*10-5), 5.5, this.skin[this.segments.length % this.skin.length], true, CONFIG.cobra.custoDoTurbo)); 
+            }
+        } else { this.speed = this.conf.velocidadeBase; this.isBoosting = false; }
+        
+        if (this.isPlayer) {
+            if (joystickActive) this.targetAngle = joystickAngle; 
+            else if (!IS_MOBILE_CLIENT) this.targetAngle = Math.atan2((mouseY - window.innerHeight / 2) / camera.zoom, (mouseX - window.innerWidth / 2) / camera.zoom);
+        } else this.updateAI();
+
+        let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
+        let tS = Math.max(0.04, 0.08 - (this.radius * 0.0012)); if (this.isBoosting) tS *= 1.35;
+        if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
+        this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
+        
+        if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) { this.die(false); return; }
+        
+        let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos; 
+        for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
+        
+        for (let i = foods.length - 1; i >= 0; i--) {
+            let f = foods[i], d2 = (this.x-f.x)**2 + (this.y-f.y)**2;
+            if (d2 < (CONFIG.mundo.forcaAtracao)**2) { let d = Math.sqrt(d2); f.x += (this.x-f.x)/d * 8; f.y += (this.y-f.y)/d * 8; }
+            if (d2 < (this.radius + f.radius)**2) { this.score += f.value; foods.splice(i, 1); }
+        }
+    }
+    die(dropFood = true) {
+        this.alive = false; createExplosion(this.x, this.y, this.mainColor, 35); if (this.isPlayer) camera.shake = 25;
+        if (dropFood) {
+            let step = 5, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num;
+            for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; foods.push(new Food(s.x+(Math.random()*20-10), s.y+(Math.random()*20-10), 9 + Math.min(10, val/30), this.skin[i % this.skin.length], true, val)); }
+        }
+        if (this.isPlayer) { gameState = 'dead'; setTimeout(() => { UI.deathLen.innerText = Math.floor(this.score).toLocaleString(); UI.deathKills.innerText = playerKills; UI.death.classList.remove('hidden'); UI.lb.style.display = 'none'; UI.status.style.display = 'none'; UI.mini.style.display = 'none'; UI.ctrls.style.display = 'none'; }, 1500); }
+    }
+    draw(ctx) {
+        if (!this.alive) return;
+        for (let i = this.segments.length - 1; i >= 0; i--) ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), this.segments[i].x - this.radius, this.segments[i].y - this.radius, this.radius * 2, this.radius * 2);
+        ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+        let look = (joystickActive && this.isPlayer) ? joystickAngle : this.angle;
+        drawStandardEyes(ctx, this.x, this.y, this.radius, this.angle, look, this.skinId);
+    }
+}
+
+/**
+ * ==========================================
+ * 🔄 UI E MOTOR DE JOGO
+ * ==========================================
+ */
+
+async function enterFullscreen() {
+    try {
+        const d = document.documentElement;
+        if (d.requestFullscreen) await d.requestFullscreen();
+        else if (d.webkitRequestFullscreen) await d.webkitRequestFullscreen();
+        if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape').catch(() => {});
+    } catch (e) {}
+}
+
+function resize() { 
+    if (!gameCanvasElement) return; gameCanvasElement.width = window.innerWidth; gameCanvasElement.height = window.innerHeight; 
+    minimapCanvasElement.width = 140; minimapCanvasElement.height = 140; 
+    if (IS_MOBILE_CLIENT) UI.orient.style.display = window.innerHeight > window.innerWidth ? 'flex' : 'none';
+}
+
+function updateHUD() {
+    if (gameState !== 'playing' || !player) return;
+    UI.score.innerText = Math.floor(player.score).toLocaleString();
+    let act = snakes.filter(s => s.alive); let sorted = [...act].sort((a,b) => b.score - a.score);
+    UI.rank.innerText = sorted.findIndex(s => s === player) + 1; UI.total.innerText = sorted.length;
+    let html = '';
+    for (let i = 0; i < Math.min(10, sorted.length); i++) { 
+        let s = sorted[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i+1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`; 
+    }
+    UI.lbList.innerHTML = html;
+    mCtxElement.clearRect(0,0,140,140); mCtxElement.beginPath(); mCtxElement.arc(70,70,70,0,Math.PI*2); mCtxElement.fillStyle='rgba(255,255,255,0.05)'; mCtxElement.fill();
+    let sc = 140 / (WORLD_CENTER * 2);
+    for(let s of act) { mCtxElement.beginPath(); mCtxElement.arc(s.x*sc, s.y*sc, s === player ? 4 : 1.5, 0, Math.PI*2); mCtxElement.fillStyle = s === player ? '#fff' : 'rgba(255,255,255,0.3)'; mCtxElement.fill(); }
+}
+
+function drawGrid(ctx, camX, camY, zoom) {
+    ctx.fillStyle = CONFIG.mundo.corFundo; ctx.fillRect(camX - (window.innerWidth/zoom)/2, camY - (window.innerHeight/zoom)/2, window.innerWidth/zoom, window.innerHeight/zoom);
+    let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, 0, WORLD_CENTER, WORLD_CENTER, WORLD_CENTER);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, WORLD_CENTER*2, WORLD_CENTER*2);
+
+    const size = CONFIG.mundo.tamanhoHexagono; const h = size * Math.sqrt(3); const w = size * 1.5;
+    let sC = Math.floor((camX - (window.innerWidth/zoom)/2) / w) - 1; let eC = Math.ceil((camX + (window.innerWidth/zoom)/2) / w) + 1;
+    let sR = Math.floor((camY - (window.innerHeight/zoom)/2) / h) - 1; let eR = Math.ceil((camY + (window.innerHeight/zoom)/2) / h) + 1;
+
+    ctx.beginPath(); ctx.strokeStyle = CONFIG.mundo.corGrade; ctx.lineWidth = 1;
+    for (let c = sC; c <= eC; c++) {
+        for (let r = sR; r <= eR; r++) {
+            let x = c * w, y = r * h + (c % 2 ? h / 2 : 0);
+            ctx.moveTo(x + size, y); for (let i = 1; i <= 6; i++) ctx.lineTo(x + size * Math.cos(i * Math.PI / 3), y + size * Math.sin(i * Math.PI / 3));
+        }
+    }
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, WORLD_CENTER, 0, Math.PI*2); ctx.strokeStyle = 'rgba(255, 0, 0, 0.15)'; ctx.lineWidth = 30; ctx.stroke();
+}
+
+function gameLoop(time) {
+    mainCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    if (gameState === 'menu') {
+        mainCtx.fillStyle = CONFIG.mundo.corFundo; mainCtx.fillRect(0,0,window.innerWidth, window.innerHeight);
+        for (let ff of fireflies) { ff.update(); ff.draw(mainCtx, time); }
+        let grad = mainCtx.createRadialGradient(window.innerWidth/2, window.innerHeight/2, 0, window.innerWidth/2, window.innerHeight/2, window.innerWidth);
+        grad.addColorStop(0, 'rgba(255,255,255,0.05)'); grad.addColorStop(1, 'rgba(0,0,0,0.9)');
+        mainCtx.fillStyle = grad; mainCtx.fillRect(0,0,window.innerWidth, window.innerHeight);
+    }
+    else if (gameState === 'skin-menu') {
+        mainCtx.fillStyle = CONFIG.mundo.corFundo; mainCtx.fillRect(0,0,window.innerWidth, window.innerHeight);
+        let act = SKINS[skinIndex], rad = IS_MOBILE_CLIENT ? 26 : 32, len = 60, segs = [], spc = rad * 0.45;
+        let headX = window.innerWidth / 2 + (len * spc) / 2, centerY = window.innerHeight / 2;
+        for(let i=0; i<len; i++) segs.push({x: headX - (i*spc), y: centerY + Math.sin(time*0.005 - i * 0.15) * 40});
+        for(let i=segs.length-1; i>=0; i--) mainCtx.drawImage(TextureManager.getSegment(act[i % act.length]), segs[i].x-rad, segs[i].y-rad, rad*2, rad*2);
+        let h = segs[0]; mainCtx.drawImage(TextureManager.getSegment(act[0]), h.x-rad, h.y-rad, rad*2, rad*2);
+        drawStandardEyes(mainCtx, h.x, h.y, rad, 0, 0, skinIndex);
+    }
+    else if (gameState === 'playing' || gameState === 'dead') {
+        if (player && player.alive) player.isBoosting = isMouseDown;
+        if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random()*BOT_NAMES.length)], Math.floor(Math.random()*SKINS.length)));
+        if (foods.length < CONFIG.mundo.quantidadeComida) spawnFood(15);
+        for (let s of snakes) s.update();
+        for (let i = 0; i < snakes.length; i++) {
+            let s1 = snakes[i]; if (!s1.alive) continue;
+            for (let j = 0; j < snakes.length; j++) {
+                let s2 = snakes[j]; if (i === j || !s2.alive) continue;
+                let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8);
+                for (let k = 0; k < s2.segments.length; k += 4) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } }
+            }
+        }
+        if (player && player.alive) {
+            camera.x += (player.x-camera.x)*0.1; camera.y += (player.y-camera.y)*0.1;
+            let zV = CONFIG.zoom[IS_MOBILE_CLIENT?'mobile':'pc'];
+            camera.zoom += (Math.max(zV.minimo, zV.inicial - Math.pow(player.score, 0.4)*zV.fatorAfastamento) * (player.isBoosting?0.94:1) - camera.zoom)*0.05;
+        }
+        snakes = snakes.filter(s => s.alive || s.isPlayer);
+        for(let i=particles.length-1; i>=0; i--) { particles[i].update(); if(particles[i].life<=0) particles.splice(i,1); }
+        for(let ff of fireflies) ff.update();
+        mainCtx.save(); mainCtx.translate(window.innerWidth/2, window.innerHeight/2);
+        if (camera.shake > 0.5) { mainCtx.translate(Math.random()*camera.shake-camera.shake/2, Math.random()*camera.shake-camera.shake/2); camera.shake *= 0.85; }
+        mainCtx.scale(camera.zoom, camera.zoom); mainCtx.translate(-camera.x, -camera.y);
+        drawGrid(mainCtx, camera.x, camera.y, camera.zoom);
+        for(let ff of fireflies) ff.draw(mainCtx, time);
+        for(let f of foods) f.draw(mainCtx, time);
+        for(let p of particles) p.draw(mainCtx);
+        let dL = [...snakes].sort((a,b) => a.score-b.score); for(let s of dL) s.draw(mainCtx);
+        mainCtx.restore();
+        if (frameCount % 10 === 0) updateHUD(); frameCount++;
+    }
+    requestAnimationFrame(gameLoop);
+}
+
+// Listeners
+window.addEventListener('resize', resize);
+window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+window.addEventListener('mousedown', (e) => { if(e.button === 0) isMouseDown = true; });
+window.addEventListener('mouseup', (e) => { if(e.button === 0) isMouseDown = false; });
+
+UI.play.addEventListener('click', async () => {
+    await enterFullscreen(); 
+    snakes = []; foods = []; fireflies = []; particles = []; playerKills = 0;
+    player = new Snake(WORLD_CENTER, WORLD_CENTER, UI.nick.value.trim() || "LENDA", skinIndex, true); snakes.push(player);
+    for(let i=0; i<CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[i%BOT_NAMES.length], Math.floor(Math.random()*SKINS.length)));
+    spawnFood(CONFIG.mundo.quantidadeComida); for(let i=0; i<CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
+    gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
+    UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
+    if(IS_MOBILE_CLIENT) UI.ctrls.style.display = 'block';
+});
+
+UI.skins.addEventListener('click', () => { gameState = 'skin-menu'; UI.start.style.display = 'none'; UI.preview.classList.remove('hidden'); UI.skinName.innerText = SKIN_NAMES[skinIndex]; });
+UI.ok.addEventListener('click', () => { UI.preview.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
+UI.left.addEventListener('click', () => { skinIndex = (skinIndex-1+SKINS.length)%SKINS.length; UI.skinName.innerText = SKIN_NAMES[skinIndex]; });
+UI.right.addEventListener('click', () => { skinIndex = (skinIndex+1)%SKINS.length; UI.skinName.innerText = SKIN_NAMES[skinIndex]; });
+UI.again.addEventListener('click', () => { UI.death.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
+
+UI.joyB.addEventListener('touchstart', (e) => { 
+    joystickActive = true; const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width/2, cY = r.top + r.height/2; 
+    joystickAngle = Math.atan2(e.touches[0].clientY - cY, e.touches[0].clientX - cX); 
+}, {passive:false});
+
+window.addEventListener('touchmove', (e) => { 
+    if(joystickActive) { 
+        const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width/2, cY = r.top + r.height/2; 
+        const dx = e.touches[0].clientX - cX, dy = e.touches[0].clientY - cY, dist = Math.hypot(dx, dy), maxD = r.width / 2; 
+        joystickAngle = Math.atan2(dy, dx); const capD = Math.min(dist, maxD); 
+        UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle)*capD}px), calc(-50% + ${Math.sin(joystickAngle)*capD}px))`; e.preventDefault(); 
+    } 
+}, {passive:false});
+
+window.addEventListener('touchend', () => { joystickActive = false; UI.joyH.style.transform = 'translate(-50%, -50%)'; });
+UI.boost.addEventListener('touchstart', (e) => { isMouseDown = true; e.preventDefault(); });
+UI.boost.addEventListener('touchend', (e) => { isMouseDown = false; e.preventDefault(); });
+
+resize();
+spawnFood(10);
+for(let i=0; i<CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
