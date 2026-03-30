@@ -1016,10 +1016,11 @@
             requestAnimationFrame(gameLoop);
         }
 
+        let socketGlob = null;
         if (typeof io !== 'undefined') {
-            const socket = io();
+            socketGlob = io();
 
-            socket.on('match_found', (data) => {
+            socketGlob.on('match_found', (data) => {
                 myPlayerId = data.playerState.id;
                 console.log("Conectado ao Motor da Nuvem! Arena:", data.arenaId);
                 
@@ -1032,7 +1033,7 @@
                 if (IS_MOBILE_CLIENT) UI.ctrls.style.display = 'block';
             });
 
-            socket.on('tick', (snapshot) => {
+            socketGlob.on('tick', (snapshot) => {
                 if (gameState !== 'playing') return;
                 
                 // Mapear Snakes Atuais
@@ -1054,13 +1055,12 @@
                 
                 // Culling de cobras que morreram no servidor
                 snakes = snakes.filter(s => activeIds.has(s.id));
-                window.socketRef = socket; // save globally
             });
 
             // Sync Inputs
             setInterval(() => {
                 if (player && player.alive && gameState === 'playing') {
-                    socket.emit('input', { angle: player.targetAngle, isBoosting: isMouseDown || player.isBoosting });
+                    socketGlob.emit('input', { angle: player.targetAngle, isBoosting: isMouseDown || player.isBoosting });
                 }
             }, 50); // Manda o input 20x por segundo independentemente da renderização visual
         }
@@ -1077,9 +1077,8 @@
             snakes = []; foods = []; fireflies = []; particles = []; playerKills = 0;
             
             // Avisa o servidor que queremos jogar (O motor fará Matchmaking)
-            if (typeof io !== 'undefined') {
-                const sck = window.socketRef || io();
-                sck.emit('join', { name: UI.nick.value.trim() || 'LENDA', skinId: skinIndex });
+            if (socketGlob) {
+                socketGlob.emit('join', { name: UI.nick.value.trim() || 'LENDA', skinId: skinIndex });
             } else {
                 alert("Servidor Multiplayer Inacessível.");
             }
