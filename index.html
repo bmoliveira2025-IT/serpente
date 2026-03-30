@@ -225,7 +225,10 @@ const CONFIG = {
         forcaAtracao: 50,               // Força do íman (Raio em pixeis que "suga" a comida para a cobra)
         corGrade: 'rgba(255,255,255,0.03)', // Cor das linhas do mosaico hexagonal (Branco quase invisível)
         corFundo: '#050505',            // Cor do fundo escuro do mapa (Preto AAA)
-        tamanhoHexagono: 75             // Escala de cada célula do mosaico cinza no chão
+        tamanhoHexagono: {
+            pc: 75,                     // Escala da célula do mosaico (PC)
+            mobile: 45                  // Escala da célula do mosaico (Mobile)
+        }
     },
 
     // ✨ 4. CONFIGURAÇÕES VISUAIS E EFEITOS AMBIENTAIS
@@ -541,7 +544,7 @@ function drawGrid(ctx, camX, camY, zoom) {
     grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, WORLD_CENTER*2, WORLD_CENTER*2);
 
-    const size = CONFIG.mundo.tamanhoHexagono; const h = size * Math.sqrt(3); const w = size * 1.5;
+    const size = IS_MOBILE_CLIENT ? CONFIG.mundo.tamanhoHexagono.mobile : CONFIG.mundo.tamanhoHexagono.pc; const h = size * Math.sqrt(3); const w = size * 1.5;
     let sC = Math.floor((camX - (window.innerWidth/zoom)/2) / w) - 1; let eC = Math.ceil((camX + (window.innerWidth/zoom)/2) / w) + 1;
     let sR = Math.floor((camY - (window.innerHeight/zoom)/2) / h) - 1; let eR = Math.ceil((camY + (window.innerHeight/zoom)/2) / h) + 1;
 
