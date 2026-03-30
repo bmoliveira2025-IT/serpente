@@ -455,7 +455,7 @@
                     espessuraInicial: 10,       // Grossura da cobra ao nascer (Mobile)
                     espessuraMaxima: 20,        // Limite máximo de grossura (Mobile)
                     comprimentoMaximo: 350,     // Limite máximo de gomos do corpo (Mobile)
-                    velocidadeBase: 3.5,        // Velocidade normal ao andar (Mobile)
+                    velocidadeBase: 3.2,        // Velocidade normal ao andar (Mobile)
                     velocidadeTurbo: 8.5        // Velocidade máxima ao usar o botão Turbo (Mobile)
                 },
                 // Comum a ambos os dispositivos:
@@ -484,21 +484,21 @@
             mundo: {
                 tamanhoRaio: 8500,              // Tamanho total da arena circular (A fronteira de Rubi)
                 quantidadeBots: 85,             // Quantos inimigos de IA andam pelo mapa simultaneamente
-                quantidadeComida: 9500,         // Número máximo de orbs de comida espalhados pelo chão
-                tamanhoComidaMin: 4.0,          // Tamanho mínimo que uma orb pode ter
+                quantidadeComida: 10000,         // Número máximo de orbs de comida espalhados pelo chão
+                tamanhoComidaMin: 4.5,          // Tamanho mínimo que uma orb pode ter
                 tamanhoComidaMax: 9.5,          // Tamanho máximo que uma orb pode ter
-                forcaAtracao: 50,               // Força do íman (Raio em pixeis que "suga" a comida para a cobra)
+                forcaAtracao: 30,               // Força do íman (Raio em pixeis que "suga" a comida para a cobra)
                 corGrade: 'rgba(255,255,255,0.03)', // Cor das linhas do mosaico hexagonal (Branco quase invisível)
                 corFundo: '#050505',            // Cor do fundo escuro do mapa (Preto AAA)
                 tamanhoHexagono: {
                     pc: 75,                     // Escala da célula do mosaico (PC)
-                    mobile: 15                  // Escala da célula do mosaico (Mobile)
+                    mobile: 10                  // Escala da célula do mosaico (Mobile)
                 }
             },
 
             // ✨ 4. CONFIGURAÇÕES VISUAIS E EFEITOS AMBIENTAIS
             visual: {
-                balancoComida: 4.5,             // Efeito de tremor/vibração flutuante das orbs no mapa
+                balancoComida: 5.0,             // Efeito de tremor/vibração flutuante das orbs no mapa
                 velocidadeAnimacaoComida: 0.003,// Velocidade com que as orbs vibram
                 quantidadeVagalumes: 100,       // Número de luzes brancas flutuantes na arena
                 distanciaFugaVagalumes: 280     // Distância a que o vagalume sente o perigo de uma cobra e foge
