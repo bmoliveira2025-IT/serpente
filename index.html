@@ -456,7 +456,7 @@
             display: none !important;
         }
     </style>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 
 <body>
@@ -1017,7 +1017,7 @@
         }
 
         if (typeof io !== 'undefined') {
-            const socket = io();
+            const socket = io('http://168.138.140.88:3000');
 
             socket.on('match_found', (data) => {
                 myPlayerId = data.playerState.id;
@@ -1078,7 +1078,7 @@
             
             // Avisa o servidor que queremos jogar (O motor fará Matchmaking)
             if (typeof io !== 'undefined') {
-                const sck = window.socketRef || io();
+                const sck = window.socketRef || io('http://168.138.140.88:3000');
                 sck.emit('join', { name: UI.nick.value.trim() || 'LENDA', skinId: skinIndex });
             } else {
                 alert("Servidor Multiplayer Inacessível.");
