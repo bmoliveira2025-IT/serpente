@@ -823,9 +823,15 @@
             }
             updateAI() {
                 let danger = false, evadeAngle = 0;
+                let myReach = this.radius * 12;
                 for (let other of snakes) {
                     if (other === this || !other.alive) continue;
-                    if (Math.hypot(other.x - this.x, other.y - this.y) < this.radius * 12) {
+                    
+                    // Fast AABB Check: Aborta o cálculo de AI se o bot estiver fora do range máximo de extensão da outra cobra
+                    let otherReach = other.radius * CONFIG.cobra.distanciaGomos * other.segments.length;
+                    if (Math.abs(other.x - this.x) > otherReach + myReach || Math.abs(other.y - this.y) > otherReach + myReach) continue;
+
+                    if (Math.hypot(other.x - this.x, other.y - this.y) < myReach) {
                         for (let k = 0; k < other.segments.length; k += 10) {
                             if (Math.hypot(other.segments[k].x - this.x, other.segments[k].y - this.y) < this.radius * 6) {
                                 danger = true; evadeAngle = Math.atan2(this.y - other.segments[k].y, this.x - other.segments[k].x); break;
@@ -992,6 +998,11 @@
                     for (let j = 0; j < snakes.length; j++) {
                         let s2 = snakes[j]; if (i === j || !s2.alive) continue;
                         let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8);
+                        
+                        // Otimização AAA: Fast AABB Culling (Aborta verificação pesada de segmentos se S1 estiver muito longe de S2)
+                        let s2Reach = s2.radius * CONFIG.cobra.distanciaGomos * s2.segments.length + s2.radius;
+                        if (Math.abs(s1.x - s2.x) > s2Reach + hitDist || Math.abs(s1.y - s2.y) > s2Reach + hitDist) continue;
+
                         for (let k = 0; k < s2.segments.length; k += 4) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } }
                     }
                 }
