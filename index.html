@@ -500,7 +500,7 @@
                 comprimentoInicial: 25,         // Quantos gomos (pontos) a cobra tem ao começar o jogo
                 distanciaGomos: 0.22,           // Espaço/sobreposição entre cada gomo do corpo (0 a 1)
                 pontosParaEngrossar: 130,       // Abundância necessária para alargar a cobra em 1 pixel
-                pontosParaCrescer: 7,          // Abundância necessária para ganhar 1 gomo extra
+                pontosParaCrescer: 6,          // Abundância necessária para ganhar 1 gomo extra
                 custoDoTurbo: 2.5               // Quantidade de pontos perdidos por instante ao usar o turbo
             },
 
@@ -967,12 +967,12 @@
         UI.again.addEventListener('click', () => { UI.death.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
 
         let joystickTouchId = null;
-        
+
         UI.joyB.addEventListener('touchstart', (e) => {
             if (joystickTouchId !== null) return;
             const touch = e.changedTouches[0];
             joystickTouchId = touch.identifier;
-            joystickActive = true; 
+            joystickActive = true;
             const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2;
             joystickAngle = Math.atan2(touch.clientY - cY, touch.clientX - cX);
         }, { passive: false });
@@ -985,7 +985,7 @@
                         const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2;
                         const dx = touch.clientX - cX, dy = touch.clientY - cY, dist = Math.hypot(dx, dy), maxD = r.width / 2;
                         joystickAngle = Math.atan2(dy, dx); const capD = Math.min(dist, maxD);
-                        UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`; 
+                        UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`;
                         if (e.cancelable) e.preventDefault();
                         break;
                     }
@@ -993,33 +993,33 @@
             }
         }, { passive: false });
 
-        window.addEventListener('touchend', (e) => { 
+        window.addEventListener('touchend', (e) => {
             if (joystickActive && joystickTouchId !== null) {
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     if (e.changedTouches[i].identifier === joystickTouchId) {
                         joystickActive = false; joystickTouchId = null;
-                        UI.joyH.style.transform = 'translate(-50%, -50%)'; 
-                        break;
-                    }
-                }
-            }
-        });
-        
-        window.addEventListener('touchcancel', (e) => { 
-            if (joystickActive && joystickTouchId !== null) {
-                for (let i = 0; i < e.changedTouches.length; i++) {
-                    if (e.changedTouches[i].identifier === joystickTouchId) {
-                        joystickActive = false; joystickTouchId = null;
-                        UI.joyH.style.transform = 'translate(-50%, -50%)'; 
+                        UI.joyH.style.transform = 'translate(-50%, -50%)';
                         break;
                     }
                 }
             }
         });
 
-        UI.boost.addEventListener('touchstart', (e) => { isMouseDown = true; if(e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
-        UI.boost.addEventListener('touchend', (e) => { isMouseDown = false; if(e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
-        UI.boost.addEventListener('touchcancel', (e) => { isMouseDown = false; if(e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
+        window.addEventListener('touchcancel', (e) => {
+            if (joystickActive && joystickTouchId !== null) {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === joystickTouchId) {
+                        joystickActive = false; joystickTouchId = null;
+                        UI.joyH.style.transform = 'translate(-50%, -50%)';
+                        break;
+                    }
+                }
+            }
+        });
+
+        UI.boost.addEventListener('touchstart', (e) => { isMouseDown = true; if (e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
+        UI.boost.addEventListener('touchend', (e) => { isMouseDown = false; if (e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
+        UI.boost.addEventListener('touchcancel', (e) => { isMouseDown = false; if (e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
 
         resize();
         spawnFood(10);
