@@ -448,7 +448,7 @@
                     espessuraInicial: 18,       // Grossura da cobra ao nascer (PC)
                     espessuraMaxima: 30,        // Limite máximo de grossura (PC)
                     comprimentoMaximo: 400,     // Limite máximo de gomos do corpo (PC)
-                    velocidadeBase: 3.6,        // Velocidade normal ao andar (PC)
+                    velocidadeBase: 4.6,        // Velocidade normal ao andar (PC)
                     velocidadeTurbo: 9.8        // Velocidade máxima ao pressionar o clique do rato (PC)
                 },
                 mobile: {
@@ -744,8 +744,11 @@
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
 
+                let attrFast = this.radius + CONFIG.mundo.forcaAtracao;
                 for (let i = foods.length - 1; i >= 0; i--) {
-                    let f = foods[i], d2 = (this.x - f.x) ** 2 + (this.y - f.y) ** 2;
+                    let f = foods[i];
+                    if (Math.abs(this.x - f.x) > attrFast || Math.abs(this.y - f.y) > attrFast) continue;
+                    let d2 = (this.x - f.x) ** 2 + (this.y - f.y) ** 2;
                     if (d2 < (CONFIG.mundo.forcaAtracao) ** 2) { let d = Math.sqrt(d2); f.x += (this.x - f.x) / d * 8; f.y += (this.y - f.y) / d * 8; }
                     if (d2 < (this.radius + f.radius) ** 2) { this.score += f.value; foods.splice(i, 1); }
                 }
@@ -867,10 +870,19 @@
                 if (camera.shake > 0.5) { mainCtx.translate(Math.random() * camera.shake - camera.shake / 2, Math.random() * camera.shake - camera.shake / 2); camera.shake *= 0.85; }
                 mainCtx.scale(camera.zoom, camera.zoom); mainCtx.translate(-camera.x, -camera.y);
                 drawGrid(mainCtx, camera.x, camera.y, camera.zoom);
-                for (let ff of fireflies) ff.draw(mainCtx, time);
-                for (let f of foods) f.draw(mainCtx, time);
-                for (let p of particles) p.draw(mainCtx);
-                let dL = [...snakes].sort((a, b) => a.score - b.score); for (let s of dL) s.draw(mainCtx);
+                const pad = IS_MOBILE_CLIENT ? 50 : 200;
+                const vw2 = (window.innerWidth / camera.zoom) / 2 + pad;
+                const vh2 = (window.innerHeight / camera.zoom) / 2 + pad;
+                const camX = camera.x; const camY = camera.y;
+
+                for (let ff of fireflies) { if (Math.abs(ff.x - camX) < vw2 && Math.abs(ff.y - camY) < vh2) ff.draw(mainCtx, time); }
+                for (let f of foods) { if (Math.abs(f.x - camX) < vw2 && Math.abs(f.y - camY) < vh2) f.draw(mainCtx, time); }
+                for (let p of particles) { if (Math.abs(p.x - camX) < vw2 && Math.abs(p.y - camY) < vh2) p.draw(mainCtx); }
+                let dL = [...snakes].sort((a, b) => a.score - b.score); 
+                for (let s of dL) { 
+                    let sReach = s.radius * CONFIG.cobra.distanciaGomos * s.segments.length + s.radius;
+                    if (Math.abs(s.x - camX) < vw2 + sReach && Math.abs(s.y - camY) < vh2 + sReach) s.draw(mainCtx); 
+                }
                 mainCtx.restore();
                 if (frameCount % 10 === 0) updateHUD(); frameCount++;
             }
