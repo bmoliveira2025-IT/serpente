@@ -434,8 +434,8 @@
             cobra: {
                 pc: {
                     espessuraInicial: 18,       // Grossura da cobra ao nascer (PC)
-                    espessuraMaxima: 36,        // Limite máximo de grossura (PC)
-                    comprimentoMaximo: 500,     // Limite máximo de gomos do corpo (PC)
+                    espessuraMaxima: 32,        // Limite máximo de grossura (PC)
+                    comprimentoMaximo: 450,     // Limite máximo de gomos do corpo (PC)
                     velocidadeBase: 3.6,        // Velocidade normal ao andar (PC)
                     velocidadeTurbo: 9.8        // Velocidade máxima ao pressionar o clique do rato (PC)
                 },
@@ -451,15 +451,17 @@
                 distanciaGomos: 0.22,           // Espaço/sobreposição entre cada gomo do corpo (0 a 1)
                 pontosParaEngrossar: 140,       // Abundância necessária para alargar a cobra em 1 pixel
                 pontosParaCrescer: 12,          // Abundância necessária para ganhar 1 gomo extra
-                custoDoTurbo: 2.5               // Quantidade de pontos perdidos por instante ao usar o turbo
+                custoDoTurbo: 2.5,              // Quantidade de pontos perdidos por instante ao usar o turbo
+                nutricaoComidaNormal: 2,        // Valor de pontos ganho ao consumir uma orb brilhante solta pelo mapa
+                multiplicadorComidaMorta: 1.0   // Multiplicador extra para as orbs das cobras mortas (1.0 = normal, 2.0 = o dobro de crescimento)
             },
 
             // 🔍 2. CONFIGURAÇÕES DE CÂMARA E ZOOM
             zoom: {
                 pc: {
-                    inicial: 1.30,              // Zoom inicial (PC) - Valores maiores aproximam mais
-                    minimo: 0.85,               // Distância máxima que a câmara afasta quando se fica gigante (PC)
-                    fatorAfastamento: 0.015     // O quão rápido a câmara recua conforme se ganha pontos (PC)
+                    inicial: 1.35,              // Zoom inicial (PC) - Valores maiores aproximam mais
+                    minimo: 0.95,               // Distância máxima que a câmara afasta quando se fica gigante (PC)
+                    fatorAfastamento: 0.005     // O quão rápido a câmara recua conforme se ganha pontos (PC)
                 },
                 mobile: {
                     inicial: 0.85,              // Zoom inicial (Mobile) - Começa mais afastado para ver mais área
@@ -548,7 +550,7 @@
         function spawnFood(count) {
             for (let i = 0; i < count; i++) {
                 let p = getRandomPosInCircle(20);
-                foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)]));
+                foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)], false, CONFIG.cobra.nutricaoComidaNormal));
             }
         }
 
@@ -604,9 +606,9 @@
         function getRandomBotScore() {
             const rand = Math.random();
             if (rand < 0.5) return 40 + Math.random() * 500;       // 50% pequenos
-            if (rand < 0.8) return 500 + Math.random() * 2000;     // 30% médios
+            if (rand < 0.8) return 500 + Math.random() * 2000;     // 35% médios
             if (rand < 0.95) return 2000 + Math.random() * 8000;   // 15% grandes
-            return 8000 + Math.random() * 25000;                   // 5% colossais
+            return 8000 + Math.random() * 25000;                   // 2% colossais
         }
 
         /**
@@ -668,11 +670,11 @@
             constructor(x, y, n, sI, isP = false, initialScore = 40) {
                 this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
                 this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle; this.conf = IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc;
-                this.speed = this.conf.velocidadeBase; this.isBoosting = false; 
-                this.score = initialScore; 
-                this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima); 
+                this.speed = this.conf.velocidadeBase; this.isBoosting = false;
+                this.score = initialScore;
+                this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(CONFIG.cobra.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
-                this.segments = []; 
+                this.segments = [];
                 for (let i = 0; i < this.targetLength; i++) this.segments.push({ x: x, y: y });
             }
             updateAI() {
@@ -739,7 +741,7 @@
             die(dropFood = true) {
                 this.alive = false; createExplosion(this.x, this.y, this.mainColor, 35); if (this.isPlayer) camera.shake = 25;
                 if (dropFood) {
-                    let step = 5, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num;
+                    let step = 5, num = Math.max(1, Math.floor(this.segments.length / step)), val = (this.score / num) * CONFIG.cobra.multiplicadorComidaMorta;
                     for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; foods.push(new Food(s.x + (Math.random() * 20 - 10), s.y + (Math.random() * 20 - 10), 9 + Math.min(10, val / 30), this.skin[i % this.skin.length], true, val)); }
                 }
                 if (this.isPlayer) { gameState = 'dead'; setTimeout(() => { UI.deathLen.innerText = Math.floor(this.score).toLocaleString(); UI.deathKills.innerText = playerKills; UI.death.classList.remove('hidden'); UI.lb.style.display = 'none'; UI.status.style.display = 'none'; UI.mini.style.display = 'none'; UI.ctrls.style.display = 'none'; }, 1500); }
