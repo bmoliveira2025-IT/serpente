@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="screen-orientation" content="landscape">
+    <meta name="x5-orientation" content="landscape">
     <title>Serpente - O Conto do Rei</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
@@ -13,8 +18,8 @@
         html {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
             background-color: #050505;
             font-family: 'Poppins', sans-serif;
@@ -33,8 +38,8 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             pointer-events: none;
             z-index: 10;
         }
@@ -254,6 +259,70 @@
             }
         }
 
+        .crown-icon {
+            display: inline-block;
+            animation: floatCrown 3.5s ease-in-out infinite;
+            filter: drop-shadow(0 5px 15px rgba(255, 223, 0, 0.3));
+        }
+
+        @keyframes floatCrown {
+            0%, 100% { transform: translateY(0) rotate(-8deg) scale(1.0); }
+            50% { transform: translateY(-12px) rotate(8deg) scale(1.1); }
+        }
+
+        .subtitle {
+            margin-top: 5px;
+            font-size: clamp(10px, 3vw, 14px);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            font-weight: 700;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 223, 0, 0.9) 50%, rgba(255, 255, 255, 0.4) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 35px;
+            text-align: center;
+        }
+
+        .input-group {
+            width: 90%;
+            max-width: 320px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        #nickname {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50px;
+            padding: 16px 30px;
+            border: 2px solid rgba(255, 223, 0, 0.15);
+            color: white;
+            text-align: center;
+            outline: none;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        #nickname:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 223, 0, 0.8);
+            box-shadow: 0 0 25px rgba(255, 223, 0, 0.3);
+            transform: scale(1.05);
+        }
+        
+        #nickname::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 400;
+        }
+
         .btn-aaa {
             padding: 18px 70px;
             font-size: 20px;
@@ -415,12 +484,13 @@
 
         <div id="start-menu">
             <div class="logo-container">
-                <div>👑</div><span class="slither-text">Serpente</span>
+                <div class="crown-icon">👑</div><span class="slither-text">Serpente</span>
             </div>
-            <div class="subtitle" style="margin-top:10px; font-size:12px; letter-spacing:5px; opacity:0.3; color:#fff;">
-                O CONTO DA COROA DOURADA</div>
-            <input type="text" id="nickname" placeholder="NOME DA LENDA" maxlength="16"
-                style="background:rgba(255,255,255,0.03); border-radius:50px; padding:12px 25px; border:1px solid rgba(255,255,255,0.1); color:white; text-align:center; outline:none; margin-bottom:20px; width:220px; font-family:inherit;">
+            <div class="subtitle">O CONTO DA COROA DOURADA</div>
+            
+            <div class="input-group">
+                <input type="text" id="nickname" placeholder="NOME DA LENDA" maxlength="16" autocomplete="off">
+            </div>
             <button id="play-btn" class="btn-aaa">INICIAR JORNADA</button>
             <div id="skins-btn">
                 <div style="font-size:30px; margin-bottom:5px;">🐍</div><span>MUDAR ESCAMAS</span>
@@ -964,7 +1034,7 @@
         window.addEventListener('mousedown', (e) => { if (e.button === 0) isMouseDown = true; });
         window.addEventListener('mouseup', (e) => { if (e.button === 0) isMouseDown = false; });
 
-        UI.play.addEventListener('click', async () => {
+        async function startGame() {
             await enterFullscreen();
             snakes = []; foods = []; fireflies = []; particles = []; playerKills = 0;
             player = new Snake(WORLD_CENTER, WORLD_CENTER, UI.nick.value.trim() || "LENDA", skinIndex, true); snakes.push(player);
@@ -974,7 +1044,9 @@
             gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
             UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
             if (IS_MOBILE_CLIENT) UI.ctrls.style.display = 'block';
-        });
+        }
+
+        UI.play.addEventListener('click', startGame);
 
         UI.skins.addEventListener('click', () => { gameState = 'skin-menu'; UI.start.style.display = 'none'; UI.preview.classList.remove('hidden'); UI.skinName.innerText = SKIN_NAMES[skinIndex]; });
 
@@ -1046,8 +1118,12 @@
         UI.boost.addEventListener('touchcancel', (e) => { isMouseDown = false; if (e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
 
         resize();
-        spawnFood(10);
-        for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
+        if (IS_MOBILE_CLIENT) {
+            startGame();
+        } else {
+            spawnFood(10);
+            for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
+        }
         requestAnimationFrame(gameLoop);
     </script>
 </body>
