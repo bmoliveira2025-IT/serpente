@@ -456,6 +456,7 @@
             display: none !important;
         }
     </style>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body>
@@ -837,83 +838,26 @@
                 this.segments = [];
                 for (let i = 0; i < this.targetLength; i++) this.segments.push({ x: x, y: y });
             }
-            updateAI() {
-                let danger = false, evadeAngle = 0;
-                let myReach = this.radius * 12;
-                for (let other of snakes) {
-                    if (other === this || !other.alive) continue;
-                    
-                    // Fast AABB Check: Aborta o cálculo de AI se o bot estiver fora do range máximo de extensão da outra cobra
-                    let otherReach = other.radius * CONFIG.cobra.distanciaGomos * other.segments.length;
-                    if (Math.abs(other.x - this.x) > otherReach + myReach || Math.abs(other.y - this.y) > otherReach + myReach) continue;
-
-                    if (Math.hypot(other.x - this.x, other.y - this.y) < myReach) {
-                        for (let k = 0; k < other.segments.length; k += 10) {
-                            if (Math.hypot(other.segments[k].x - this.x, other.segments[k].y - this.y) < this.radius * 6) {
-                                danger = true; evadeAngle = Math.atan2(this.y - other.segments[k].y, this.x - other.segments[k].x); break;
-                            }
-                        }
-                    }
-                    if (danger) break;
-                }
-                if (danger) { this.targetAngle = evadeAngle; this.isBoosting = true; }
-                else {
-                    this.isBoosting = false;
-                    if (frameCount % 30 === 0) {
-                        let nearest = null, minDist = 700;
-                        for (let f of foods) { let d = Math.hypot(f.x - this.x, f.y - this.y); if (d < minDist) { minDist = d; nearest = f; } }
-                        if (nearest) this.targetAngle = Math.atan2(nearest.y - this.y, nearest.x - this.x);
-                        else if (Math.random() < 0.2) this.targetAngle += (Math.random() - 0.5) * 2;
-                    }
-                }
-                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER - 600) this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
-            }
-            update() {
+            updateFromServer(serverData) {
                 if (!this.alive) return;
+                
+                // Interpolação/Sincronização LERP do Servidor
+                this.x = serverData.x;
+                this.y = serverData.y;
+                this.angle = serverData.a;
+                this.score = serverData.s;
+                
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(CONFIG.cobra.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 if (this.segments.length < this.targetLength) this.segments.push({ x: this.segments[this.segments.length - 1].x, y: this.segments[this.segments.length - 1].y });
 
-                if (this.isBoosting && this.score > 50) {
-                    this.speed = this.conf.velocidadeTurbo;
-                    if (Math.random() < 0.3) {
-                        this.score -= CONFIG.cobra.custoDoTurbo;
-                        let t = this.segments[this.segments.length - 1];
-                        foods.push(new Food(t.x + (Math.random() * 10 - 5), t.y + (Math.random() * 10 - 5), 5.5, this.skin[this.segments.length % this.skin.length], true, CONFIG.cobra.custoDoTurbo));
-                    }
-                } else { this.speed = this.conf.velocidadeBase; this.isBoosting = false; }
-
-                if (this.isPlayer) {
-                    if (joystickActive) this.targetAngle = joystickAngle;
-                    else if (!IS_MOBILE_CLIENT) this.targetAngle = Math.atan2((mouseY - window.innerHeight / 2) / camera.zoom, (mouseX - window.innerWidth / 2) / camera.zoom);
-                } else this.updateAI();
-
-                let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                let tS = Math.max(0.04, 0.08 - (this.radius * 0.0012)); if (this.isBoosting) tS *= 1.35;
-                if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
-                this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
-
-                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) { this.die(false); return; }
-
+                // Client-side visual only for segments following the head
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
-                for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
-
-                let attrFast = this.radius + CONFIG.mundo.forcaAtracao;
-                for (let i = foods.length - 1; i >= 0; i--) {
-                    let f = foods[i];
-                    if (Math.abs(this.x - f.x) > attrFast || Math.abs(this.y - f.y) > attrFast) continue;
-                    let d2 = (this.x - f.x) ** 2 + (this.y - f.y) ** 2;
-                    if (d2 < (CONFIG.mundo.forcaAtracao) ** 2) { let d = Math.sqrt(d2); f.x += (this.x - f.x) / d * 8; f.y += (this.y - f.y) / d * 8; }
-                    if (d2 < (this.radius + f.radius) ** 2) { this.score += f.value; removeFood(i); }
+                for (let i = 0; i < this.segments.length; i++) { 
+                    let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); 
+                    if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } 
+                    pX = s.x; pY = s.y; 
                 }
-            }
-            die(dropFood = true) {
-                this.alive = false; createExplosion(this.x, this.y, this.mainColor, 35); if (this.isPlayer) camera.shake = 25;
-                if (dropFood) {
-                    let step = 5, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num;
-                    for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; foods.push(getFoodObj(s.x + (Math.random() * 20 - 10), s.y + (Math.random() * 20 - 10), 9 + Math.min(10, val / 30), this.skin[i % this.skin.length], true, val)); }
-                }
-                if (this.isPlayer) { gameState = 'dead'; setTimeout(() => { UI.deathLen.innerText = Math.floor(this.score).toLocaleString(); UI.deathKills.innerText = playerKills; UI.death.classList.remove('hidden'); UI.lb.style.display = 'none'; UI.status.style.display = 'none'; UI.mini.style.display = 'none'; UI.ctrls.style.display = 'none'; }, 1500); }
             }
             draw(ctx) {
                 if (!this.alive) return;
@@ -1028,22 +972,15 @@
                 drawStandardEyes(mainCtx, h.x, h.y, rad, 0, 0, skinIndex);
             }
             else if (gameState === 'playing' || gameState === 'dead') {
-                if (player && player.alive) player.isBoosting = isMouseDown;
-                let maxBots = IS_MOBILE_CLIENT ? CONFIG.mundo.quantidadeBots.mobile : CONFIG.mundo.quantidadeBots.pc;
-                if (snakes.filter(s => s.alive).length < maxBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), getAvailableBotName(), Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
-                if (foods.length < CONFIG.mundo.quantidadeComida) spawnFood(15);
-                for (let s of snakes) s.update();
-                for (let i = 0; i < snakes.length; i++) {
-                    let s1 = snakes[i]; if (!s1.alive) continue;
-                    for (let j = 0; j < snakes.length; j++) {
-                        let s2 = snakes[j]; if (i === j || !s2.alive) continue;
-                        let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8);
-                        
-                        // Otimização AAA: Fast AABB Culling (Aborta verificação pesada de segmentos se S1 estiver muito longe de S2)
-                        let s2Reach = s2.radius * CONFIG.cobra.distanciaGomos * s2.segments.length + s2.radius;
-                        if (Math.abs(s1.x - s2.x) > s2Reach + hitDist || Math.abs(s1.y - s2.y) > s2Reach + hitDist) continue;
-
-                        for (let k = 0; k < s2.segments.length; k += 4) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } }
+                // Multiplayer MMO Engine: No local Bot/Food Spawning or Collision Physics O(N^2)
+                
+                // Em vez disso, envia inputs crus do jogador para a Nuvem
+                if (player && player.alive) {
+                    if (joystickActive) player.targetAngle = joystickAngle;
+                    else if (!IS_MOBILE_CLIENT) player.targetAngle = Math.atan2((mouseY - window.innerHeight / 2) / camera.zoom, (mouseX - window.innerWidth / 2) / camera.zoom);
+                    
+                    if (typeof socket !== 'undefined' && socket) {
+                        socket.emit('input', { angle: player.targetAngle, isBoosting: isMouseDown || player.isBoosting });
                     }
                 }
                 if (player && player.alive) {
@@ -1079,7 +1016,57 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // Listeners
+        if (typeof io !== 'undefined') {
+            const socket = io();
+
+            socket.on('match_found', (data) => {
+                myPlayerId = data.playerState.id;
+                console.log("Conectado ao Motor da Nuvem! Arena:", data.arenaId);
+                
+                player = new Snake(data.playerState.x, data.playerState.y, UI.nick.value.trim() || "LENDA", skinIndex, true, data.playerState.score); 
+                player.id = myPlayerId;
+                snakes = [player];
+                
+                gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
+                UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
+                if (IS_MOBILE_CLIENT) UI.ctrls.style.display = 'block';
+            });
+
+            socket.on('tick', (snapshot) => {
+                if (gameState !== 'playing') return;
+                
+                // Mapear Snakes Atuais
+                let activeIds = new Set();
+                
+                for (let s of snapshot.p) {
+                    activeIds.add(s.id);
+                    let existing = snakes.find(sn => sn.id === s.id);
+                    
+                    if (existing) {
+                        existing.updateFromServer(s);
+                    } else {
+                        // Novo jogador/bot descoberto na nuvem
+                        let nS = new Snake(s.x, s.y, "Inimigo", Math.floor(Math.random() * SKINS.length), false, s.score);
+                        nS.id = s.id;
+                        snakes.push(nS);
+                    }
+                }
+                
+                // Culling de cobras que morreram no servidor
+                snakes = snakes.filter(s => activeIds.has(s.id));
+                window.socketRef = socket; // save globally
+            });
+
+            // Sync Inputs
+            setInterval(() => {
+                if (player && player.alive && gameState === 'playing') {
+                    socket.emit('input', { angle: player.targetAngle, isBoosting: isMouseDown || player.isBoosting });
+                }
+            }, 50); // Manda o input 20x por segundo independentemente da renderização visual
+        }
+        
+        // Listeners Locais
+        let myPlayerId = null;
         window.addEventListener('resize', resize);
         window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
         window.addEventListener('mousedown', (e) => { if (e.button === 0) isMouseDown = true; });
@@ -1088,13 +1075,16 @@
         async function startGame() {
             await enterFullscreen();
             snakes = []; foods = []; fireflies = []; particles = []; playerKills = 0;
-            player = new Snake(WORLD_CENTER, WORLD_CENTER, UI.nick.value.trim() || "LENDA", skinIndex, true); snakes.push(player);
-            let maxBots = IS_MOBILE_CLIENT ? CONFIG.mundo.quantidadeBots.mobile : CONFIG.mundo.quantidadeBots.pc;
-            for (let i = 0; i < maxBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), getAvailableBotName(), Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
-            spawnFood(CONFIG.mundo.quantidadeComida); for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
-            gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
-            UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
-            if (IS_MOBILE_CLIENT) UI.ctrls.style.display = 'block';
+            
+            // Avisa o servidor que queremos jogar (O motor fará Matchmaking)
+            if (typeof io !== 'undefined') {
+                const sck = window.socketRef || io();
+                sck.emit('join', { name: UI.nick.value.trim() || 'LENDA', skinId: skinIndex });
+            } else {
+                alert("Servidor Multiplayer Inacessível.");
+            }
+            
+            for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
         }
 
         UI.play.addEventListener('click', startGame);
@@ -1169,10 +1159,7 @@
         UI.boost.addEventListener('touchcancel', (e) => { isMouseDown = false; if (e.cancelable) e.preventDefault(); e.stopPropagation(); }, { passive: false });
 
         resize();
-        if (IS_MOBILE_CLIENT) {
-            startGame();
-        } else {
-            spawnFood(10);
+        if (!IS_MOBILE_CLIENT) {
             for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
         }
         requestAnimationFrame(gameLoop);
