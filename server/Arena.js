@@ -132,52 +132,68 @@ class Arena {
 
         let allSnakes = Object.values(this.players).concat(this.bots);
 
+        // 1. Física e Movimento
         for (let s of allSnakes) {
             if (!s.alive) continue;
             
-            // Lógica de Movimento com Base na Plataforma (PC vs Mobile)
-            const speed = s.isBoosting && s.score > 20 ? s.conf.velocidadeTurbo : s.conf.velocidadeBase;
-            if (s.isBoosting && s.score > 20) s.score -= s.conf.custoDoTurbo / 20; // Cost per tick
+            // Lógica de Boost e Custo de Massa (Slither mechanics)
+            const canBoost = s.isBoosting && s.score > 20;
+            const speed = canBoost ? s.conf.velocidadeTurbo : s.conf.velocidadeBase;
+            
+            if (canBoost) {
+                // Perda de massa gradual ao impulsionar
+                let cost = s.conf.custoDoTurbo / 20; 
+                s.score -= cost;
+                
+                // Deixa rastro de comida (Partículas menores)
+                if (this.frameCount % 5 === 0) {
+                    let tail = s.segments[s.segments.length - 1];
+                    this.foods.push({
+                        id: 'f_boost_' + Math.random().toString(36).substr(2, 5),
+                        x: tail.x + (Math.random() - 0.5) * 10,
+                        y: tail.y + (Math.random() - 0.5) * 10,
+                        radius: 3,
+                        value: 1
+                    });
+                }
+            }
 
             s.radius = Math.min(s.conf.espessuraInicial + Math.floor(s.score / s.conf.pontosParaEngrossar), s.conf.espessuraMaxima);
             let tLength = s.conf.comprimentoInicial + Math.floor(s.score / s.conf.pontosParaCrescer);
             while (s.segments.length < tLength) s.segments.push({ x: s.segments[s.segments.length - 1].x, y: s.segments[s.segments.length - 1].y });
+            if (s.segments.length > tLength) s.segments.pop();
 
             let diff = s.targetAngle - s.angle;
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
-            s.angle += diff * 0.15; // Velocidade de rotação
+            s.angle += diff * 0.15; 
             
-            // Inteligência Artificial Passiva (Nuvem)
+            // IA
             if (s.id.startsWith('bot_')) {
-                // 1% de chance a cada 50ms (Tick) de o Bot decidir virar aleatoriamente
-                if (Math.random() < 0.03) {
-                    s.targetAngle += (Math.random() - 0.5) * 1.5;
-                }
+                if (Math.random() < 0.03) s.targetAngle += (Math.random() - 0.5) * 1.5;
             }
             
             s.x += Math.cos(s.angle) * speed;
             s.y += Math.sin(s.angle) * speed;
 
-            // Limites Geográficos Morte instantânea ao tocar nas bordas
+            // Morte por Limites
             if (Math.hypot(s.x - CONFIG.mundo.tamanhoRaio, s.y - CONFIG.mundo.tamanhoRaio) > CONFIG.mundo.tamanhoRaio) {
-                s.alive = false;
+                this.killSnake(s, allSnakes);
                 continue;
             }
 
-            // Colisão com Comida (Nutrição)
+            // Colisão com Comida
             for (let i = this.foods.length - 1; i >= 0; i--) {
                 const f = this.foods[i];
                 if (Math.hypot(s.x - f.x, s.y - f.y) < s.radius + f.radius) {
                     s.score += f.value;
                     eatenFoods.push(f.id);
                     this.foods.splice(i, 1);
-                    // Repõe comida imediatamente para manter o balanceamento do mundo constante
                     newFoods.push(this.spawnFood()); 
                 }
             }
 
-            // Move os gomos traseiros em fila india (Sincronizado Mestre)
+            // Movimento dos Gomos
             let pX = s.x, pY = s.y, spc = s.radius * s.conf.distanciaGomos;
             for (let i = 0; i < s.segments.length; i++) {
                 let seg = s.segments[i];
@@ -191,20 +207,15 @@ class Arena {
             }
         }
 
-        // Inteligência Artificial Complexa (Nuvem)
+        // 2. IA Complexa (Fuga de Predadores e Busca)
         for (let b of this.bots) {
             if (!b.alive) continue;
-            
-            let closestFood = null;
-            let closestFoodDist = 500; // Raio de visão do bot para comida
-            let danger = false;
+            let closestFood = null, closestFoodDist = 500, danger = false;
 
-            // Fuga de Predadores
             for (let other of allSnakes) {
                 if (!other.alive || other.id === b.id) continue;
                 let d = Math.hypot(b.x - other.x, b.y - other.y);
                 if (d < 300 && other.score > b.score) {
-                    // Predador por perto! Foge na direção oposta e dá Turbo!
                     b.targetAngle = Math.atan2(b.y - other.y, b.x - other.x);
                     b.isBoosting = true;
                     danger = true;
@@ -212,39 +223,75 @@ class Arena {
                 }
             }
 
-            // Caso não esteja em perigo, busca comida
             if (!danger) {
                 b.isBoosting = false;
-                // Procura a comida mais próxima
                 for (let f of this.foods) {
                     let d = Math.hypot(b.x - f.x, b.y - f.y);
-                    if (d < closestFoodDist) {
-                        closestFoodDist = d;
-                        closestFood = f;
-                    }
+                    if (d < closestFoodDist) { closestFoodDist = d; closestFood = f; }
                 }
-                if (closestFood) {
-                    // Direciona levemente para a comida
-                    b.targetAngle = Math.atan2(closestFood.y - b.y, closestFood.x - b.x);
-                } else {
-                    // Caminhada errante se não ver nada
-                    if (Math.random() < 0.05) b.targetAngle += (Math.random() - 0.5) * 1.5;
-                }
+                if (closestFood) b.targetAngle = Math.atan2(closestFood.y - b.y, closestFood.x - b.x);
             }
         }
 
-        // --- Network Delta Broadcast ---
-        // Sending full array of segments is heavily bandwidth intensive. 
-        // We will send only the head positions and angle. Clients can interpolate.
-        const snapshot = {
-            p: allSnakes.filter(s => s.alive).map(s => ({
-                id: s.id, x: Math.round(s.x), y: Math.round(s.y), a: parseFloat(s.angle.toFixed(2)), s: Math.round(s.score)
-            })),
-            fE: eatenFoods, // Apenas IDs das comidas comidas neste exato microsegundo
-            fN: newFoods    // Apenas Novas Comidas nascidas neste exato microsegundo
-        };
+        // 3. Colisões Cabeça-Corpo (Morte Slither)
+        for (let s of allSnakes) {
+            if (!s.alive) continue;
+            for (let other of allSnakes) {
+                if (!other.alive || s.id === other.id) continue;
+                // Verifica a cabeça de 's' contra todos os gomos de 'other'
+                for (let seg of other.segments) {
+                    if (Math.hypot(s.x - seg.x, s.y - seg.y) < s.radius + other.radius * 0.8) {
+                        this.killSnake(s, allSnakes);
+                        break;
+                    }
+                }
+                if (!s.alive) break;
+            }
+        }
 
-        this.io.to(this.id).emit('tick', snapshot);
+        // 4. Network Delta Broadcast Otimizado (Spatial Culling)
+        // Em vez de enviar tudos para todos, filtramos por distância visual
+        const VISUAL_RANGE = 2200; 
+
+        for (let socketId in this.players) {
+            const p = this.players[socketId];
+            if (!p) continue;
+
+            const snapshot = {
+                p: allSnakes.filter(s => s.alive && Math.hypot(s.x - p.x, s.y - p.y) < VISUAL_RANGE).map(s => ({
+                    id: s.id, x: Math.round(s.x), y: Math.round(s.y), a: parseFloat(s.angle.toFixed(2)), s: Math.round(s.score)
+                })),
+                fE: eatenFoods, 
+                fN: newFoods.filter(f => Math.hypot(f.x - p.x, f.y - p.y) < VISUAL_RANGE)
+            };
+            this.io.to(socketId).emit('tick', snapshot);
+        }
+
+        // Broadcast básico para bots (IA não precisa de socket individual)
+    }
+
+    killSnake(snake, allSnakes) {
+        snake.alive = false;
+        // Transforma gomos em comida
+        for (let i = 0; i < snake.segments.length; i += 2) {
+            let seg = snake.segments[i];
+            this.foods.push({
+                id: 'f_death_' + Math.random().toString(36).substr(2, 7),
+                x: seg.x + (Math.random() - 0.5) * 20,
+                y: seg.y + (Math.random() - 0.5) * 20,
+                radius: snake.radius * 0.6,
+                value: 5 // Comida de morte vale mais
+            });
+        }
+        
+        // Se for bot, respawn imediato após algum tempo
+        if (snake.id.startsWith('bot_')) {
+            setTimeout(() => {
+                const idx = this.bots.indexOf(snake);
+                if (idx > -1) this.bots.splice(idx, 1);
+                this.spawnBot();
+            }, 3000);
+        }
     }
 }
 

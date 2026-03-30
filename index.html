@@ -491,18 +491,20 @@
         </div>
 
         <!-- MODAL ADMIN -->
-        <div id="admin-panel" class="hidden" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:auto; touch-action:auto; overscroll-behavior:contain; background:rgba(10,12,16,0.95); border:1px solid #00ffff; border-radius:16px; padding:20px; box-shadow:0 0 30px rgba(0,255,255,0.2); z-index:9999; max-width:90%; width:400px; max-height:85vh; overflow-y:auto;">
-            <div style="text-align:center; font-family:'Outfit', sans-serif;">
+        <div id="admin-panel" class="hidden" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(10,12,16,0.98); border:1px solid #00ffff; border-radius:16px; padding:25px; box-shadow:0 0 50px rgba(0,255,255,0.4); z-index:10000; max-width:95%; width:500px; height:80vh; display:flex; flex-direction:column; pointer-events:all;">
+            <div style="text-align:center; font-family:'Outfit', sans-serif; flex-shrink:0;">
                 <div style="font-size:2rem; filter:drop-shadow(0 0 10px #ff0055);">⚙️ OCI NUVEM</div>
                 <div style="color:#ff0055; font-weight:bold; margin-bottom:15px;">Acesso Restrito às Físicas</div>
             </div>
             
-            <div id="admin-fields" style="display:flex; flex-direction:column; gap:8px; font-family:'Inter', sans-serif; text-align:left;">
+            <div id="admin-fields" style="flex-grow:1; overflow-y:auto; overflow-x:hidden; padding-right:10px; display:flex; flex-direction:column; gap:8px; font-family:'Inter', sans-serif; text-align:left; scrollbar-width:thin; scrollbar-color:#00ffff rgba(255,255,255,0.1);">
                 <div style="color:gray; font-size:12px; text-align:center;">A Ligar à Máquina...</div>
             </div>
 
-            <button id="btn-save-admin" class="btn-aaa" style="margin-top:20px; padding:15px; background:linear-gradient(135deg, #ff0055, #aa00ff);">APLICAR NA NUVEM</button>
-            <button id="btn-close-admin" class="btn-aaa" style="margin-top:10px; padding:15px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); box-shadow:none;">SAIR DO COFRE</button>
+            <div style="flex-shrink:0; margin-top:20px;">
+                <button id="btn-save-admin" class="btn-aaa" style="padding:15px; background:linear-gradient(135deg, #ff0055, #aa00ff);">APLICAR NA NUVEM</button>
+                <button id="btn-close-admin" class="btn-aaa" style="margin-top:10px; padding:15px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); box-shadow:none;">SAIR DO COFRE</button>
+            </div>
         </div>
 
         <div id="start-menu">
@@ -1189,18 +1191,25 @@
         });
 
         function buildAdminInputs(obj, parentKey = '', container) {
-            for (let key in obj) {
+            // Ordem garantida para facilitar encontrar campos
+            let keys = Object.keys(obj).sort();
+            for (let key of keys) {
+                let deepKey = parentKey ? parentKey + '.' + key : key;
                 if (typeof obj[key] === 'object' && obj[key] !== null) {
                     let sectionTitle = document.createElement('div');
-                    sectionTitle.innerHTML = `<br><span style="color:#00ffff; font-weight:bold; font-size:14px; text-transform:uppercase;">[Grupo: ${parentKey ? parentKey + '.' : ''}${key}]</span><hr style="border-color:rgba(0,255,255,0.2);">`;
+                    sectionTitle.innerHTML = `<br><span style="color:#00ffff; font-weight:bold; font-size:14px; text-transform:uppercase;">[Grupo: ${deepKey}]</span><hr style="border-color:rgba(0,255,255,0.2);">`;
                     container.appendChild(sectionTitle);
-                    buildAdminInputs(obj[key], parentKey ? parentKey + '.' + key : key, container);
+                    buildAdminInputs(obj[key], deepKey, container);
                 } else if (typeof obj[key] === 'number') {
+                    let friendlyName = key
+                        .replace(/([A-Z])/g, ' $1')
+                        .replace(/^./, str => str.toUpperCase());
+                    
                     let w = document.createElement('div');
-                    w.style = "display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px;";
+                    w.style = "display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:4px;";
                     w.innerHTML = `
-                        <label style="color:#fff; font-size:13px; font-weight:500;">${key}</label>
-                        <input type="number" step="any" data-key="${parentKey ? parentKey + '.' + key : key}" value="${obj[key]}" style="width:80px; text-align:right; background:rgba(0,0,0,0.8); border:1px solid #00ffff; color:#00ffff; border-radius:4px; padding:4px;">
+                        <label style="color:#fff; font-size:12px; font-weight:600; text-transform:uppercase;">${friendlyName}</label>
+                        <input type="number" step="any" data-key="${deepKey}" value="${obj[key]}" style="width:100px; text-align:right; background:rgba(0,0,0,0.4); border:1px solid #00ffff; color:#00ffff; border-radius:4px; padding:6px; font-weight:bold;">
                     `;
                     container.appendChild(w);
                 }
