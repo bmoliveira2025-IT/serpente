@@ -601,6 +601,14 @@
             ctx.restore();
         }
 
+        function getRandomBotScore() {
+            const rand = Math.random();
+            if (rand < 0.5) return 40 + Math.random() * 500;       // 50% pequenos
+            if (rand < 0.8) return 500 + Math.random() * 2000;     // 30% médios
+            if (rand < 0.95) return 2000 + Math.random() * 8000;   // 15% grandes
+            return 8000 + Math.random() * 25000;                   // 5% colossais
+        }
+
         /**
          * ==========================================
          * 🐍 CLASSES DE ENTIDADES
@@ -657,10 +665,14 @@
         }
 
         class Snake {
-            constructor(x, y, n, sI, isP = false) {
+            constructor(x, y, n, sI, isP = false, initialScore = 40) {
                 this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
                 this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle; this.conf = IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc;
-                this.speed = this.conf.velocidadeBase; this.isBoosting = false; this.score = 40; this.radius = this.conf.espessuraInicial; this.segments = []; this.targetLength = CONFIG.cobra.comprimentoInicial;
+                this.speed = this.conf.velocidadeBase; this.isBoosting = false; 
+                this.score = initialScore; 
+                this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima); 
+                this.targetLength = Math.min(CONFIG.cobra.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
+                this.segments = []; 
                 for (let i = 0; i < this.targetLength; i++) this.segments.push({ x: x, y: y });
             }
             updateAI() {
@@ -818,7 +830,7 @@
             }
             else if (gameState === 'playing' || gameState === 'dead') {
                 if (player && player.alive) player.isBoosting = isMouseDown;
-                if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length)));
+                if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
                 if (foods.length < CONFIG.mundo.quantidadeComida) spawnFood(15);
                 for (let s of snakes) s.update();
                 for (let i = 0; i < snakes.length; i++) {
@@ -861,7 +873,7 @@
             await enterFullscreen();
             snakes = []; foods = []; fireflies = []; particles = []; playerKills = 0;
             player = new Snake(WORLD_CENTER, WORLD_CENTER, UI.nick.value.trim() || "LENDA", skinIndex, true); snakes.push(player);
-            for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length)));
+            for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
             spawnFood(CONFIG.mundo.quantidadeComida); for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
             gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
             UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
