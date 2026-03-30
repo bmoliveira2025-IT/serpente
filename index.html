@@ -838,20 +838,45 @@
                 this.segments = [];
                 for (let i = 0; i < this.targetLength; i++) this.segments.push({ x: x, y: y });
             }
+
             updateFromServer(serverData) {
                 if (!this.alive) return;
                 
-                // Interpolação/Sincronização LERP do Servidor
-                this.x = serverData.x;
-                this.y = serverData.y;
-                this.angle = serverData.a;
+                // Em vez de teletransportar a cobra duramente (Tick de 20hz), 
+                // Guardamos as Coordenadas-Alvo para animá-las aos poucos no ecrã (60hz V-Sync)
+                this.serverX = serverData.x;
+                this.serverY = serverData.y;
+                
+                // Previne voltas completas invulgares
+                let diff = serverData.a - this.angle;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                this.serverAngle = this.angle + diff;
+                
                 this.score = serverData.s;
+                
+                // Se estiver muito longe do alvo (ex: Spawn inicial), teleporta-se imediatamente
+                if (Math.hypot(this.serverX - this.x, this.serverY - this.y) > 200) {
+                    this.x = this.serverX;
+                    this.y = this.serverY;
+                }
                 
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(CONFIG.cobra.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 if (this.segments.length < this.targetLength) this.segments.push({ x: this.segments[this.segments.length - 1].x, y: this.segments[this.segments.length - 1].y });
+            }
 
-                // Client-side visual only for segments following the head
+            lerpUpdate() {
+                if (!this.alive) return;
+                
+                // LERP: Move o visual 30% da distância rumo ao verdadeiro valor da nuvem todos os frames
+                if (this.serverX !== undefined && this.serverY !== undefined) {
+                    this.x += (this.serverX - this.x) * 0.25;
+                    this.y += (this.serverY - this.y) * 0.25;
+                    this.angle += (this.serverAngle - this.angle) * 0.25;
+                }
+
+                // Efeito Cinético (Anima os gomos rastejando mecanicamente pelo chão seguindo a cabeça)
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) { 
                     let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); 
@@ -1007,6 +1032,7 @@
                 for (let f of foods) { if (Math.abs(f.x - camX) < vw2 && Math.abs(f.y - camY) < vh2) f.draw(mainCtx, time); }
                 let dL = [...snakes].sort((a, b) => a.score - b.score);
                 for (let s of dL) {
+                    s.lerpUpdate();
                     let sReach = s.radius * CONFIG.cobra.distanciaGomos * s.segments.length + s.radius;
                     if (Math.abs(s.x - camX) < vw2 + sReach && Math.abs(s.y - camY) < vh2 + sReach) s.draw(mainCtx);
                 }
