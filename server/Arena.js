@@ -128,133 +128,123 @@ class Arena {
     tick() {
         this.frameCount++;
         let eatenFoods = [];
-        let createdFoods = []; // Captura tudo o que nasce neste tick
+        let createdFoods = [];
 
-        // Helper para criar comida e registar para o broadcast
+        // Grade Espacial (Grid) para Otimização de Performance AAA
+        const GRID_SIZE = 500;
+        const grid = {};
+        const getCell = (x, y) => `${Math.floor(x / GRID_SIZE)},${Math.floor(y / GRID_SIZE)}`;
+
+        // Helper para criar comida
         const createFood = (x, y, r, v, idPrefix = 'f_') => {
-            let f = {
-                id: idPrefix + Math.random().toString(36).substr(2, 9),
-                x: x, y: y, radius: r, value: v
-            };
+            let f = { id: idPrefix + Math.random().toString(36).substr(2, 9), x: x, y: y, radius: r, value: v };
             this.foods.push(f);
             createdFoods.push(f);
             return f;
         };
 
-        let allSnakes = Object.values(this.players).concat(this.bots);
+        const allSnakes = Object.values(this.players).concat(this.bots).filter(s => s.alive);
+
+        // Popula a grade com os gomos das cobras para colisões rápidas
+        for (let s of allSnakes) {
+            for (let seg of s.segments) {
+                const cell = getCell(seg.x, seg.y);
+                if (!grid[cell]) grid[cell] = { snakes: [], foods: [] };
+                grid[cell].snakes.push({ owner: s, x: seg.x, y: seg.y });
+            }
+        }
+
+        // Popula a grade com comida
+        for (let f of this.foods) {
+            const cell = getCell(f.x, f.y);
+            if (!grid[cell]) grid[cell] = { snakes: [], foods: [] };
+            grid[cell].foods.push(f);
+        }
 
         // 1. Física e Movimento
         for (let s of allSnakes) {
-            if (!s.alive) continue;
-            
-            const canBoost = s.isBoosting && s.score > 20;
-            const speed = canBoost ? s.conf.velocidadeTurbo : s.conf.velocidadeBase;
-            
-            if (canBoost) {
+            const speed = (s.isBoosting && s.score > 20) ? s.conf.velocidadeTurbo : s.conf.velocidadeBase;
+            if (s.isBoosting && s.score > 20) {
                 s.score -= s.conf.custoDoTurbo / 20;
                 if (this.frameCount % 5 === 0) {
                     let tail = s.segments[s.segments.length - 1];
-                    createFood(tail.x + (Math.random()-0.5)*10, tail.y + (Math.random()-0.5)*10, 3, 1, 'f_boost_');
+                    createFood(tail.x + (Math.random() - 0.5) * 10, tail.y + (Math.random() - 0.5) * 10, 3, 1, 'f_boost_');
                 }
             }
 
             s.radius = Math.min(s.conf.espessuraInicial + Math.floor(s.score / s.conf.pontosParaEngrossar), s.conf.espessuraMaxima);
             let tLength = s.conf.comprimentoInicial + Math.floor(s.score / s.conf.pontosParaCrescer);
-            while (s.segments.length < tLength) s.segments.push({ x: s.segments[s.segments.length - 1].x, y: s.segments[s.segments.length - 1].y });
+            while (s.segments.length < tLength) s.segments.push({ ...s.segments[s.segments.length - 1] });
             if (s.segments.length > tLength) s.segments.pop();
 
             let diff = s.targetAngle - s.angle;
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
-            s.angle += diff * 0.15; 
-            
-            if (s.id.startsWith('bot_')) {
-                if (Math.random() < 0.03) s.targetAngle += (Math.random() - 0.5) * 1.5;
-            }
-            
+            s.angle += diff * 0.15;
             s.x += Math.cos(s.angle) * speed;
             s.y += Math.sin(s.angle) * speed;
 
+            // Morte por Limites
             if (Math.hypot(s.x - CONFIG.mundo.tamanhoRaio, s.y - CONFIG.mundo.tamanhoRaio) > CONFIG.mundo.tamanhoRaio) {
-                this.killSnake(s, allSnakes, createFood);
-                continue;
+                this.killSnake(s, allSnakes, createFood); continue;
             }
 
-            // Colisão com Comida
-            for (let i = this.foods.length - 1; i >= 0; i--) {
-                const f = this.foods[i];
-                if (Math.hypot(s.x - f.x, s.y - f.y) < s.radius + f.radius) {
-                    s.score += f.value;
-                    eatenFoods.push(f.id);
-                    this.foods.splice(i, 1);
-                    // Spawn normal de reposição
-                    let p = getRandomPosInCircle(20);
-                    createFood(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, 2);
+            // Colisão com Comida (Otimizada via Grade)
+            const myCell = getCell(s.x, s.y);
+            if (grid[myCell]) {
+                for (let i = grid[myCell].foods.length - 1; i >= 0; i--) {
+                    const f = grid[myCell].foods[i];
+                    if (Math.hypot(s.x - f.x, s.y - f.y) < s.radius + f.radius) {
+                        s.score += f.value;
+                        eatenFoods.push(f.id);
+                        this.foods = this.foods.filter(o => o.id !== f.id);
+                        grid[myCell].foods.splice(i, 1);
+                        let p = getRandomPosInCircle(20); createFood(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, 2);
+                    }
                 }
             }
 
+            // Movimento dos Gomos
             let pX = s.x, pY = s.y, spc = s.radius * s.conf.distanciaGomos;
             for (let i = 0; i < s.segments.length; i++) {
-                let seg = s.segments[i];
-                let dx = pX - seg.x, dy = pY - seg.y, d = Math.sqrt(dx * dx + dy * dy);
-                if (d > spc) {
-                    let mv = d - spc;
-                    seg.x += (dx / d) * mv;
-                    seg.y += (dy / d) * mv;
-                }
+                let seg = s.segments[i], dx = pX - seg.x, dy = pY - seg.y, d = Math.sqrt(dx * dx + dy * dy);
+                if (d > spc) { let mv = d - spc; seg.x += (dx / d) * mv; seg.y += (dy / d) * mv; }
                 pX = seg.x; pY = seg.y;
             }
         }
 
-        // 2. IA
-        for (let b of this.bots) {
-            if (!b.alive) continue;
-            let closestFood = null, closestFoodDist = 500, danger = false;
-            for (let other of allSnakes) {
-                if (!other.alive || other.id === b.id) continue;
-                let d = Math.hypot(b.x - other.x, b.y - other.y);
-                if (d < 300 && other.score > b.score) {
-                    b.targetAngle = Math.atan2(b.y - other.y, b.x - other.x);
-                    b.isBoosting = true;
-                    danger = true;
-                    break;
-                }
-            }
-            if (!danger) {
-                b.isBoosting = false;
-                for (let f of this.foods) {
-                    let d = Math.hypot(b.x - f.x, b.y - f.y);
-                    if (d < closestFoodDist) { closestFoodDist = d; closestFood = f; }
-                }
-                if (closestFood) b.targetAngle = Math.atan2(closestFood.y - b.y, closestFood.x - b.x);
-            }
-        }
-
-        // 3. Colisões Cabeça-Corpo
+        // 3. Colisões Cabeça-Corpo (Otimizada via Grade)
         for (let s of allSnakes) {
-            if (!s.alive) continue;
-            for (let other of allSnakes) {
-                if (!other.alive || s.id === other.id) continue;
-                for (let seg of other.segments) {
-                    if (Math.hypot(s.x - seg.x, s.y - seg.y) < s.radius + other.radius * 0.8) {
-                        this.killSnake(s, allSnakes, createFood);
-                        break;
+            const cell = getCell(s.x, s.y);
+            if (grid[cell]) {
+                for (let obj of grid[cell].snakes) {
+                    if (obj.owner.id === s.id) continue;
+                    if (Math.hypot(s.x - obj.x, s.y - obj.y) < s.radius + obj.owner.radius * 0.8) {
+                        this.killSnake(s, allSnakes, createFood); break;
                     }
                 }
-                if (!s.alive) break;
             }
         }
 
-        // 4. Broadcast Otimizado
-        const VISUAL_RANGE = 2200; 
+        // IA Básica (Bots)
+        for (let b of this.bots) {
+            if (!b.alive) continue;
+            if (this.frameCount % 2 === 0) { // Resolve IA a cada 2 ticks para poupar CPU
+                 if (Math.random() < 0.05) b.targetAngle += (Math.random() - 0.5) * 1.5;
+            }
+        }
+
+        // 4. Broadcast Individual com Culling
+        const VISUAL_RANGE = 2000;
         for (let socketId in this.players) {
-            const p = this.players[socketId];
-            if (!p) continue;
+            const p = this.players[socketId]; if (!p) continue;
             const snapshot = {
-                p: allSnakes.filter(s => s.alive && Math.hypot(s.x - p.x, s.y - p.y) < VISUAL_RANGE).map(s => ({
-                    id: s.id, x: Math.round(s.x), y: Math.round(s.y), a: parseFloat(s.angle.toFixed(2)), s: Math.round(s.score)
-                })),
-                fE: eatenFoods, 
+                p: allSnakes.map(s => {
+                    const dist = Math.hypot(s.x - p.x, s.y - p.y);
+                    if (dist < VISUAL_RANGE) return { id: s.id, x: Math.round(s.x), y: Math.round(s.y), a: parseFloat(s.angle.toFixed(2)), s: Math.round(s.score) };
+                    return null;
+                }).filter(o => o),
+                fE: eatenFoods,
                 fN: createdFoods.filter(f => Math.hypot(f.x - p.x, f.y - p.y) < VISUAL_RANGE)
             };
             this.io.to(socketId).emit('tick', snapshot);

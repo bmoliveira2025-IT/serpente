@@ -894,14 +894,35 @@
             lerpUpdate() {
                 if (!this.alive) return;
 
-                // LERP: Move o visual 30% da distância rumo ao verdadeiro valor da nuvem todos os frames
-                if (this.serverX !== undefined && this.serverY !== undefined) {
-                    this.x += (this.serverX - this.x) * 0.25;
-                    this.y += (this.serverY - this.y) * 0.25;
-                    this.angle += (this.serverAngle - this.angle) * 0.25;
+                if (this.isPlayer) {
+                    // --- CLiente-Side Prediction (Latência Zero) ---
+                    // Movemos a cabeça instantaneamente com o ângulo que o jogador quer
+                    const speed = (isMouseDown || this.isBoosting) ? this.conf.velocidadeTurbo : this.conf.velocidadeBase;
+                    this.angle += (this.targetAngle - this.angle) * 0.15;
+                    this.x += Math.cos(this.angle) * speed;
+                    this.y += Math.sin(this.angle) * speed;
+
+                    // Reconciliação Suave (Se houver desvio da nuvem, corrige apenas 10% por frame)
+                    if (this.serverX !== undefined) {
+                        const dx = this.serverX - this.x;
+                        const dy = this.serverY - this.y;
+                        if (Math.hypot(dx, dy) < 200) {
+                            this.x += dx * 0.1;
+                            this.y += dy * 0.1;
+                        } else {
+                            this.x = this.serverX; this.y = this.serverY;
+                        }
+                    }
+                } else {
+                    // LERP padrão para inimigos/bots vindos da nuvem
+                    if (this.serverX !== undefined) {
+                        this.x += (this.serverX - this.x) * 0.2;
+                        this.y += (this.serverY - this.y) * 0.2;
+                        this.angle += (this.serverAngle - this.angle) * 0.2;
+                    }
                 }
 
-                // Efeito Cinético (Anima os gomos rastejando mecanicamente pelo chão seguindo a cabeça)
+                // Efeito de rastejamento suave dos gomos
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) {
                     let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy);
@@ -1029,8 +1050,9 @@
                     if (joystickActive) player.targetAngle = joystickAngle;
                     else if (!IS_MOBILE_CLIENT) player.targetAngle = Math.atan2((mouseY - window.innerHeight / 2) / camera.zoom, (mouseX - window.innerWidth / 2) / camera.zoom);
 
-                    if (typeof socket !== 'undefined' && socket) {
-                        socket.emit('input', { angle: player.targetAngle, isBoosting: isMouseDown || player.isBoosting });
+                    // --- Otimização de Rede: Envia inputs apenas a cada 50ms ou se mudar o ângulo ---
+                    if (typeof socketGlob !== 'undefined' && socketGlob && (frameCount % 3 === 0)) {
+                        socketGlob.emit('input', { angle: player.targetAngle, isBoosting: isMouseDown || player.isBoosting });
                     }
                 }
                 if (player && player.alive) {
