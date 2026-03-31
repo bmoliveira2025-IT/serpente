@@ -1476,6 +1476,43 @@
             }
             draw(ctx) {
                 if (!this.alive) return;
+
+                // ── BOOST GLOW ──
+                if (this.isBoosting) {
+                    const pulse = 0.72 + 0.28 * Math.sin(Date.now() * 0.012);
+                    const glowColor = this.mainColor;
+                    // Passe 1: halo largo e suave
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.shadowColor = glowColor;
+                    ctx.shadowBlur = this.radius * 2.8 * pulse;
+                    ctx.globalAlpha = 0.38 * pulse;
+                    for (let i = this.segments.length - 1; i >= 0; i--) {
+                        ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]),
+                            this.segments[i].x - this.radius, this.segments[i].y - this.radius,
+                            this.radius * 2, this.radius * 2);
+                    }
+                    ctx.drawImage(TextureManager.getSegment(this.skin[0]),
+                        this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+                    ctx.restore();
+
+                    // Passe 2: núcleo brilhante mais concentrado
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.shadowColor = '#ffffff';
+                    ctx.shadowBlur = this.radius * 1.1 * pulse;
+                    ctx.globalAlpha = 0.18 * pulse;
+                    for (let i = this.segments.length - 1; i >= 0; i--) {
+                        ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]),
+                            this.segments[i].x - this.radius, this.segments[i].y - this.radius,
+                            this.radius * 2, this.radius * 2);
+                    }
+                    ctx.drawImage(TextureManager.getSegment(this.skin[0]),
+                        this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+                    ctx.restore();
+                }
+
+                // ── CORPO NORMAL ──
                 for (let i = this.segments.length - 1; i >= 0; i--) ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), this.segments[i].x - this.radius, this.segments[i].y - this.radius, this.radius * 2, this.radius * 2);
                 ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
                 let look = (joystickActive && this.isPlayer) ? joystickAngle : this.angle;
