@@ -890,7 +890,7 @@
             // Configurações do Mundo e Entidades (Simulação de Servidor)
             mundo: {
                 tamanhoRaio: 7000,           // Raio do mapa circular (Arena)
-                quantidadeBots: 200,          // Número de bots ativos simultaneamente
+                quantidadeBots: 150,          // Número de bots ativos simultaneamente
                 quantidadeComida: 8000,      // Total de "orbs" (comida) no mapa
 
                 // Tipos de Spawn (Equilíbrio de População)
@@ -1511,7 +1511,7 @@
                     const bva = this.boostVisualAmt;
                     const pulse = 0.85 + 0.15 * Math.sin(Date.now() * 0.012);
                     const step = 2; // Maior densidade para parecer sólido (fita de neon)
-                    
+
                     ctx.save();
                     ctx.globalCompositeOperation = 'lighter';
 
@@ -1536,7 +1536,7 @@
                     ctx.globalAlpha = 0.4 * bva * pulse;
                     ctx.drawImage(TextureManager.getSegment(this.skin[0]),
                         this.x - headR, this.y - headR, headR * 2, headR * 2);
-                    
+
                     ctx.restore();
                 }
 
