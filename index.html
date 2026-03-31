@@ -877,8 +877,8 @@
             zoom: {
                 pc: {
                     inicial: 1.25,           // Zoom padrão inicial
-                    minimo: 0.65,            // Zoom máximo de afastamento (cobra gigante)
-                    fatorAfastamento: 0.016  // Quão rápido a câmera se afasta ao crescer
+                    minimo: 0.85,            // Zoom máximo de afastamento (cobra gigante)
+                    fatorAfastamento: 0.012  // Quão rápido a câmera se afasta ao crescer
                 },
                 mobile: {
                     inicial: 0.80,           // Mais campo de visão inicial no mobile
@@ -907,15 +907,15 @@
                 forcaAtracao: 55,            // Distância em que a comida "voa" para a boca
                 corGrade: 'rgba(255,255,255,0.02)', // Estética da grade hexagonal
                 corFundo: '#06060a',         // Cor principal do abismo
-                tamanhoHexagono: 78          // Escala visual da grade
+                tamanhoHexagono: 70          // Escala visual da grade
             },
 
             // Efeitos Visuais e Performance de Renderização
             visual: {
                 balancoComida: 4.5,          // Intensidade do balanço "organico" da comida
-                velocidadeAnimacao: 0.003,   // Velocidade do pulsar da luz
-                quantidadeVagalumes: 120,    // Partículas de ambiente
-                distanciaFugaVagalumes: 300, // Raio de fuga ao passar a cobra
+                velocidadeAnimacao: 0.002,   // Velocidade do pulsar da luz
+                quantidadeVagalumes: 100,    // Partículas de ambiente
+                distanciaFugaVagalumes: 30, // Raio de fuga ao passar a cobra
                 dRender: 450,                // Distância de Culling (Corte de processamento fora da tela)
                 qualidadeSombra: 10          // Desfoque da luz (ShadowBlur) para glow
             },
