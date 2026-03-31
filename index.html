@@ -889,8 +889,8 @@
 
             // Configurações do Mundo e Entidades (Simulação de Servidor)
             mundo: {
-                tamanhoRaio: 6000,           // Raio do mapa circular (Arena)
-                quantidadeBots: 150,          // Número de bots ativos simultaneamente
+                tamanhoRaio: 7000,           // Raio do mapa circular (Arena)
+                quantidadeBots: 200,          // Número de bots ativos simultaneamente
                 quantidadeComida: 8000,      // Total de "orbs" (comida) no mapa
 
                 // Tipos de Spawn (Equilíbrio de População)
@@ -913,9 +913,9 @@
             // Efeitos Visuais e Performance de Renderização
             visual: {
                 balancoComida: 4.5,          // Intensidade do balanço "organico" da comida
-                velocidadeAnimacao: 0.002,   // Velocidade do pulsar da luz
-                quantidadeVagalumes: 100,    // Partículas de ambiente
-                distanciaFugaVagalumes: 30, // Raio de fuga ao passar a cobra
+                velocidadeAnimacao: 0.003,   // Velocidade do pulsar da luz
+                quantidadeVagalumes: 110,    // Partículas de ambiente
+                distanciaFugaVagalumes: 50, // Raio de fuga ao passar a cobra
                 dRender: 450,                // Distância de Culling (Corte de processamento fora da tela)
                 qualidadeSombra: 10          // Desfoque da luz (ShadowBlur) para glow
             },
@@ -1337,6 +1337,8 @@
                 this.segments = [];
                 for (let i = 0; i < this.targetLength; i++) this.segments.push({ x: x, y: y });
                 this.energy = CONFIG.cobra.energiaMaxima;
+                this.boostState = false;      // Estado real do turbo (Histerese)
+                this.boostVisualAmt = 0;    // Animação suave (0 a 1)
                 this.genome = isP ? null : (genome || mutate({ ...DEFAULT_GENOME }));
                 this.birthTime = Date.now();
             }
@@ -1406,7 +1408,16 @@
                 if (this.segments.length < this.targetLength) this.segments.push({ x: this.segments[this.segments.length - 1].x, y: this.segments[this.segments.length - 1].y });
 
                 const eCfg = CONFIG.cobra;
-                if (this.isBoosting && this.energy > eCfg.energiaMinima) {
+                // ── HISTERESE DO BOOST ──
+                // Só liga se tiver energia mínima. Se ligou, só desliga em 0 ou se soltar o botão.
+                if (this.isBoosting) {
+                    if (!this.boostState && this.energy > eCfg.energiaMinima) this.boostState = true;
+                } else {
+                    this.boostState = false;
+                }
+                if (this.energy <= 0) this.boostState = false;
+
+                if (this.boostState) {
                     this.speed = this.conf.velocidadeTurbo;
                     this.energy = Math.max(0, this.energy - eCfg.energiaDreno);
                     if (Math.random() < 0.25) {
@@ -1415,9 +1426,12 @@
                     }
                 } else {
                     this.speed = this.conf.velocidadeBase;
-                    this.isBoosting = false;
                     this.energy = Math.min(eCfg.energiaMaxima, this.energy + eCfg.energiaRecarga);
                 }
+
+                // Animação suave para a iluminação (lerp)
+                if (this.boostState) this.boostVisualAmt += (1 - this.boostVisualAmt) * 0.15;
+                else this.boostVisualAmt += (0 - this.boostVisualAmt) * 0.10;
 
                 if (this.isPlayer) {
                     if (joystickActive) this.targetAngle = joystickAngle;
@@ -1492,23 +1506,37 @@
             draw(ctx) {
                 if (!this.alive) return;
 
-                // ── BOOST GLOW (sem shadowBlur — usa drawImage ampliado a cada 4 gomos) ──
-                if (this.isBoosting) {
-                    const pulse = 0.72 + 0.28 * Math.sin(Date.now() * 0.012);
-                    const gr = this.radius * (1.7 + 0.6 * pulse);
-                    const step = 4; // amostra a cada 4 segmentos
+                // ── ILUMINAÇÃO PREMIUM DO BOOST (Smooth Fade & Denser) ──
+                if (this.boostVisualAmt > 0.01) {
+                    const bva = this.boostVisualAmt;
+                    const pulse = 0.85 + 0.15 * Math.sin(Date.now() * 0.012);
+                    const step = 2; // Maior densidade para parecer sólido (fita de neon)
+                    
                     ctx.save();
                     ctx.globalCompositeOperation = 'lighter';
-                    ctx.globalAlpha = 0.28 * pulse;
+
+                    // Camada 1: Corona (Aura larga e suave)
+                    const coronaR = this.radius * (1.8 + 0.7 * pulse) * (0.8 + 0.2 * bva);
+                    ctx.globalAlpha = 0.15 * bva * pulse;
                     for (let i = 0; i < this.segments.length; i += step) {
                         ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]),
-                            this.segments[i].x - gr, this.segments[i].y - gr, gr * 2, gr * 2);
+                            this.segments[i].x - coronaR, this.segments[i].y - coronaR, coronaR * 2, coronaR * 2);
                     }
-                    // Cabeça com brilho extra
-                    const hr = this.radius * (2.1 + 0.5 * pulse);
-                    ctx.globalAlpha = 0.42 * pulse;
+
+                    // Camada 2: Núcleo (Brilho intenso e focado)
+                    const coreR = this.radius * (1.2 + 0.3 * pulse) * (0.9 + 0.1 * bva);
+                    ctx.globalAlpha = 0.25 * bva * pulse;
+                    for (let i = 0; i < this.segments.length; i += step) {
+                        ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]),
+                            this.segments[i].x - coreR, this.segments[i].y - coreR, coreR * 2, coreR * 2);
+                    }
+
+                    // Cabeça com brilho extra (Ponto Focal)
+                    const headR = this.radius * (2.4 + 0.4 * pulse) * bva;
+                    ctx.globalAlpha = 0.4 * bva * pulse;
                     ctx.drawImage(TextureManager.getSegment(this.skin[0]),
-                        this.x - hr, this.y - hr, hr * 2, hr * 2);
+                        this.x - headR, this.y - headR, headR * 2, headR * 2);
+                    
                     ctx.restore();
                 }
 
