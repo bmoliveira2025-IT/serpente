@@ -1379,12 +1379,16 @@
                     this.isBoosting = preyDist < boostThresh && this.energy > CONFIG.cobra.energiaMinima;
                 } else {
                     this.isBoosting = false;
-                    let updateFreq = Math.floor(12 + (1 - g.exploracao) * 22);
+                    let updateFreq = Math.floor(18 + (1 - g.exploracao) * 30);
                     if (frameCount % updateFreq === 0) {
-                        let nearest = null, minDist = 300 + g.comida * 600;
-                        for (let f of foods) {
-                            let d = Math.hypot(f.x - this.x, f.y - this.y);
-                            if (d < minDist) { minDist = d; nearest = f; }
+                        // Busca amostragem: verifica apenas 1 em cada 8 comidas para economizar CPU
+                        let nearest = null, minDist2 = (300 + g.comida * 600) ** 2;
+                        const step = Math.max(1, Math.floor(foods.length / 500));
+                        for (let fi = 0; fi < foods.length; fi += step) {
+                            let f = foods[fi];
+                            let dx = f.x - this.x, dy = f.y - this.y;
+                            let d2 = dx * dx + dy * dy;
+                            if (d2 < minDist2) { minDist2 = d2; nearest = f; }
                         }
                         if (nearest) this.targetAngle = Math.atan2(nearest.y - this.y, nearest.x - this.x);
                         else if (Math.random() < 0.08 + g.exploracao * 0.35) this.targetAngle += (Math.random() - 0.5) * 2.2;
@@ -1430,10 +1434,21 @@
                 let pX = this.x, pY = this.y, spc = this.radius * this.conf.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
 
+                // Atração magnética só para o player (bots só comem por contato)
+                const eatR2 = (this.radius + 10) ** 2; // margem de comer ligeiramente aumentada para bots
+                const atracaoR2 = CONFIG.mundo.forcaAtracao ** 2;
                 for (let i = foods.length - 1; i >= 0; i--) {
-                    let f = foods[i], d2 = (this.x - f.x) ** 2 + (this.y - f.y) ** 2;
-                    if (d2 < (CONFIG.mundo.forcaAtracao) ** 2) { let d = Math.sqrt(d2); f.x += (this.x - f.x) / d * 8; f.y += (this.y - f.y) / d * 8; }
-                    if (d2 < (this.radius + f.radius) ** 2) {
+                    let f = foods[i];
+                    let dx = this.x - f.x, dy = this.y - f.y;
+                    let d2 = dx * dx + dy * dy;
+                    // Atração magnética: apenas jogador
+                    if (this.isPlayer && d2 < atracaoR2) {
+                        let d = Math.sqrt(d2);
+                        f.x += (dx / d) * 8;
+                        f.y += (dy / d) * 8;
+                    }
+                    const eatDist2 = this.isPlayer ? (this.radius + f.radius) ** 2 : eatR2;
+                    if (d2 < eatDist2) {
                         this.score += f.value;
                         foods.splice(i, 1);
                         if (this.isPlayer) {
@@ -1477,38 +1492,23 @@
             draw(ctx) {
                 if (!this.alive) return;
 
-                // ── BOOST GLOW ──
+                // ── BOOST GLOW (sem shadowBlur — usa drawImage ampliado a cada 4 gomos) ──
                 if (this.isBoosting) {
                     const pulse = 0.72 + 0.28 * Math.sin(Date.now() * 0.012);
-                    const glowColor = this.mainColor;
-                    // Passe 1: halo largo e suave
+                    const gr = this.radius * (1.7 + 0.6 * pulse);
+                    const step = 4; // amostra a cada 4 segmentos
                     ctx.save();
                     ctx.globalCompositeOperation = 'lighter';
-                    ctx.shadowColor = glowColor;
-                    ctx.shadowBlur = this.radius * 2.8 * pulse;
-                    ctx.globalAlpha = 0.38 * pulse;
-                    for (let i = this.segments.length - 1; i >= 0; i--) {
+                    ctx.globalAlpha = 0.28 * pulse;
+                    for (let i = 0; i < this.segments.length; i += step) {
                         ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]),
-                            this.segments[i].x - this.radius, this.segments[i].y - this.radius,
-                            this.radius * 2, this.radius * 2);
+                            this.segments[i].x - gr, this.segments[i].y - gr, gr * 2, gr * 2);
                     }
+                    // Cabeça com brilho extra
+                    const hr = this.radius * (2.1 + 0.5 * pulse);
+                    ctx.globalAlpha = 0.42 * pulse;
                     ctx.drawImage(TextureManager.getSegment(this.skin[0]),
-                        this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
-                    ctx.restore();
-
-                    // Passe 2: núcleo brilhante mais concentrado
-                    ctx.save();
-                    ctx.globalCompositeOperation = 'lighter';
-                    ctx.shadowColor = '#ffffff';
-                    ctx.shadowBlur = this.radius * 1.1 * pulse;
-                    ctx.globalAlpha = 0.18 * pulse;
-                    for (let i = this.segments.length - 1; i >= 0; i--) {
-                        ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]),
-                            this.segments[i].x - this.radius, this.segments[i].y - this.radius,
-                            this.radius * 2, this.radius * 2);
-                    }
-                    ctx.drawImage(TextureManager.getSegment(this.skin[0]),
-                        this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+                        this.x - hr, this.y - hr, hr * 2, hr * 2);
                     ctx.restore();
                 }
 
