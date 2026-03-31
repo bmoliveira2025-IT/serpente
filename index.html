@@ -840,7 +840,7 @@
                 // Configurações específicas para PC (Performance e Equilíbrio)
                 pc: {
                     espessuraInicial: 18,    // Espessura da cobra ao nascer
-                    espessuraMaxima: 35,     // Limite de engrossamento
+                    espessuraMaxima: 25,     // Limite de engrossamento
                     comprimentoMaximo: 450,  // Quantidade máxima de gomos
                     velocidadeBase: 3.8,     // Velocidade de cruzeiro
                     velocidadeTurbo: 10.0,   // Velocidade ao usar o Boost
@@ -848,10 +848,10 @@
                 },
                 // Configurações específicas para MOBILE (Otimização de Toque e Lag)
                 mobile: {
-                    espessuraInicial: 16,    // Um pouco mais fino para telas menores
-                    espessuraMaxima: 30,     // Evita oclusão visual no celular
-                    comprimentoMaximo: 370,  // Menos gomos para manter 60+ FPS
-                    velocidadeBase: 5.0,     // Controle mais preciso com joystick
+                    espessuraInicial: 14,    // Um pouco mais fino para telas menores
+                    espessuraMaxima: 25,     // Evita oclusão visual no celular
+                    comprimentoMaximo: 360,  // Menos gomos para manter 60+ FPS
+                    velocidadeBase: 6.0,     // Controle mais preciso com joystick
                     velocidadeTurbo: 8.8,    // Turbo balanceado para touch
                     distanciaGomos: 0.24     // Mais flexível para curvas fechadas
                 },
@@ -881,7 +881,7 @@
                     fatorAfastamento: 0.016  // Quão rápido a câmera se afasta ao crescer
                 },
                 mobile: {
-                    inicial: 0.82,           // Mais campo de visão inicial no mobile
+                    inicial: 0.80,           // Mais campo de visão inicial no mobile
                     minimo: 0.35,            // Evita ficar pequeno demais em telas 16:9
                     fatorAfastamento: 0.012  // Afastamento mais suave
                 }
@@ -890,8 +890,8 @@
             // Configurações do Mundo e Entidades (Simulação de Servidor)
             mundo: {
                 tamanhoRaio: 6000,           // Raio do mapa circular (Arena)
-                quantidadeBots: 160,          // Número de bots ativos simultaneamente
-                quantidadeComida: 9000,      // Total de "orbs" (comida) no mapa
+                quantidadeBots: 150,          // Número de bots ativos simultaneamente
+                quantidadeComida: 8000,      // Total de "orbs" (comida) no mapa
 
                 // Tipos de Spawn (Equilíbrio de População)
                 spawn: {
