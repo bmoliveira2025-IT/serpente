@@ -848,17 +848,17 @@
                 },
                 // Configurações específicas para MOBILE (Otimização de Toque e Lag)
                 mobile: {
-                    espessuraInicial: 12,    // Um pouco mais fino para telas menores
+                    espessuraInicial: 11,    // Um pouco mais fino para telas menores
                     espessuraMaxima: 25,     // Evita oclusão visual no celular
-                    comprimentoMaximo: 360,  // Menos gomos para manter 60+ FPS
-                    velocidadeBase: 6.0,     // Controle mais preciso com joystick
+                    comprimentoMaximo: 320,  // Menos gomos para manter 60+ FPS
+                    velocidadeBase: 5.0,     // Controle mais preciso com joystick
                     velocidadeTurbo: 8.8,    // Turbo balanceado para touch
                     distanciaGomos: 0.27     // Mais flexível para curvas fechadas
                 },
                 // Lógica de Crescimento e Energia
                 comprimentoInicial: 24,      // Quantos gomos a cobra tem no início
-                pontosParaEngrossar: 150,    // Score necessário para aumentar o raio
-                pontosParaCrescer: 12,       // Score necessário para ganhar novo gomo
+                pontosParaEngrossar: 160,    // Score necessário para aumentar o raio
+                pontosParaCrescer: 14,       // Score necessário para ganhar novo gomo
                 energiaMaxima: 100,          // Capacidade total do tanque de turbo
                 energiaDreno: 1.4,           // Consumo por frame durante o turbo
                 energiaRecarga: 0.45,        // Recuperação passiva por frame
@@ -890,7 +890,7 @@
             // Configurações do Mundo e Entidades (Simulação de Servidor)
             mundo: {
                 tamanhoRaio: 6000,           // Raio do mapa circular (Arena)
-                quantidadeBots: 100,          // Número de bots ativos simultaneamente
+                quantidadeBots: 150,          // Número de bots ativos simultaneamente
                 quantidadeComida: 8000,      // Total de "orbs" (comida) no mapa
 
                 // Tipos de Spawn (Equilíbrio de População)
@@ -907,7 +907,7 @@
                 forcaAtracao: 55,            // Distância em que a comida "voa" para a boca
                 corGrade: 'rgba(255,255,255,0.02)', // Estética da grade hexagonal
                 corFundo: '#06060a',         // Cor principal do abismo
-                tamanhoHexagono: 70          // Escala visual da grade
+                tamanhoHexagono: 40          // Escala visual da grade
             },
 
             // Efeitos Visuais e Performance de Renderização
