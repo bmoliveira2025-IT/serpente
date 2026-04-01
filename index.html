@@ -7,40 +7,9 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Serpente - O Conto do Rei</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
 
-        /* =============================================
-           DESIGN SYSTEM — Serpente 2026
-           Premium Dark · Glassmorphism · WCAG AA
-        ============================================= */
-        :root {
-            --bg: #06060a;
-            --surface: rgba(255, 255, 255, 0.045);
-            --surface-md: rgba(255, 255, 255, 0.07);
-            --border: rgba(255, 255, 255, 0.08);
-            --border-hi: rgba(255, 255, 255, 0.14);
-            --gold: #FFD60A;
-            --gold-dim: rgba(255, 214, 10, 0.22);
-            --gold-glow: rgba(255, 214, 10, 0.45);
-            --text-1: rgba(255, 255, 255, 0.92);
-            --text-2: rgba(255, 255, 255, 0.50);
-            --text-3: rgba(255, 255, 255, 0.28);
-            --radius-sm: 10px;
-            --radius-md: 16px;
-            --radius-lg: 24px;
-            --radius-pill: 100px;
-            --blur: blur(20px) saturate(160%);
-            --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --ease: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* RESET */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-        }
-
+        /* RESET E BLOQUEIO DE COMPORTAMENTOS NATIVOS MOBILE */
         body,
         html {
             margin: 0;
@@ -48,14 +17,13 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: var(--bg);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #050505;
+            font-family: 'Poppins', sans-serif;
             touch-action: none;
             overscroll-behavior: none;
             user-select: none;
             -webkit-user-select: none;
             -webkit-touch-callout: none;
-            color: var(--text-1);
         }
 
         #gameCanvas {
@@ -74,511 +42,413 @@
             z-index: 10;
         }
 
-        /* GLASS PANEL */
+        /* Animações de UI */
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes popTitle {
+            0% {
+                transform: translateX(-50%) scale(0.5);
+                opacity: 0;
+            }
+
+            20% {
+                transform: translateX(-50%) scale(1.1);
+                opacity: 1;
+            }
+
+            30% {
+                transform: translateX(-50%) scale(1);
+                opacity: 1;
+            }
+
+            80% {
+                transform: translateX(-50%) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(-50%) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        .anim-slide-up {
+            animation: slideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+        }
+
+        .anim-fade-in {
+            animation: fadeIn 1s ease forwards;
+            opacity: 0;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-4 {
+            animation-delay: 0.4s;
+        }
+
+        /* Estilo Vidro AAA */
         .glass-panel {
-            background: var(--surface);
-            backdrop-filter: var(--blur);
-            -webkit-backdrop-filter: var(--blur);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            color: var(--text-1);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: white;
             pointer-events: auto;
         }
 
-        /* ── HUD STATUS (PC: bottom-left) ── */
+        /* HUD - PADRÃO PC */
         #hud-status {
             position: absolute;
-            bottom: 24px;
-            left: 24px;
+            bottom: 25px;
+            left: 25px;
             display: none;
             flex-direction: column;
-            gap: 4px;
-            padding: 14px 22px 12px;
-            border-radius: var(--radius-md);
+            gap: 5px;
+            padding: 15px 30px;
+            border-radius: 15px;
             z-index: 50;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
-        .hud-label {
-            font-size: 9px;
-            font-weight: 600;
-            color: var(--text-3);
-            letter-spacing: .12em;
-            text-transform: uppercase;
-        }
-
-        .hud-value {
-            font-size: clamp(18px, 2.2vw, 24px);
-            font-weight: 800;
-            color: var(--gold);
-            line-height: 1;
-            text-shadow: 0 0 16px var(--gold-dim);
-        }
-
         .hud-stat {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
+        .hud-stat span {
+            color: #ffdf00;
+            font-size: 20px;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px black;
+            margin-left: 5px;
+        }
+
+        /* HUD - MOBILE */
         @media (max-width: 1024px) {
             #hud-status {
-                bottom: 10px !important;
+                bottom: 12px !important;
                 left: 50% !important;
                 transform: translateX(-50%) !important;
                 flex-direction: row !important;
-                gap: 18px !important;
-                padding: 7px 20px !important;
-                border-radius: var(--radius-pill) !important;
+                gap: 15px !important;
+                padding: 6px 18px !important;
+                border-radius: 50px !important;
                 white-space: nowrap;
-                background: rgba(6, 6, 10, 0.75) !important;
+                background: rgba(0, 0, 0, 0.6) !important;
+                border-color: rgba(255, 255, 255, 0.1) !important;
             }
 
             .hud-stat {
-                flex-direction: row;
-                align-items: center;
-                gap: 6px;
-            }
-
-            .hud-label {
                 font-size: 7px !important;
+                display: flex;
+                align-items: center;
+                gap: 4px;
             }
 
-            .hud-value {
+            .hud-stat span {
                 font-size: 15px !important;
+                margin-left: 0 !important;
             }
         }
 
-        /* ── ENERGY BAR ── */
-        #energy-bar-inline {
-            width: 100%;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        #energy-bar-fill {
-            height: 100%;
-            width: 100%;
-            border-radius: 2px;
-            background: linear-gradient(90deg, #00e87a, #FFD60A);
-            transition: width .12s var(--ease), background .3s;
-        }
-
-        @media (max-width: 1024px) {
-            #energy-bar-inline {
-                width: 60px;
-                margin-top: 0;
-                align-self: center;
-            }
-        }
-
-        /* ── LEADERBOARD ── */
+        /* TOP 10 */
         #leaderboard {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 175px;
-            padding: 12px 14px;
-            border-radius: var(--radius-md);
+            top: 15px;
+            right: 15px;
+            width: 170px;
+            padding: 10px;
+            border-radius: 10px;
             display: none;
             font-size: 10px;
-            background: rgba(6, 6, 10, 0.5);
-            border-color: var(--border);
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(5px);
         }
 
         #lb-list {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
         }
 
         .lb-entry {
             display: flex;
             justify-content: space-between;
-            color: var(--text-2);
-            font-weight: 500;
-            transition: color .2s;
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .lb-entry.is-me {
-            color: var(--gold) !important;
+            color: #ffdf00 !important;
             font-weight: 800;
         }
 
-        /* ── MINIMAP ──
-           CORRECAO BUG 3: Container agora 140px para coincidir com o canvas JS (140x140)
-           O canvas era recortado quando o container estava em 96px/100px
-        */
-        #minimap-wrapper {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            display: none;
-            z-index: 60;
-        }
-
-        #minimap-container {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 1px solid var(--border-hi);
-            overflow: hidden;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-        }
-
-        /* ── SKIN BUTTON ── */
+        /* SKINS RODAPÉ DIREITO */
         #skins-btn {
             position: absolute;
-            bottom: 28px;
-            right: 28px;
+            bottom: 30px;
+            right: 30px;
             cursor: pointer;
             pointer-events: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            transition: transform .25s var(--spring), opacity .2s;
+            gap: 8px;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
             z-index: 50;
-            padding: 10px 14px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            backdrop-filter: var(--blur);
         }
 
         #skins-btn:hover {
-            transform: translateY(-3px) scale(1.04);
-            border-color: var(--border-hi);
-        }
-
-        #skins-btn:active {
-            transform: scale(0.95);
+            transform: scale(1.1);
         }
 
         #skins-btn span {
-            font-weight: 700;
-            color: var(--gold);
-            font-size: 9px;
-            letter-spacing: .12em;
+            font-weight: 800;
+            color: #ffdf00;
+            font-size: 10px;
+            letter-spacing: 1.5px;
         }
 
-        @media (max-width:1024px) {
+        @media (max-width: 1024px) {
             #skins-btn {
-                bottom: 18px;
-                right: 18px;
-                transform: scale(0.88);
+                bottom: 20px;
+                right: 20px;
+                transform: scale(0.85);
             }
         }
 
-        /* ── START / DEATH SCREENS ── */
+        /* MODO MENU E MORTE - Fundo semi-transparente para ver a arena */
         #start-menu,
         #death-screen {
             position: absolute;
             inset: 0;
-            background: radial-gradient(ellipse at 50% 40%, rgba(20, 20, 30, 0.92) 0%, var(--bg) 100%);
+            background: radial-gradient(circle at center, rgba(10, 10, 10, 0.6) 0%, rgba(5, 5, 5, 0.95) 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             pointer-events: auto;
             z-index: 100;
-            gap: 0;
         }
 
-        /* Logo */
-        .logo-container {
-            font-size: clamp(44px, 11vw, 88px);
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 4px;
-            letter-spacing: -2px;
-        }
-
-        .slither-text {
-            color: var(--gold);
-            text-shadow: 0 0 32px var(--gold-glow);
-        }
-
-        .subtitle {
-            font-size: clamp(8px, 1.2vw, 11px);
-            font-weight: 600;
-            letter-spacing: .32em;
-            color: var(--text-3);
-            text-transform: uppercase;
-            margin-bottom: 36px;
-            margin-top: 6px;
-        }
-
-        /* Death title */
+        /* TELA DE MORTE E BOTÕES RESPONSIVOS */
         #death-screen h2 {
-            font-size: clamp(28px, 7vw, 64px);
-            font-weight: 900;
-            color: var(--gold);
-            text-shadow: 0 0 40px var(--gold-glow);
-            text-transform: uppercase;
-            letter-spacing: -.02em;
-            margin: 0 16px 28px;
-            line-height: 1.05;
-            text-align: center;
+            color: #ffdf00 !important;
+            font-size: clamp(30px, 8vw, 65px);
+            font-weight: 800;
+            text-shadow: 0 0 30px rgba(255, 223, 0, 0.4);
+            margin: 0 10px 5px 10px;
+            line-height: 1.1;
         }
 
-        /* Death card */
+        #death-msg {
+            font-size: clamp(14px, 4vw, 20px);
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
         .death-stats-box {
-            padding: clamp(24px, 5vw, 44px) clamp(28px, 9vw, 88px);
-            border-radius: var(--radius-lg);
-            margin-bottom: clamp(20px, 4vw, 32px);
+            padding: clamp(20px, 5vw, 40px) clamp(20px, 8vw, 80px);
+            border-radius: clamp(15px, 4vw, 30px);
+            margin-bottom: clamp(15px, 5vw, 30px);
             text-align: center;
-            border-color: rgba(255, 214, 10, 0.18);
-            background: rgba(255, 214, 10, 0.04);
-            width: clamp(260px, 85vw, 440px);
-        }
-
-        .stat-label {
-            font-size: clamp(9px, 2vw, 11px);
-            font-weight: 600;
-            color: var(--text-3);
-            letter-spacing: .18em;
-            text-transform: uppercase;
-            margin: 0 0 4px;
+            border-color: #ffdf00;
+            background: rgba(0, 0, 0, 0.8);
+            width: 85%;
+            max-width: 450px;
+            box-sizing: border-box;
         }
 
         #death-length {
-            font-size: clamp(48px, 13vw, 80px);
-            font-weight: 900;
-            color: var(--gold);
-            line-height: 1.1;
-            margin: 0;
-            text-shadow: 0 0 24px var(--gold-dim);
-        }
-
-        .death-sub {
-            margin-top: 14px;
-            font-weight: 600;
-            color: var(--text-2);
-            font-size: clamp(12px, 3vw, 15px);
-        }
-
-        .death-sub b {
-            color: var(--gold);
-        }
-
-        #death-record {
-            margin-top: 10px;
-            font-size: clamp(10px, 2.5vw, 13px);
-            font-weight: 700;
-            color: var(--text-3);
-            letter-spacing: .14em;
-            text-transform: uppercase;
-        }
-
-        #death-record.new-record {
-            color: var(--gold);
-            animation: pulseRec .9s infinite alternate;
-        }
-
-        @keyframes pulseRec {
-            from {
-                text-shadow: 0 0 4px rgba(255, 214, 10, .2);
-            }
-
-            to {
-                text-shadow: 0 0 22px rgba(255, 214, 10, .9);
-            }
-        }
-
-        /* ── PRIMARY BUTTON (CTA) ── */
-        .btn-aaa {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: clamp(14px, 3vw, 18px) clamp(36px, 9vw, 72px);
-            font-family: inherit;
-            font-size: clamp(14px, 3.5vw, 17px);
+            font-size: clamp(40px, 12vw, 75px);
             font-weight: 800;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            border-radius: var(--radius-pill);
+            color: #ffdf00;
+            text-shadow: 0 0 20px rgba(255, 223, 0, 0.5);
+            line-height: 1.2;
+            margin: 5px 0;
+        }
+
+        /* Botões lado a lado */
+        .btn-row {
+            display: flex;
+            gap: 15px;
+            width: 85%;
+            max-width: 350px;
+        }
+
+        .btn-half {
+            padding: 15px 0;
+            font-size: clamp(12px, 3.5vw, 15px);
+            width: 50%;
+            border-radius: 50px;
             border: none;
-            background: var(--gold);
-            color: #07050A;
+            font-weight: 800;
             cursor: pointer;
-            transition: transform .22s var(--spring), box-shadow .22s var(--ease), background .15s;
+            transition: transform 0.2s;
             pointer-events: auto;
-            width: clamp(220px, 80vw, 320px);
-            box-shadow: 0 4px 24px var(--gold-dim);
-            -webkit-tap-highlight-color: transparent;
-            outline-offset: 3px;
+        }
+
+        .btn-share {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-share:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-restart {
+            background: linear-gradient(145deg, #ffdf00 0%, #ccaa00 100%);
+            color: black;
+            box-shadow: 0 5px 20px rgba(255, 223, 0, 0.25);
+        }
+
+        .btn-restart:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-container {
+            font-size: clamp(45px, 12vw, 90px);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: -5px;
+        }
+
+        .slither-text {
+            color: #ffdf00;
+            text-shadow: 0 0 25px rgba(255, 223, 0, 0.6);
+            letter-spacing: -2px;
+        }
+
+        .btn-aaa {
+            padding: clamp(14px, 3vw, 18px) clamp(30px, 8vw, 70px);
+            font-size: clamp(15px, 4vw, 18px);
+            font-weight: 800;
+            border-radius: 50px;
+            border: none;
+            background: #ffdf00;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.2s;
+            pointer-events: auto;
+            width: 85%;
+            max-width: 320px;
+            box-sizing: border-box;
+            box-shadow: 0 5px 20px rgba(255, 223, 0, 0.25);
         }
 
         .btn-aaa:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 36px var(--gold-glow);
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 223, 0, 0.4);
         }
 
-        .btn-aaa:active {
-            transform: scale(0.96) translateY(0);
-            box-shadow: 0 2px 10px var(--gold-dim);
-        }
-
-        .btn-aaa:focus-visible {
-            outline: 2px solid var(--gold);
-            outline-offset: 4px;
-        }
-
-        /* ── INPUT ── */
         #nickname {
-            background: var(--surface-md);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-pill);
-            padding: 14px 28px;
-            color: var(--text-1);
+            background: rgba(15, 15, 15, 0.8);
+            border-radius: 50px;
+            padding: 14px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
             text-align: center;
             outline: none;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             font-family: inherit;
             font-size: 13px;
             font-weight: 600;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            width: clamp(220px, 78vw, 300px);
-            transition: border-color .2s var(--ease), background .2s, box-shadow .2s;
-            backdrop-filter: var(--blur);
-            pointer-events: auto;
+            width: 80%;
+            max-width: 280px;
+            box-sizing: border-box;
+            letter-spacing: 1px;
+            transition: border-color 0.3s;
+            backdrop-filter: blur(5px);
         }
 
         #nickname:focus {
-            border-color: rgba(255, 214, 10, .5);
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 0 0 3px rgba(255, 214, 10, .1);
+            border-color: #ffdf00;
         }
 
         #nickname::placeholder {
-            color: var(--text-3);
+            color: #777;
         }
 
-        /* ── SKIN PREVIEW UI ── */
-        #skin-preview-ui {
+        #minimap-wrapper {
             position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 101;
-            pointer-events: auto;
-            background: radial-gradient(circle at center, rgba(6, 6, 10, 0.4) 0%, rgba(6, 6, 10, 0.9) 100%);
-            /* backdrop-filter removido para garantir nitidez máxima da cobra */
+            top: 15px;
+            left: 15px;
+            display: none;
+            z-index: 60;
         }
 
-        #skin-name-display {
-            position: absolute;
-            top: clamp(14%, 16%, 18%);
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: clamp(28px, 5.5vw, 48px);
-            font-weight: 900;
-            color: var(--gold);
-            text-shadow: 0 0 32px var(--gold-glow);
-            letter-spacing: -.02em;
-            white-space: nowrap;
-        }
-
-        #skin-counter {
-            position: absolute;
-            top: calc(clamp(14%, 16%, 18%) + clamp(38px, 7vw, 62px));
-            left: 50%;
-            transform: translateX(-50%);
-            color: var(--text-3);
-            font-weight: 600;
-            font-size: 11px;
-            letter-spacing: .2em;
-        }
-
-        .arrow-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            pointer-events: auto;
-            z-index: 105;
-            background: var(--surface-md);
-            border: 1px solid var(--border);
+        #minimap-container {
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: var(--blur);
-            transition: transform .22s var(--spring), background .2s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.5);
         }
 
-        .arrow-btn:hover {
-            transform: translateY(-50%) scale(1.12);
-            border-color: var(--border-hi);
-        }
-
-        .arrow-btn:active {
-            transform: translateY(-50%) scale(0.93);
-        }
-
-        #left-arrow {
-            left: clamp(20px, 6%, 80px);
-        }
-
-        #right-arrow {
-            right: clamp(20px, 6%, 80px);
-        }
-
-        /* ── TOP1 BANNER ── */
-        #top1-banner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            font-size: clamp(26px, 6.5vw, 58px);
-            font-weight: 900;
-            color: var(--gold);
-            text-shadow: 0 0 48px var(--gold-glow), 0 4px 16px rgba(0, 0, 0, .9);
-            text-align: center;
-            z-index: 200;
-            pointer-events: none;
-            white-space: nowrap;
-            transition: transform .4s var(--spring), opacity .5s var(--ease);
-            opacity: 0;
-            letter-spacing: -.02em;
-        }
-
-        #top1-banner.show {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-        }
-
-        /* ── MOBILE CONTROLS ── */
+        /* CONTROLES MOBILE */
         #mobile-controls {
             position: absolute;
             inset: 0;
             pointer-events: none;
             display: none;
             z-index: 1000;
+            transition: opacity 0.3s;
         }
 
         #joystick-base {
             position: absolute;
-            bottom: 32px;
-            left: 32px;
-            width: 112px;
-            height: 112px;
+            bottom: 35px;
+            left: 35px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(6px);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(4px);
             pointer-events: auto;
             touch-action: none;
         }
@@ -587,48 +457,48 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 48px;
-            height: 48px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.32);
-            box-shadow: 0 4px 18px rgba(0, 0, 0, .25);
+            background: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transform: translate(-50%, -50%);
             pointer-events: none;
-            transition: background .15s;
         }
 
         .action-btn {
             position: absolute;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.10);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            color: var(--gold);
-            backdrop-filter: blur(6px);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
             justify-content: center;
             pointer-events: auto;
             touch-action: none;
-            transition: transform .12s var(--spring), background .12s;
+            transition: transform 0.1s;
         }
 
         .action-btn:active {
-            transform: scale(0.88);
-            background: rgba(255, 214, 10, 0.22);
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .action-btn svg {
-            width: 46%;
-            height: 46%;
+            width: 45%;
+            height: 45%;
             fill: currentColor;
         }
 
         #btn-turbo {
-            bottom: 36px;
-            right: 36px;
-            width: 68px;
-            height: 68px;
-            border-color: rgba(255, 214, 10, .3);
+            bottom: 40px;
+            right: 40px;
+            width: 65px;
+            height: 65px;
+            color: #ffdf00;
+            border-color: rgba(255, 223, 0, 0.3);
         }
 
         #gesture-hint {
@@ -636,11 +506,11 @@
             top: 25%;
             left: 50%;
             transform: translateX(-50%);
-            color: var(--text-3);
+            color: rgba(255, 255, 255, 0.4);
             font-size: 11px;
             font-weight: 600;
             pointer-events: none;
-            letter-spacing: .14em;
+            letter-spacing: 2px;
             text-align: center;
             animation: fadeOut 5s forwards;
         }
@@ -657,70 +527,217 @@
             }
         }
 
-        /* ── ORIENTATION OVERLAY ── */
+        /* PREVIEW SKIN */
+        #skin-preview-ui {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            pointer-events: auto;
+            background: transparent;
+        }
+
+        .arrow-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 105;
+        }
+
+        #left-arrow {
+            left: 8%;
+        }
+
+        #right-arrow {
+            right: 8%;
+        }
+
+        #skin-locked-overlay {
+            position: absolute;
+            bottom: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        /* MISSÕES DIÁRIAS */
+        #missions-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 110;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            pointer-events: auto;
+            width: 220px;
+            text-align: left;
+        }
+
+        .m-desc {
+            font-size: 10px;
+            color: #ccc;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+
+        .m-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .m-fill {
+            height: 100%;
+            background: #ffdf00;
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .m-rainbow-text {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8b00ff);
+            -webkit-background-clip: text;
+            color: transparent;
+            animation: rainbow 3s linear infinite;
+            background-size: 200% 100%;
+        }
+
+        @keyframes rainbow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            #missions-panel {
+                top: 15px;
+                left: 15px;
+                transform: scale(0.75);
+                transform-origin: top left;
+            }
+        }
+
+        /* BOTÃO E MENU DE CONFIGURAÇÕES */
+        #settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 110;
+            transition: transform 0.3s;
+            pointer-events: auto;
+            opacity: 0.8;
+        }
+
+        #settings-btn:hover {
+            transform: rotate(90deg);
+            opacity: 1;
+        }
+
+        #settings-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            padding: 25px;
+            border-radius: 20px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(15, 15, 15, 0.95);
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #ccc;
+        }
+
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 10px;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: #ffdf00;
+            color: black;
+            border-color: #ffdf00;
+        }
+
+        /* TÍTULOS DE EVOLUÇÃO IN-GAME */
+        #level-popup {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%) scale(0.5);
+            opacity: 0;
+            z-index: 80;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #level-popup h3 {
+            margin: 0;
+            font-size: 14px;
+            color: white;
+            letter-spacing: 2px;
+        }
+
+        #level-popup h1 {
+            margin: -5px 0 0 0;
+            font-size: clamp(30px, 6vw, 45px);
+            font-weight: 800;
+            text-shadow: 0 0 20px currentColor;
+            text-transform: uppercase;
+        }
+
         #orientation-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(6, 6, 10, .95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            color: var(--gold);
+            background: rgba(5, 5, 5, 0.9);
+            backdrop-filter: blur(15px);
+            color: #ffdf00;
             z-index: 9999;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-        }
-
-        /* ── SCREEN FADE IN ── */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        #start-menu>*,
-        #death-screen>* {
-            animation: fadeInUp .35s var(--ease) both;
-        }
-
-        #start-menu>*:nth-child(1) {
-            animation-delay: .05s;
-        }
-
-        #start-menu>*:nth-child(2) {
-            animation-delay: .10s;
-        }
-
-        #start-menu>*:nth-child(3) {
-            animation-delay: .15s;
-        }
-
-        #start-menu>*:nth-child(4) {
-            animation-delay: .20s;
-        }
-
-        #start-menu>*:nth-child(5) {
-            animation-delay: .25s;
-        }
-
-        #death-screen>*:nth-child(1) {
-            animation-delay: .04s;
-        }
-
-        #death-screen>*:nth-child(2) {
-            animation-delay: .12s;
-        }
-
-        #death-screen>*:nth-child(3) {
-            animation-delay: .20s;
         }
 
         .hidden {
@@ -734,21 +751,15 @@
     <canvas id="gameCanvas"></canvas>
 
     <div id="ui-layer">
+        <!-- EMBLEMA DE EVOLUÇÃO (POPUP) -->
+        <div id="level-popup">
+            <h3>NOVA EVOLUÇÃO!</h3>
+            <h1 id="level-title-text">DEUS DA ARENA</h1>
+        </div>
+
         <div id="hud-status" class="glass-panel">
-            <div class="hud-stat">
-                <span class="hud-label">Abundância</span>
-                <span class="hud-value" id="score-display">0</span>
-            </div>
-            <div class="hud-stat">
-                <span class="hud-label">Rank</span>
-                <span class="hud-value" id="rank-display">0</span>
-                <span class="hud-label" style="align-self:center">/</span>
-                <span class="hud-value" id="total-display"
-                    style="color:var(--text-2);font-size:clamp(14px,1.6vw,18px)">0</span>
-            </div>
-            <div id="energy-bar-inline">
-                <div id="energy-bar-fill"></div>
-            </div>
+            <div class="hud-stat">ABUNDÂNCIA <span id="score-display">0</span></div>
+            <div class="hud-stat">RANK <span id="rank-display">0</span> / <span id="total-display">0</span></div>
         </div>
 
         <div id="leaderboard" class="glass-panel">
@@ -758,527 +769,302 @@
             <div id="minimap-container" class="glass-panel"><canvas id="minimap"></canvas></div>
         </div>
 
-        <div id="top1-banner">&#128081; VOC&#202; &#201; O REI!</div>
-
         <div id="mobile-controls">
             <div id="joystick-base">
                 <div id="joystick-handle"></div>
             </div>
-            <div id="btn-turbo" class="action-btn">
-                <svg viewBox="0 0 24 24">
+            <div id="btn-turbo" class="action-btn"><svg viewBox="0 0 24 24">
                     <path
                         d="M13 2.05v3.03c3.39.49 6 3.39 6 6.92 0 .9-.22 1.75-.61 2.51l2.33 2.33c.8-1.43 1.28-3.08 1.28-4.84 0-4.95-3.64-9.05-8-9.95zM12 19c-3.87 0-7-3.13-7-7 0-3.53 2.61-6.43 6-6.92V2.05C6.36 2.95 3 7.05 3 12c0 4.97 4.03 9 9 9 2.22 0 4.24-.81 5.8-2.14l-2.2-2.2C14.6 18.25 13.35 19 12 19zm4.23-2.61c.42-.45.79-.95 1.1-1.49l-2.15-2.15c-.15.25-.33.48-.53.69l1.58 2.95zM12 6.5c-3.03 0-5.5 2.47-5.5 5.5s2.47 5.5 5.5 5.5 5.5-2.47 5.5-5.5-2.47-5.5-5.5-5.5z" />
-                </svg>
-            </div>
+                </svg></div>
             <div id="gesture-hint">SWIPE NA TELA PARA DASH<br>👆 👇 👈 👉</div>
         </div>
 
-        <div id="start-menu">
-            <div class="logo-container">
-                <div role="img" aria-label="coroa">&#128081;</div><span class="slither-text">Serpente</span>
-            </div>
-            <div class="subtitle">O Conto da Coroa Dourada</div>
-            <input type="text" id="nickname" placeholder="Nome da lenda" maxlength="16" autocomplete="off"
-                autocorrect="off" spellcheck="false" aria-label="Seu nome no jogo">
-            <button id="play-btn" class="btn-aaa" aria-label="Iniciar partida">Iniciar Jornada</button>
+        <!-- BOTAO DE CONFIGS -->
+        <div id="settings-btn">⚙️</div>
+        <div id="settings-modal" class="glass-panel hidden">
+            <h3 style="margin:0 0 15px 0; text-align:center; color:#ffdf00; font-size: 16px; letter-spacing: 1px;">
+                CONFIGURAÇÕES</h3>
+            <div class="setting-row"><span>ÁUDIO & SFX</span><button class="toggle-btn active"
+                    id="toggle-audio">ON</button></div>
+            <div class="setting-row"><span>GRÁFICOS</span><button class="toggle-btn active"
+                    id="toggle-gfx">ALTOS</button></div>
+            <div class="setting-row"><span>OPACIDADE UI</span><button class="toggle-btn active"
+                    id="toggle-ui">FORTE</button></div>
+            <button id="close-settings" class="btn-aaa"
+                style="width:100%; padding:12px; font-size:12px; margin-top:10px;">FECHAR</button>
+        </div>
 
-            <div id="skins-btn" role="button" aria-label="Mudar escamas" tabindex="0">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <div id="start-menu">
+            <div id="missions-panel" class="glass-panel anim-slide-up delay-1">
+                <div style="color:#ffdf00; font-weight:800; font-size:12px; letter-spacing:1px; margin-bottom: 5px;">📜
+                    DESAFIOS DIÁRIOS</div>
+                <div class="mission-item"><span class="m-desc" id="m-desc-1">Abates (0/50)</span>
+                    <div class="m-bar">
+                        <div id="m-bar-1" class="m-fill"></div>
+                    </div>
+                </div>
+                <div class="mission-item"><span class="m-desc" id="m-desc-2">Comer Orbes (0/1500)</span>
+                    <div class="m-bar">
+                        <div id="m-bar-2" class="m-fill"></div>
+                    </div>
+                </div>
+                <div class="mission-item"><span class="m-desc" id="m-desc-3">Sobrevivência (0/5 min)</span>
+                    <div class="m-bar">
+                        <div id="m-bar-3" class="m-fill"></div>
+                    </div>
+                </div>
+                <div id="mission-reward" style="font-size:10px; font-weight:800; text-align:center; margin-top:5px;"
+                    class="hidden m-rainbow-text">✨ RASTRO ARCO-ÍRIS ATIVADO!</div>
+            </div>
+
+            <div class="logo-container anim-slide-up delay-2">
+                <div>👑</div><span class="slither-text">Serpente</span>
+            </div>
+            <div class="subtitle anim-fade-in delay-3"
+                style="margin-top:15px; margin-bottom: 25px; font-size:10px; font-weight: 700; letter-spacing:5px; opacity:0.3; color:#fff;">
+                O CONTO DA COROA DOURADA</div>
+
+            <input type="text" id="nickname" class="anim-slide-up delay-3" placeholder="NOME DA LENDA" maxlength="16">
+            <button id="play-btn" class="btn-aaa anim-slide-up delay-4">INICIAR JORNADA</button>
+
+            <div id="skins-btn" class="anim-fade-in delay-4">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                     <path
                         d="M8 17C5.23858 17 3 14.7614 3 12C3 9.23858 5.23858 7 8 7H13C15.7614 7 18 4.76142 18 2H20C20 5.86599 16.866 9 13 9H8C6.34315 9 5 10.3431 5 12C5 13.6569 6.34315 15 8 15H18C20.7614 15 23 17.2386 23 20V22H21V20C21 18.3431 19.6569 17 18 17H8Z"
-                        fill="#00e87a" />
-                    <circle cx="20" cy="5" r="1.5" fill="#FFD60A" />
+                        fill="#00ff88" />
+                    <circle cx="20" cy="5" r="1.5" fill="#ffdf00" />
                 </svg>
-                <span>Mudar Escamas</span>
+                <span>MUDAR ESCAMAS</span>
             </div>
         </div>
 
         <div id="skin-preview-ui" class="hidden">
-            <div id="skin-name-display">PELE ORIGINAL</div>
-            <div id="skin-counter">1 / 34</div>
-            <div id="left-arrow" class="arrow-btn" role="button" aria-label="Skin anterior">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFD60A">
+            <div id="skin-name-display"
+                style="position:absolute; top:15%; left:50%; transform:translateX(-50%); color:#ffdf00; font-weight:800; font-size:clamp(30px, 6vw, 45px); text-align: center; width: 100%;">
+                PELE ORIGINAL</div>
+            <div id="left-arrow" class="arrow-btn"><svg width="60" height="60" viewBox="0 0 24 24" fill="#ffdf00">
                     <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                </svg>
-            </div>
-            <div id="right-arrow" class="arrow-btn" role="button" aria-label="Próxima skin">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFD60A">
+                </svg></div>
+            <div id="right-arrow" class="arrow-btn"><svg width="60" height="60" viewBox="0 0 24 24" fill="#ffdf00">
                     <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-                </svg>
+                </svg></div>
+            <div id="skin-locked-overlay" class="hidden">
+                <div style="color:#ff4444; font-weight:800; font-size:16px; letter-spacing:1px;" id="skin-req-title">🔒
+                    REQUER X ABUNDÂNCIA</div>
+                <div style="font-size:12px; color:#aaa; margin-top:3px;" id="skin-req-status">SUA PROGRESSÃO: 0</div>
             </div>
             <button id="skin-ok-btn" class="btn-aaa"
-                style="position:absolute;bottom:clamp(8%,12%,15%);left:50%;transform:translateX(-50%);z-index:110;">Confirmar</button>
+                style="position:absolute; bottom:10%; left:50%; transform:translateX(-50%); z-index: 110;">OK</button>
         </div>
 
         <div id="death-screen" class="hidden">
-            <h2>A Lenda Terminou</h2>
+            <h2>A LENDA TERMINOU</h2>
+            <div id="death-msg">BOM TRABALHO!</div>
             <div class="glass-panel death-stats-box">
-                <p class="stat-label">Abundância Recolhida</p>
+                <p
+                    style="margin: 0; color: rgba(255,255,255,0.4); font-weight: 600; font-size: clamp(10px, 3vw, 12px); letter-spacing: 2px;">
+                    ABUNDÂNCIA RECOLHIDA</p>
                 <div id="death-length">0</div>
-                <p class="death-sub">Inimigos Vencidos: <b><span id="death-kills">0</span></b></p>
-                <div id="death-record">Melhor: 0</div>
+                <p
+                    style="margin-top: 10px; font-weight: 600; color: rgba(255,255,255,0.8); font-size: clamp(12px, 3.5vw, 16px);">
+                    COMPRIMENTO ATINGIDO: <span id="death-size" style="color:#ffdf00">0</span></p>
+                <p
+                    style="margin-top: 5px; font-weight: 600; color: rgba(255,255,255,0.8); font-size: clamp(12px, 3.5vw, 16px);">
+                    INIMIGOS VENCIDOS: <span id="death-kills" style="color:#ffdf00">0</span></p>
             </div>
-            <button id="play-again-btn" class="btn-aaa" aria-label="Reiniciar partida">Recomeçar</button>
+            <div class="btn-row">
+                <button id="share-btn" class="btn-half btn-share">COMPARTILHAR</button>
+                <button id="play-again-btn" class="btn-half btn-restart">RECOMEÇAR</button>
+            </div>
         </div>
 
         <div id="orientation-overlay">
-            <div style="font-size:56px;margin-bottom:12px" role="img" aria-label="celular">&#128241;</div>
-            <h2 style="margin:0;font-size:clamp(18px,5vw,28px)">Gire o Aparelho</h2>
-            <p style="color:var(--text-2);max-width:75%;margin-top:10px;font-size:clamp(13px,3vw,16px)">A verdadeira
-                experiência requer o modo paisagem.</p>
+            <div style="font-size: 60px; margin-bottom: 10px;">📱</div>
+            <h2 style="margin:0;">GIRE O APARELHO</h2>
+            <p style="color: rgba(255,255,255,0.7); max-width: 80%;">A verdadeira experiência requer o modo paisagem.
+            </p>
         </div>
     </div>
 
     <script>
+        /**
+         * =========================================================================================
+         * ⚙️ PAINEL DE DEFINIÇÕES (FÁCIL DE EDITAR)
+         * Pode alterar todos os números abaixo sem medo, respeitando os limites indicados.
+         * =========================================================================================
+         */
         const IS_MOBILE_CLIENT = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024;
 
-        /* 🛠️ CONFIGURAÇÕES GERAIS (PC & MOBILE)
-           Este objeto controla todo o comportamento, equilíbrio e performance do jogo. 
-           Ideal para ajustes finos de jogabilidade e experiência do usuário. */
         const CONFIG = {
+            // 🐍 1. CONFIGURAÇÕES DA SERPENTE (Física, Velocidade e Crescimento)
             cobra: {
-                // Configurações específicas para PC (Performance e Equilíbrio)
                 pc: {
-                    espessuraInicial: 18,    // Espessura da cobra ao nascer
-                    espessuraMaxima: 25,     // Limite de engrossamento
-                    comprimentoMaximo: 450,  // Quantidade máxima de gomos
-                    velocidadeBase: 3.8,     // Velocidade de cruzeiro
-                    velocidadeTurbo: 10.0,   // Velocidade ao usar o Boost
-                    distanciaGomos: 0.22     // Suavidade da articulação entre gomos
+                    espessuraInicial: 18,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
+                    espessuraMaxima: 30,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
+                    comprimentoInicial: 15,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
+                    comprimentoMaximo: 400,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
+                    velocidadeBase: 3.6,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
+                    velocidadeTurbo: 9.8        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
-                // Configurações específicas para MOBILE (Otimização de Toque e Lag)
                 mobile: {
-                    espessuraInicial: 11,    // Um pouco mais fino para telas menores
-                    espessuraMaxima: 25,     // Evita oclusão visual no celular
-                    comprimentoMaximo: 320,  // Menos gomos para manter 60+ FPS
-                    velocidadeBase: 5.6,     // Controle mais preciso com joystick
-                    velocidadeTurbo: 8.8,    // Turbo balanceado para touch
-                    distanciaGomos: 0.27     // Mais flexível para curvas fechadas
+                    espessuraInicial: 16,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
+                    espessuraMaxima: 28,        // (Recomendado: 20 a 35) Limite de grossura em Telemóveis.
+                    comprimentoInicial: 14,     // (Recomendado: 10 a 30) Comprimento inicial mais curto no Mobile.
+                    comprimentoMaximo: 380,     // (⚠️ Limite: 500) Máximo no mobile para evitar sobreaquecimento do aparelho.
+                    velocidadeBase: 3.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeTurbo: 8.5        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
-                // Lógica de Crescimento e Energia
-                comprimentoInicial: 24,      // Quantos gomos a cobra tem no início
-                pontosParaEngrossar: 160,    // Score necessário para aumentar o raio
-                pontosParaCrescer: 14,       // Score necessário para ganhar novo gomo
-                energiaMaxima: 100,          // Capacidade total do tanque de turbo
-                energiaDreno: 1.4,           // Consumo por frame durante o turbo
-                energiaRecarga: 0.45,        // Recuperação passiva por frame
-                energiaMinima: 15,           // Energia mínima para PERMITIR ativar o turbo
-
-                // Haptic Feedback (Vibração)
-                tato: {
-                    ativo: true,             // Habilita/Desabilita haptics
-                    forcaClique: 12,         // Vibração ao clicar botões (ms)
-                    forcaMorte: 65,          // Vibração ao morrer (ms)
-                    forcaComida: 8           // Vibração sutil ao comer (ms)
-                }
+                // Variáveis Comuns a todas as plataformas:
+                distanciaGomos: 0.22,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.22 é ideal).
+                pontosParaEngrossar: 140,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
+                pontosParaCrescer: 18,          // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
+                custoDoTurbo: 1.5               // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
             },
 
-            // Controle de Câmera e Zoom Dinâmico
+            // 🔍 2. CONFIGURAÇÕES DA CÂMARA (Visão do Jogador)
             zoom: {
                 pc: {
-                    inicial: 1.25,           // Zoom padrão inicial
-                    minimo: 0.85,            // Zoom máximo de afastamento (cobra gigante)
-                    fatorAfastamento: 0.012  // Quão rápido a câmera se afasta ao crescer
+                    inicial: 1.30,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
+                    minimo: 0.95,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
+                    fatorAfastamento: 0.010     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
                 },
                 mobile: {
-                    inicial: 0.80,           // Mais campo de visão inicial no mobile
-                    minimo: 0.60,            // Evita ficar pequeno demais em telas 16:9
-                    fatorAfastamento: 0.010  // Afastamento mais suave
+                    inicial: 0.85,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
+                    minimo: 0.30,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
+                    fatorAfastamento: 0.012     // Suavidade do afastamento no telemóvel.
                 }
             },
 
-            // Configurações do Mundo e Entidades (Simulação de Servidor)
+            // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
-                tamanhoRaio: 5000,           // Raio do mapa circular (Arena)
-                quantidadeBots: 160,          // Número de bots ativos simultaneamente
-                quantidadeComida: 8000,      // Total de "orbs" (comida) no mapa
-
-                // Tipos de Spawn (Equilíbrio de População)
-                spawn: {
-                    jogadorInicial: 45,      // Pontuação inicial do jogador
-                    botIniciante: { score: 120, chance: 0.50 }, // 50% nascem pequenos
-                    botEvoluido: { score: 750, chance: 0.30 }, // 30% já têm algum tamanho
-                    botElite: { score: 2200, chance: 0.15 }, // 15% são perigosos
-                    botLenda: { score: 5500, chance: 0.05 }  // 5% são "bosses" gigantes
-                },
-
-                tamanhoComidaMin: 4.5,       // Tamanho visual da menor comida
-                tamanhoComidaMax: 10.0,      // Tamanho visual da maior comida
-                forcaAtracao: 55,            // Distância em que a comida "voa" para a boca
-                corGrade: 'rgba(255,255,255,0.02)', // Estética da grade hexagonal
-                corFundo: '#06060a',         // Cor principal do abismo
-                tamanhoHexagono: 40          // Escala visual da grade
+                tamanhoRaio: 8500,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
+                quantidadeBots: 85,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
+                quantidadeComida: 9500,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
+                quantidadeInsetosDourados: 15,  // (Recomendado: 5 a 30) Quantidade de "Moscas Douradas" ativas no mapa ao mesmo tempo.
+                tamanhoComidaMin: 7.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
+                tamanhoComidaMax: 9.5,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
+                forcaAtracao: 50,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
+                corGrade: 'rgba(255,255,255,0.03)', // Cor das linhas hexagonais no fundo da arena.
+                corFundo: '#050505',            // A cor do fundo (O preto "AAA" realça muito o neon do jogo).
+                tamanhoHexagono: 75             // (Recomendado: 40 a 150) O tamanho da malha desenhada no fundo.
             },
 
-            // Efeitos Visuais e Performance de Renderização
+            // ✨ 4. EFEITOS ESPECIAIS E AMBIENTE (Detalhes Gráficos)
             visual: {
-                balancoComida: 4.5,          // Intensidade do balanço "organico" da comida
-                velocidadeAnimacao: 0.003,   // Velocidade do pulsar da luz
-                quantidadeVagalumes: 110,    // Partículas de ambiente
-                distanciaFugaVagalumes: 50, // Raio de fuga ao passar a cobra
-                dRender: 450,                // Distância de Culling (Corte de processamento fora da tela)
-                qualidadeSombra: 10          // Desfoque da luz (ShadowBlur) para glow
-            },
-
-            // Inteligência Artificial (ML / Genetic Algorithm)
-            ai: {
-                poolSize: 50,                // Quantidade de genomas salvos na memória
-                taxaMutacao: 0.15,           // Probabilidade de mudança genética (Evolução)
-                genes: {
-                    exploracao: "Direcionamento aleatório",
-                    agressao: "Ataque a cobras menores",
-                    comida: "Prioridade de busca por alimento",
-                    fuga: "Reação a perigo",
-                    boostFuga: "Uso de turbo em perigo",
-                    boostAtaque: "Uso de turbo para caçar"
-                }
+                balancoComida: 4.5,             // (Recomendado: 0 a 10) Efeito que faz a comida "tremer" ou flutuar ligeiramente.
+                velocidadeAnimacaoComida: 0.003,// (Recomendado: 0.001 a 0.01) A velocidade com que a comida vibra/pulsa.
+                quantidadeVagalumes: 100,       // (⚠️ Limite: 250) Pontos de luz branca de fundo. +250 pode causar lentidão ligeira.
+                distanciaFugaVagalumes: 280,    // (Recomendado: 100 a 500) Distância em que as luzes se assustam com a cobra e fogem.
+                dRender: 400                    // (Técnico) Otimização. Impede renderizar o que está a mais de 400px fora do ecrã.
             }
         };
 
+        let APP_SETTINGS = { audio: true, highGfx: true, uiOpac: 'forte' };
+
         const WORLD_CENTER = CONFIG.mundo.tamanhoRaio;
-        const BOT_NAMES = [
-            "Helena", "Jorge", "Principe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardiao",
-            "Fantasma", "Lenda", "Tita", "Zara", "Falcao", "Kratos", "Medusa", "Ares", "Lua", "Vortex",
-            "Dragao", "Farao", "Cobra", "Zeus", "Leviathan", "Nero", "Morgana", "Ajax", "Venom", "Golias",
-            "Ragnar", "Tempestade", "Onix", "Cerberus", "Fenix", "Atlas", "Brutus", "Dario", "Espada", "Ferreiro",
-            "Glacial", "Hydra", "Imperator", "Jaguar", "Kaiser", "Lider", "Mastim", "Naga", "Olimpo", "Pantera"
-        ];
+        const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã"];
         const PALETTE_COLORS = ['#ffdf00', '#ffffff', '#aaaaaa', '#666666', '#ffaa00', '#cccccc', '#ffcc00', '#dddddd', '#888888'];
 
         const SKINS = [
             ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#002776', '#002776'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222'],
-            ['#00b4cc', '#00d4ee', '#0099bb', '#00e5ff'],
-            ['#1a0000', '#550000', '#880000', '#cc0000'],
-            ['#ff8c00', '#ffaa00', '#cc7700', '#ffcc55'],
-            ['#5500cc', '#7700ff', '#aa00ff', '#ff00ff'],
-            ['#c8d8ff', '#e0e8ff', '#a0b4ee', '#d0d8ff'],
-            ['#001a66', '#0033cc', '#4488ff', '#00ccff']
+            ['#000000', '#ffdf00'], ['#ff8c00', '#000000', '#ffffff'], ['#1a1a2e', '#16213e', '#0f3460', '#e94560'], ['#00ffcc', '#ff00ff', '#111111'], ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'], ['#8a2be2', '#4b0082', '#000000'], ['#00ffff', '#00cccc', '#009999', '#006666'], ['#ff0000', '#8b0000', '#000000'], ['#39ff14', '#000000', '#111111'], ['#ffffff', '#000000']
         ];
-        const SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados", "Lula", "Maligna", "Gato", "Hipno", "Fantasmão", "Tritão"];
+        const SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados", "Ouro Negro", "Tigre", "Galáxia", "Ciborgue", "Algodão Doce", "Vazio", "Abissal", "Vampiro", "Matriz", "Zebra"];
 
-        let snakes = [], foods = [], fireflies = [], particles = [], confetti = [], player = null;
+        const PLAYER_STATS = {
+            highScore: parseInt(localStorage.getItem('serpente_highScore') || '0'), totalKills: parseInt(localStorage.getItem('serpente_totalKills') || '0'),
+            totalFood: parseInt(localStorage.getItem('serpente_totalFood') || '0'), totalTime: parseInt(localStorage.getItem('serpente_totalTime') || '0'),
+            save: function () { localStorage.setItem('serpente_highScore', this.highScore); localStorage.setItem('serpente_totalKills', this.totalKills); localStorage.setItem('serpente_totalFood', this.totalFood); localStorage.setItem('serpente_totalTime', this.totalTime); }
+        };
+        const MISSIONS = { killsReq: 50, foodReq: 1500, timeReq: 300 };
+        const SKIN_REQUIREMENTS = {
+            28: { type: 'score', val: 5000, desc: '5.000 DE ABUNDÂNCIA MÁX' }, 29: { type: 'kills', val: 50, desc: '50 ABATES TOTAIS' }, 30: { type: 'score', val: 10000, desc: '10.000 DE ABUNDÂNCIA MÁX' },
+            31: { type: 'kills', val: 100, desc: '100 ABATES TOTAIS' }, 32: { type: 'score', val: 15000, desc: '15.000 DE ABUNDÂNCIA MÁX' }, 33: { type: 'kills', val: 150, desc: '150 ABATES TOTAIS' },
+            34: { type: 'score', val: 20000, desc: '20.000 DE ABUNDÂNCIA MÁX' }, 35: { type: 'kills', val: 300, desc: '300 ABATES TOTAIS' }, 36: { type: 'score', val: 30000, desc: '30.000 DE ABUNDÂNCIA MÁX' }, 37: { type: 'kills', val: 500, desc: '500 ABATES TOTAIS' }
+        };
+
+        // 🏆 Títulos de Evolução
+        const EVOLUTIONS = [
+            { score: 1000, name: "SERPENTE JOVEM", color: "#aaff00" }, { score: 3000, name: "CAÇADOR IMPLACÁVEL", color: "#00ffff" },
+            { score: 5000, name: "BESTA DOURADA", color: "#ffdf00" }, { score: 10000, name: "DEUS DA ARENA", color: "#ff00ff" }, { score: 20000, name: "ENTIDADE CÓSMICA", color: "#ff0000" }
+        ];
+        let currentEvo = -1;
+
+        const AudioSys = {
+            ctx: null,
+            init: function () { if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
+            play: function (type) {
+                if (!this.ctx || !APP_SETTINGS.audio) return;
+                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                osc.connect(gain); gain.connect(this.ctx.destination); const now = this.ctx.currentTime;
+                if (type === 'eat') { osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
+                else if (type === 'dash') { osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(450, now + 0.2); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
+                else if (type === 'die') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.5); gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5); osc.start(now); osc.stop(now + 0.5); }
+            }
+        };
+
+        let snakes = [], foods = [], fireflies = [], particles = [], goldenBugs = [], player = null;
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
         let joystickActive = false, joystickAngle = 0, skinIndex = 0;
-        let wasTop1 = false, audioCtx = null;
+        let vpWidth = window.innerWidth, vpHeight = window.innerHeight, dpr = window.devicePixelRatio || 1;
 
-        let vpWidth = window.innerWidth;
-        let vpHeight = window.innerHeight;
-        let dpr = window.devicePixelRatio || 1;
-
-        const gameCanvasElement = document.getElementById('gameCanvas');
-        const mainCtx = gameCanvasElement.getContext('2d', { alpha: false });
-        const minimapCanvasElement = document.getElementById('minimap');
-        const mCtxElement = minimapCanvasElement.getContext('2d');
+        const gameCanvasElement = document.getElementById('gameCanvas'); const mainCtx = gameCanvasElement.getContext('2d', { alpha: false });
+        const minimapCanvasElement = document.getElementById('minimap'); const mCtxElement = minimapCanvasElement.getContext('2d');
 
         const UI = {
             start: document.getElementById('start-menu'), play: document.getElementById('play-btn'), nick: document.getElementById('nickname'),
-            skins: document.getElementById('skins-btn'), preview: document.getElementById('skin-preview-ui'), ok: document.getElementById('skin-ok-btn'),
-            left: document.getElementById('left-arrow'), right: document.getElementById('right-arrow'),
-            lb: document.getElementById('leaderboard'), lbList: document.getElementById('lb-list'),
-            status: document.getElementById('hud-status'), score: document.getElementById('score-display'), rank: document.getElementById('rank-display'), total: document.getElementById('total-display'),
-            death: document.getElementById('death-screen'), deathLen: document.getElementById('death-length'), deathKills: document.getElementById('death-kills'), deathRecord: document.getElementById('death-record'),
-            again: document.getElementById('play-again-btn'), skinName: document.getElementById('skin-name-display'), skinCounter: document.getElementById('skin-counter'), orient: document.getElementById('orientation-overlay'),
-            ctrls: document.getElementById('mobile-controls'), joyB: document.getElementById('joystick-base'), joyH: document.getElementById('joystick-handle'), boost: document.getElementById('btn-turbo'),
-            mini: document.getElementById('minimap-wrapper'),
-            energyFill: document.getElementById('energy-bar-fill'),
-            top1Banner: document.getElementById('top1-banner')
+            skins: document.getElementById('skins-btn'), preview: document.getElementById('skin-preview-ui'), ok: document.getElementById('skin-ok-btn'), left: document.getElementById('left-arrow'), right: document.getElementById('right-arrow'),
+            lb: document.getElementById('leaderboard'), lbList: document.getElementById('lb-list'), status: document.getElementById('hud-status'), score: document.getElementById('score-display'), rank: document.getElementById('rank-display'), total: document.getElementById('total-display'),
+            death: document.getElementById('death-screen'), deathLen: document.getElementById('death-length'), deathKills: document.getElementById('death-kills'), deathMsg: document.getElementById('death-msg'), deathSize: document.getElementById('death-size'),
+            again: document.getElementById('play-again-btn'), share: document.getElementById('share-btn'), skinName: document.getElementById('skin-name-display'), orient: document.getElementById('orientation-overlay'),
+            ctrls: document.getElementById('mobile-controls'), joyB: document.getElementById('joystick-base'), joyH: document.getElementById('joystick-handle'), boost: document.getElementById('btn-turbo'), mini: document.getElementById('minimap-wrapper'),
+            lockOverlay: document.getElementById('skin-locked-overlay'), reqTitle: document.getElementById('skin-req-title'), reqStatus: document.getElementById('skin-req-status'),
+            setBtn: document.getElementById('settings-btn'), setMod: document.getElementById('settings-modal'), btnAudio: document.getElementById('toggle-audio'), btnGfx: document.getElementById('toggle-gfx'), btnUi: document.getElementById('toggle-ui'), closeSet: document.getElementById('close-settings'),
+            lvlPopup: document.getElementById('level-popup'), lvlTitle: document.getElementById('level-title-text')
         };
 
-        /* ── WEB AUDIO ── */
-        function ensureAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-        function playTone(freq, type, dur, vol = 0.12, delay = 0) {
-            try {
-                ensureAudio();
-                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-                o.connect(g); g.connect(audioCtx.destination);
-                o.type = type; o.frequency.value = freq;
-                const t = audioCtx.currentTime + delay;
-                g.gain.setValueAtTime(vol, t);
-                g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-                o.start(t); o.stop(t + dur + 0.01);
-            } catch (e) { }
-        }
-        function soundEat() { playTone(440, 'sine', 0.07, 0.05); playTone(660, 'sine', 0.07, 0.04, 0.06); }
-        function soundBoost() {
-            try {
-                ensureAudio();
-                const buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.06), audioCtx.sampleRate);
-                const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.22;
-                const s = audioCtx.createBufferSource(), g = audioCtx.createGain(), f = audioCtx.createBiquadFilter();
-                f.type = 'bandpass'; f.frequency.value = 900;
-                s.buffer = buf; s.connect(f); f.connect(g); g.connect(audioCtx.destination);
-                g.gain.setValueAtTime(0.16, audioCtx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06); s.start();
-            } catch (e) { }
-        }
-        function soundDeath() { playTone(220, 'sawtooth', 0.3, 0.16); playTone(110, 'sawtooth', 0.5, 0.11, 0.25); playTone(55, 'sine', 0.7, 0.07, 0.5); }
-        function soundTop1() { playTone(523, 'sine', 0.15, 0.17); playTone(659, 'sine', 0.15, 0.17, 0.18); playTone(784, 'sine', 0.3, 0.2, 0.36); }
+        function getRandomPosInCircle(p = 50) { let r = Math.sqrt(Math.random()) * (WORLD_CENTER - p), t = Math.random() * 2 * Math.PI; return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) }; }
+        function getSafeSpawnPos(minD) { let p, safe = false, att = 0; while (!safe && att < 50) { p = getRandomPosInCircle(300); safe = true; if (player && player.alive && Math.hypot(player.x - p.x, player.y - p.y) < minD) safe = false; att++; } return p; }
+        function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(20); foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)])); } }
+        function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / 3); for (let i = 0; i < amount; i++) particles.push(new Particle(x, y, color, Math.random() * 5 + 2)); }
+        function getRandomBotScore() { const r = Math.random(); if (r < 0.5) return Math.floor(40 + Math.random() * 150); if (r < 0.8) return Math.floor(200 + Math.random() * 800); if (r < 0.95) return Math.floor(1000 + Math.random() * 2000); return Math.floor(3000 + Math.random() * 5000); }
 
-        /* ── CONFETTI ── */
-        function createConfetti(cx, cy, count) {
-            for (let i = 0; i < count; i++) {
-                confetti.push({
-                    x: cx + (Math.random() - 0.5) * 500, y: cy + (Math.random() - 0.5) * 250,
-                    vx: (Math.random() - 0.5) * 8, vy: -Math.random() * 10 - 2,
-                    color: ['#ffdf00', '#fff', '#ff0088', '#00ff88', '#00aaff'][Math.floor(Math.random() * 5)],
-                    size: 5 + Math.random() * 7, life: 1.0, decay: 0.01 + Math.random() * 0.009,
-                    rot: Math.random() * Math.PI * 2, rotSpeed: (Math.random() - 0.5) * 0.25
-                });
-            }
-        }
-
-        /* ── RECORDE ── */
-        function getRecord() { return parseInt(localStorage.getItem('serpente_record') || '0'); }
-        function saveRecord(sc) { const s = Math.floor(sc); if (s > getRecord()) { localStorage.setItem('serpente_record', s); return true; } return false; }
-
-        /* ── GENE POOL (Algoritmo Genético) ── */
-        const GENE_POOL_KEY = 'serpente_genepool_v1';
-        const GENE_KEYS = ['agressao', 'medo', 'comida', 'boostAtaque', 'boostFuga', 'exploracao'];
-        const DEFAULT_GENOME = { agressao: 0.5, medo: 0.5, comida: 0.7, boostAtaque: 0.5, boostFuga: 0.6, exploracao: 0.3 };
-        let genePool = [];
-        let mlGeneration = 0;
-
-        function loadGenePool() {
-            try {
-                genePool = JSON.parse(localStorage.getItem(GENE_POOL_KEY) || '[]');
-                mlGeneration = genePool.length > 0 ? Math.max(...genePool.map(g => g.gen || 0)) : 0;
-            } catch (e) { genePool = []; }
-        }
-        function saveGenePool() {
-            try { localStorage.setItem(GENE_POOL_KEY, JSON.stringify(genePool)); } catch (e) { }
-        }
-        function recordFitness(genome, score, survivalMs) {
-            if (!genome || score < 60) return;
-            let fitness = score * (1 + Math.sqrt(survivalMs / 1000));
-            mlGeneration++;
-            genePool.push({ genome, fitness, gen: mlGeneration });
-            genePool.sort((a, b) => b.fitness - a.fitness);
-            genePool = genePool.slice(0, 30);
-            saveGenePool();
-        }
-        function selectParent() {
-            let pool = genePool.length >= 3 ? genePool : genePool.concat([{ genome: { ...DEFAULT_GENOME } }]);
-            let candidates = [0, 1, 2].map(() => pool[Math.floor(Math.random() * pool.length)]);
-            return candidates.sort((a, b) => (b.fitness || 0) - (a.fitness || 0))[0].genome;
-        }
-        function crossover(g1, g2) {
-            let c = {}; GENE_KEYS.forEach(k => c[k] = Math.random() < 0.5 ? g1[k] : g2[k]); return c;
-        }
-        function mutate(genome, rate = 0.25) {
-            let g = { ...genome };
-            GENE_KEYS.forEach(k => { if (Math.random() < rate) g[k] = Math.max(0.05, Math.min(0.95, g[k] + (Math.random() - 0.5) * 0.35)); });
-            return g;
-        }
-        function getNewGenome() {
-            if (genePool.length < 4) return mutate({ ...DEFAULT_GENOME });
-            let r = Math.random();
-            if (r < 0.65) return mutate(crossover(selectParent(), selectParent()));
-            if (r < 0.85) return mutate(selectParent());
-            return mutate({ ...DEFAULT_GENOME }, 0.6);
-        }
-        loadGenePool();
-
-        /* ── UTILIDADES E SPAWN ── */
-        function getRandomPosInCircle(p = 50) {
-            let r = Math.sqrt(Math.random()) * (WORLD_CENTER - p), t = Math.random() * 2 * Math.PI;
-            return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) };
-        }
-
-        function getSafeSpawnPos(minD) {
-            let p, safe = false, att = 0;
-            while (!safe && att < 50) { p = getRandomPosInCircle(300); safe = true; if (player && player.alive && Math.hypot(player.x - p.x, player.y - p.y) < minD) safe = false; att++; }
-            return p;
-        }
-
-        function spawnFood(count) {
-            for (let i = 0; i < count; i++) {
-                let p = getRandomPosInCircle(20);
-                foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)]));
-            }
-        }
-
-        function createExplosion(x, y, color, amount) { for (let i = 0; i < amount; i++) particles.push(new Particle(x, y, color, Math.random() * 5 + 2)); }
-
-        function getRandomBotScore() {
-            const r = Math.random();
-            const s = CONFIG.mundo.spawn;
-            if (r < s.botIniciante.chance)
-                return Math.floor(s.botIniciante.score * (0.8 + Math.random() * 0.4));
-            if (r < s.botIniciante.chance + s.botEvoluido.chance)
-                return Math.floor(s.botEvoluido.score * (0.8 + Math.random() * 0.4));
-            if (r < s.botIniciante.chance + s.botEvoluido.chance + s.botElite.chance)
-                return Math.floor(s.botElite.score * (0.8 + Math.random() * 0.4));
-            return Math.floor(s.botLenda.score * (0.8 + Math.random() * 0.4));
-        }
-
-        /* ── TEXTURAS ── */
         const TextureManager = {
             cache: {},
             getSegment: function (color) {
                 if (this.cache[color]) return this.cache[color];
                 const c = document.createElement('canvas'); c.width = 128; c.height = 128; const cx = c.getContext('2d'); const r = 64;
                 cx.beginPath(); cx.arc(r, r, r - 2, 0, Math.PI * 2); cx.fillStyle = color; cx.fill();
-                const grad = cx.createRadialGradient(r - r * 0.2, r - r * 0.2, r * 0.1, r, r, r); grad.addColorStop(0, 'rgba(255,255,255,0.2)'); grad.addColorStop(1, 'rgba(0,0,0,0.4)');
-                cx.fillStyle = grad; cx.fill(); this.cache[color] = c; return c;
+                const grad = cx.createRadialGradient(r - r * 0.2, r - r * 0.2, r * 0.1, r, r, r); grad.addColorStop(0, 'rgba(255,255,255,0.2)'); grad.addColorStop(1, 'rgba(0,0,0,0.4)'); cx.fillStyle = grad; cx.fill(); this.cache[color] = c; return c;
             },
             getFood: function (color) {
                 let key = 'food_' + color; if (this.cache[key]) return this.cache[key];
                 const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const r = 32;
                 const gG = cx.createRadialGradient(r, r, r * 0.1, r, r, r); gG.addColorStop(0, color); gG.addColorStop(1, 'rgba(0,0,0,0)');
-                cx.fillStyle = gG; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill();
-                cx.beginPath(); cx.arc(r, r, r * 0.4, 0, Math.PI * 2); cx.fillStyle = color; cx.fill();
-                cx.beginPath(); cx.arc(r - 4, r - 4, 4, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.8)'; cx.fill();
-                this.cache[key] = c; return c;
+                cx.fillStyle = gG; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill(); cx.beginPath(); cx.arc(r, r, r * 0.4, 0, Math.PI * 2); cx.fillStyle = color; cx.fill(); cx.beginPath(); cx.arc(r - 4, r - 4, 4, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.8)'; cx.fill(); this.cache[key] = c; return c;
             },
             getDroppedFood: function (color) {
                 let key = 'drop_' + color; if (this.cache[key]) return this.cache[key];
                 const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const r = 32;
-                const gG = cx.createRadialGradient(r, r, r * 0.15, r, r, r); gG.addColorStop(0, 'white'); gG.addColorStop(0.4, color); gG.addColorStop(1, 'rgba(0,0,0,0)');
-                cx.fillStyle = gG; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill();
-                cx.beginPath(); cx.arc(r, r, r * 0.45, 0, Math.PI * 2); cx.fillStyle = 'white'; cx.fill();
-                this.cache[key] = c; return c;
+                const gG = cx.createRadialGradient(r, r, r * 0.15, r, r, r); gG.addColorStop(0, 'white'); gG.addColorStop(0.4, color); gG.addColorStop(1, 'rgba(0,0,0,0)'); cx.fillStyle = gG; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill(); cx.beginPath(); cx.arc(r, r, r * 0.45, 0, Math.PI * 2); cx.fillStyle = 'white'; cx.fill(); this.cache[key] = c; return c;
             }
         };
 
-        function getLbColor(hex) {
-            if (!hex || hex.length < 7) return '#ffffff';
-            let r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-            let luma = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-            if (luma < 0.28) {
-                let f = 0.38 / Math.max(luma, 0.01);
-                r = Math.min(255, Math.round(r * f));
-                g = Math.min(255, Math.round(g * f));
-                b = Math.min(255, Math.round(b * f));
-                if ((0.299 * r + 0.587 * g + 0.114 * b) < 60) return 'rgba(255,255,255,0.75)';
-                return `rgb(${r},${g},${b})`;
-            }
-            return hex;
-        }
-
-        function drawStandardEyes(ctx, x, y, radius, angle, lookAngle, skinId) {
-            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
-            let oD = radius * 0.55, aO = Math.PI / 3.5, pO = radius * 0.15, eR = radius * 0.4, pR = eR * 0.6;
-            let lA = lookAngle - angle;
-            ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-
+        function drawStandardEyes(ctx, x, y, radius, angle, lookAngle, skinId, isBoosting = false, isEating = false) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle); let oD = radius * 0.55, aO = Math.PI / 3.5, pO = radius * 0.15, eR = radius * 0.4, pR = isEating ? eR * 0.8 : eR * 0.6;
+            ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = 'white';
             if (skinId === 18) {
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(radius * 0.25, 0, eR * 1.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(radius * 0.25 + Math.cos(lA) * pO, Math.sin(lA) * pO, pR * 1.1, 0, Math.PI * 2); ctx.fillStyle = '#111'; ctx.fill();
-            } else if (skinId === 28) {
-                let eRL = radius * 0.52, oL = radius * 0.42, aL = Math.PI / 2.6;
-                let e1x = Math.cos(-aL) * oL, e1y = Math.sin(-aL) * oL;
-                let e2x = Math.cos(aL) * oL, e2y = Math.sin(aL) * oL;
-                ctx.lineWidth = 2; ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(e1x, e1y, eRL, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(e2x, e2y, eRL, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                let iO = eRL * 0.2;
-                ctx.fillStyle = '#00c8e0';
-                ctx.beginPath(); ctx.arc(e1x + Math.cos(lA) * iO, e1y + Math.sin(lA) * iO, eRL * 0.58, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x + Math.cos(lA) * iO, e2y + Math.sin(lA) * iO, eRL * 0.58, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#000';
-                ctx.beginPath(); ctx.arc(e1x + Math.cos(lA) * iO, e1y + Math.sin(lA) * iO, eRL * 0.28, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x + Math.cos(lA) * iO, e2y + Math.sin(lA) * iO, eRL * 0.28, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = 'rgba(255,255,255,0.9)';
-                ctx.beginPath(); ctx.arc(e1x + Math.cos(lA) * iO - eRL * 0.18, e1y + Math.sin(lA) * iO - eRL * 0.18, eRL * 0.1, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x + Math.cos(lA) * iO - eRL * 0.18, e2y + Math.sin(lA) * iO - eRL * 0.18, eRL * 0.1, 0, Math.PI * 2); ctx.fill();
-            } else if (skinId === 29) {
-                let e1x = Math.cos(-aO) * oD, e1y = Math.sin(-aO) * oD;
-                let e2x = Math.cos(aO) * oD, e2y = Math.sin(aO) * oD;
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = '#cc0000';
-                ctx.beginPath(); ctx.arc(e1x + Math.cos(lA) * pO, e1y + Math.sin(lA) * pO, pR * 1.15, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x + Math.cos(lA) * pO, e2y + Math.sin(lA) * pO, pR * 1.15, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#111';
-                ctx.beginPath(); ctx.arc(e1x + Math.cos(lA) * pO, e1y + Math.sin(lA) * pO, pR * 0.45, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x + Math.cos(lA) * pO, e2y + Math.sin(lA) * pO, pR * 0.45, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#880000'; ctx.lineWidth = Math.max(2, radius * 0.07);
-                ctx.beginPath(); ctx.moveTo(e1x - eR * 0.6, e1y - eR * 0.9); ctx.lineTo(e1x + eR * 0.5, e1y - eR * 0.45); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(e2x - eR * 0.6, e2y + eR * 0.45); ctx.lineTo(e2x + eR * 0.5, e2y + eR * 0.9); ctx.stroke();
-            } else if (skinId === 30) {
-                let e1x = Math.cos(-aO) * oD, e1y = Math.sin(-aO) * oD;
-                let e2x = Math.cos(aO) * oD, e2y = Math.sin(aO) * oD;
-                ctx.fillStyle = '#ffaa00';
-                ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = '#111';
-                ctx.save(); ctx.translate(e1x, e1y);
-                ctx.beginPath(); ctx.ellipse(0, 0, eR * 0.16, eR * 0.72, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.restore();
-                ctx.save(); ctx.translate(e2x, e2y);
-                ctx.beginPath(); ctx.ellipse(0, 0, eR * 0.16, eR * 0.72, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.restore();
-                ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                ctx.beginPath(); ctx.arc(e1x - eR * 0.25, e1y - eR * 0.25, eR * 0.12, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x - eR * 0.25, e2y - eR * 0.25, eR * 0.12, 0, Math.PI * 2); ctx.fill();
-            } else if (skinId === 31) {
-                let e1x = Math.cos(-aO) * oD, e1y = Math.sin(-aO) * oD;
-                let e2x = Math.cos(aO) * oD, e2y = Math.sin(aO) * oD;
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                [e1x, e1y, e2x, e2y].reduce((_, __, i, a) => {
-                    if (i % 2 !== 0) return;
-                    let cx2 = a[i], cy2 = a[i + 1];
-                    let colors = ['#9900ff', '#cc00ff', '#aa00ff'];
-                    for (let ri = 0; ri < 3; ri++) {
-                        let r2 = eR * (0.75 - ri * 0.25);
-                        ctx.beginPath(); ctx.arc(cx2, cy2, r2, -Math.PI / 2, Math.PI * 1.2);
-                        ctx.strokeStyle = colors[ri]; ctx.lineWidth = Math.max(1.5, radius * 0.05); ctx.stroke();
-                    }
-                    ctx.fillStyle = '#5500cc';
-                    ctx.beginPath(); ctx.arc(cx2, cy2, eR * 0.18, 0, Math.PI * 2); ctx.fill();
-                }, null);
-            } else if (skinId === 32) {
-                let e1x = Math.cos(-aO) * oD, e1y = Math.sin(-aO) * oD;
-                let e2x = Math.cos(aO) * oD, e2y = Math.sin(aO) * oD;
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.strokeStyle = '#222'; ctx.lineWidth = Math.max(2, radius * 0.07);
-                let xO = eR * 0.5;
-                [[e1x, e1y], [e2x, e2y]].forEach(([ex, ey]) => {
-                    ctx.beginPath(); ctx.moveTo(ex - xO, ey - xO); ctx.lineTo(ex + xO, ey + xO); ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(ex + xO, ey - xO); ctx.lineTo(ex - xO, ey + xO); ctx.stroke();
-                });
-            } else if (skinId === 33) {
-                let e1x = Math.cos(-aO) * oD, e1y = Math.sin(-aO) * oD;
-                let e2x = Math.cos(aO) * oD, e2y = Math.sin(aO) * oD;
-                let e3x = radius * 0.32, e3y = 0;
-                let eRS = eR * 0.82;
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(e1x, e1y, eRS, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(e2x, e2y, eRS, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(e3x, e3y, eRS * 0.75, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = '#0033cc';
-                ctx.beginPath(); ctx.arc(e1x + Math.cos(lA) * pO * 0.7, e1y + Math.sin(lA) * pO * 0.7, pR * 0.9, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x + Math.cos(lA) * pO * 0.7, e2y + Math.sin(lA) * pO * 0.7, pR * 0.9, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#00ccff';
-                ctx.beginPath(); ctx.arc(e3x + Math.cos(lA) * pO * 0.4, e3y + Math.sin(lA) * pO * 0.4, pR * 0.65, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#111';
-                ctx.beginPath(); ctx.arc(e1x + Math.cos(lA) * pO * 0.7, e1y + Math.sin(lA) * pO * 0.7, pR * 0.4, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x + Math.cos(lA) * pO * 0.7, e2y + Math.sin(lA) * pO * 0.7, pR * 0.4, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e3x + Math.cos(lA) * pO * 0.4, e3y + Math.sin(lA) * pO * 0.4, pR * 0.3, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(radius * 0.25, 0, eR * 1.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(radius * 0.25 + Math.cos(lookAngle - angle) * pO, Math.sin(lookAngle - angle) * pO, pR * 1.1, 0, Math.PI * 2); ctx.fillStyle = '#111'; ctx.fill();
             } else {
-                let e1x = Math.cos(-aO) * oD, e1y = Math.sin(-aO) * oD;
-                ctx.fillStyle = 'white';
-                ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                let e2x = Math.cos(aO) * oD, e2y = Math.sin(aO) * oD;
-                ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = '#111';
-                ctx.beginPath(); ctx.arc(e1x + Math.cos(lA) * pO, e1y + Math.sin(lA) * pO, pR, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x + Math.cos(lA) * pO, e2y + Math.sin(lA) * pO, pR, 0, Math.PI * 2); ctx.fill();
-            }
-            ctx.restore();
+                let e1x = Math.cos(-aO) * oD, e1y = Math.sin(-aO) * oD; ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                let e2x = Math.cos(aO) * oD, e2y = Math.sin(aO) * oD; ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(e1x + Math.cos(lookAngle - angle) * pO, e1y + Math.sin(lookAngle - angle) * pO, pR, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(e2x + Math.cos(lookAngle - angle) * pO, e2y + Math.sin(lookAngle - angle) * pO, pR, 0, Math.PI * 2); ctx.fill();
+                if (isBoosting && !isEating) { ctx.lineWidth = radius * 0.15; ctx.strokeStyle = '#000'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(e1x - radius * 0.3, e1y - radius * 0.2); ctx.lineTo(e1x + radius * 0.2, e1y - radius * 0.05); ctx.stroke(); ctx.beginPath(); ctx.moveTo(e2x + radius * 0.3, e2y - radius * 0.2); ctx.lineTo(e2x - radius * 0.2, e2y - radius * 0.05); ctx.stroke(); }
+            } ctx.restore();
         }
 
-        /* ── CLASSES ── */
         class Particle {
             constructor(x, y, color, s) { this.x = x; this.y = y; this.color = color; let a = Math.random() * Math.PI * 2; this.vx = Math.cos(a) * s; this.vy = Math.sin(a) * s; this.life = 1.0; this.decay = 0.02 + Math.random() * 0.02; this.size = 2 + Math.random() * 3; }
             update() { this.x += this.vx; this.y += this.vy; this.life -= this.decay; }
@@ -1287,309 +1073,154 @@
 
         class Food {
             constructor(x, y, r, c, isD = false, eV = 2) { this.x = x; this.y = y; this.radius = r; this.color = c; this.isDropped = isD; this.value = eV; this.wO = Math.random() * Math.PI * 2; }
-            draw(ctx, time) {
-                let dx = this.x + Math.cos(time * CONFIG.visual.velocidadeAnimacao + this.wO) * CONFIG.visual.balancoComida;
-                let dy = this.y + Math.sin(time * CONFIG.visual.velocidadeAnimacao + this.wO) * CONFIG.visual.balancoComida;
-                let img = this.isDropped ? TextureManager.getDroppedFood(this.color) : TextureManager.getFood(this.color);
-                ctx.drawImage(img, dx - this.radius, dy - this.radius, this.radius * 2, this.radius * 2);
-            }
+            draw(ctx, time) { let dx = this.x + Math.cos(time * CONFIG.visual.velocidadeAnimacaoComida + this.wO) * CONFIG.visual.balancoComida; let dy = this.y + Math.sin(time * CONFIG.visual.velocidadeAnimacaoComida + this.wO) * CONFIG.visual.balancoComida; let img = this.isDropped ? TextureManager.getDroppedFood(this.color) : TextureManager.getFood(this.color); ctx.drawImage(img, dx - this.radius, dy - this.radius, this.radius * 2, this.radius * 2); }
+        }
+
+        class GoldenBug {
+            constructor(x, y) { this.x = x; this.y = y; this.radius = 8; this.value = 150; this.color = '#ffdf00'; this.angle = Math.random() * Math.PI * 2; this.speed = 2.0; this.wO = Math.random() * Math.PI * 2; }
+            update() { let nearest = null, minDist = 400; for (let s of snakes) { if (!s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < minDist) { minDist = d; nearest = s; } } if (nearest && minDist < 250) { let evadeAngle = Math.atan2(this.y - nearest.y, this.x - nearest.x); let diff = evadeAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2; this.angle += diff * 0.15; this.speed = 6.5; } else { this.angle += (Math.random() - 0.5) * 0.2; this.speed = 1.5; } this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) { this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); } }
+            draw(ctx, time) { let dx = this.x + Math.cos(time * 0.01 + this.wO) * 2, dy = this.y + Math.sin(time * 0.01 + this.wO) * 2; ctx.save(); ctx.translate(dx, dy); ctx.rotate(this.angle); ctx.beginPath(); ctx.arc(0, 0, this.radius * 2.5, 0, Math.PI * 2); let g = ctx.createRadialGradient(0, 0, 0, 0, 0, this.radius * 2.5); g.addColorStop(0, 'rgba(255, 223, 0, 0.6)'); g.addColorStop(1, 'rgba(255, 223, 0, 0)'); ctx.fillStyle = g; ctx.fill(); ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#ffaa00'; ctx.stroke(); let wingAngle = Math.sin(time * 0.05) * 0.6; ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; ctx.beginPath(); ctx.ellipse(-this.radius * 0.5, -this.radius * 1.2, this.radius * 1.5, this.radius * 0.5, wingAngle, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(-this.radius * 0.5, this.radius * 1.2, this.radius * 1.5, this.radius * 0.5, -wingAngle, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
         }
 
         class Firefly {
-            constructor() {
-                let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * 2 * Math.PI;
-                this.x = WORLD_CENTER + r * Math.cos(t); this.y = WORLD_CENTER + r * Math.sin(t);
-                this.radius = 3 + Math.random() * 3; this.angle = Math.random() * Math.PI * 2;
-                this.speed = 1.0; this.color = '#fff'; this.offset = Math.random() * 100;
-            }
-            update() {
-                let dX = 0, dY = 0, count = 0;
-                for (let s of snakes) {
-                    if (!s.alive) continue;
-                    let d = Math.hypot(s.x - this.x, s.y - this.y);
-                    if (d < CONFIG.visual.distanciaFugaVagalumes) { dX += s.x; dY += s.y; count++; }
-                }
-                if (count > 0) {
-                    let away = Math.atan2(this.y - (dY / count), this.x - (dX / count));
-                    let diff = away - this.angle;
-                    while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                    this.angle += diff * 0.15; this.speed = 4.5;
-                } else { this.angle += (Math.random() - 0.5) * 0.1; this.speed = 1.2; }
-                this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
-                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
-            }
-            draw(ctx, time) {
-                let p = Math.sin(time * 0.003 + this.offset), cR = Math.max(1, this.radius + p);
-                ctx.beginPath(); ctx.arc(this.x, this.y, cR * 4, 0, Math.PI * 2);
-                let g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, cR * 4);
-                g.addColorStop(0, 'rgba(255,255,255,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.fillStyle = g; ctx.fill();
-            }
+            constructor() { let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * 2 * Math.PI; this.x = WORLD_CENTER + r * Math.cos(t); this.y = WORLD_CENTER + r * Math.sin(t); this.radius = 3 + Math.random() * 3; this.angle = Math.random() * Math.PI * 2; this.speed = 1.0; this.color = '#fff'; this.offset = Math.random() * 100; }
+            update() { let dX = 0, dY = 0, count = 0; for (let s of snakes) { if (!s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < CONFIG.visual.distanciaFugaVagalumes) { dX += s.x; dY += s.y; count++; } } if (count > 0) { let away = Math.atan2(this.y - (dY / count), this.x - (dX / count)); let diff = away - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2; this.angle += diff * 0.15; this.speed = 4.5; } else { this.angle += (Math.random() - 0.5) * 0.1; this.speed = 1.2; } this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); }
+            draw(ctx, time) { let p = Math.sin(time * 0.003 + this.offset), cR = Math.max(1, this.radius + p); ctx.beginPath(); ctx.arc(this.x, this.y, cR * 4, 0, Math.PI * 2); let g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, cR * 4); g.addColorStop(0, 'rgba(255,255,255,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fill(); }
         }
 
         class Snake {
-            constructor(x, y, n, sI, isP = false, startScore = 40, genome = null) {
+            constructor(x, y, n, sI, isP = false, startScore = 40) {
                 this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
                 this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle; this.conf = IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc;
                 this.speed = this.conf.velocidadeBase; this.isBoosting = false; this.score = startScore;
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
-                this.targetLength = Math.min(CONFIG.cobra.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
-                this.segments = [];
+                this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
+                this.segments = []; this.trails = []; this.eatTimer = 0;
                 for (let i = 0; i < this.targetLength; i++) this.segments.push({ x: x, y: y });
-                this.energy = CONFIG.cobra.energiaMaxima;
-                this.boostState = false;      // Estado real do turbo (Histerese)
-                this.boostVisualAmt = 0;    // Animação suave (0 a 1)
-                this.genome = isP ? null : (genome || mutate({ ...DEFAULT_GENOME }));
-                this.birthTime = Date.now();
             }
             updateAI() {
-                const g = this.genome || DEFAULT_GENOME;
-                let danger = false, evadeAngle = 0, prey = null, preyDist = Infinity;
-
+                let danger = false, evadeAngle = 0;
                 for (let other of snakes) {
                     if (other === this || !other.alive) continue;
-                    let d = Math.hypot(other.x - this.x, other.y - this.y);
-                    let sizeRatio = other.score / Math.max(1, this.score);
-                    let fearDist = this.radius * (8 + g.medo * 10);
-
-                    if (d < fearDist) {
-                        let shouldFear = sizeRatio > (1.8 - g.medo * 1.2);
-                        if (shouldFear) {
-                            for (let k = 0; k < other.segments.length; k += 10) {
-                                let segD = Math.hypot(other.segments[k].x - this.x, other.segments[k].y - this.y);
-                                if (segD < this.radius * (4 + g.medo * 5)) {
-                                    danger = true;
-                                    evadeAngle = Math.atan2(this.y - other.segments[k].y, this.x - other.segments[k].x);
-                                    break;
-                                }
-                            }
+                    if (Math.hypot(other.x - this.x, other.y - this.y) < this.radius * 12) {
+                        for (let k = 0; k < other.segments.length; k += 10) {
+                            if (Math.hypot(other.segments[k].x - this.x, other.segments[k].y - this.y) < this.radius * 6) { danger = true; evadeAngle = Math.atan2(this.y - other.segments[k].y, this.x - other.segments[k].x); break; }
                         }
-                        if (!danger && sizeRatio < (0.85 - g.agressao * 0.3)) {
-                            let huntRange = this.radius * (8 + g.agressao * 14);
-                            if (d < huntRange && d < preyDist) { preyDist = d; prey = other; }
-                        }
-                    }
-                    if (danger) break;
+                    } if (danger) break;
                 }
-
-                if (danger) {
-                    this.targetAngle = evadeAngle;
-                    this.isBoosting = this.energy > CONFIG.cobra.energiaMinima && g.boostFuga > 0.35;
-                } else if (prey) {
-                    this.targetAngle = Math.atan2(prey.y - this.y, prey.x - this.x);
-                    let boostThresh = this.radius * (6 + g.boostAtaque * 10);
-                    this.isBoosting = preyDist < boostThresh && this.energy > CONFIG.cobra.energiaMinima;
-                } else {
-                    this.isBoosting = false;
-                    let updateFreq = Math.floor(18 + (1 - g.exploracao) * 30);
-                    if (frameCount % updateFreq === 0) {
-                        // Busca amostragem: verifica apenas 1 em cada 8 comidas para economizar CPU
-                        let nearest = null, minDist2 = (300 + g.comida * 600) ** 2;
-                        const step = Math.max(1, Math.floor(foods.length / 500));
-                        for (let fi = 0; fi < foods.length; fi += step) {
-                            let f = foods[fi];
-                            let dx = f.x - this.x, dy = f.y - this.y;
-                            let d2 = dx * dx + dy * dy;
-                            if (d2 < minDist2) { minDist2 = d2; nearest = f; }
-                        }
-                        if (nearest) this.targetAngle = Math.atan2(nearest.y - this.y, nearest.x - this.x);
-                        else if (Math.random() < 0.08 + g.exploracao * 0.35) this.targetAngle += (Math.random() - 0.5) * 2.2;
-                    }
-                }
-                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER - 600) {
-                    this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
-                    this.isBoosting = false;
-                }
+                if (danger) { this.targetAngle = evadeAngle; this.isBoosting = true; }
+                else { this.isBoosting = false; if (frameCount % 30 === 0) { let nearest = null, minDist = 700; for (let f of foods) { let d = Math.hypot(f.x - this.x, f.y - this.y); if (d < minDist) { minDist = d; nearest = f; } } if (nearest) this.targetAngle = Math.atan2(nearest.y - this.y, nearest.x - this.x); else if (Math.random() < 0.2) this.targetAngle += (Math.random() - 0.5) * 2; } }
+                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER - 600) this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
             }
             update() {
                 if (!this.alive) return;
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
-                this.targetLength = Math.min(CONFIG.cobra.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
+                this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 if (this.segments.length < this.targetLength) this.segments.push({ x: this.segments[this.segments.length - 1].x, y: this.segments[this.segments.length - 1].y });
 
-                const eCfg = CONFIG.cobra;
-                // ── HISTERESE DO BOOST ──
-                // Só liga se tiver energia mínima. Se ligou, só desliga em 0 ou se soltar o botão.
-                if (this.isBoosting) {
-                    if (!this.boostState && this.energy > eCfg.energiaMinima) this.boostState = true;
-                } else {
-                    this.boostState = false;
-                }
-                if (this.energy <= 0) this.boostState = false;
-
-                if (this.boostState) {
+                if (this.isBoosting && this.score > 50) {
                     this.speed = this.conf.velocidadeTurbo;
-                    this.energy = Math.max(0, this.energy - eCfg.energiaDreno);
-                    if (Math.random() < 0.25) {
-                        let t = this.segments[this.segments.length - 1];
-                        foods.push(new Food(t.x + (Math.random() * 10 - 5), t.y + (Math.random() * 10 - 5), 4.5, this.skin[this.segments.length % this.skin.length], true, 0.5));
-                    }
-                } else {
-                    this.speed = this.conf.velocidadeBase;
-                    this.energy = Math.min(eCfg.energiaMaxima, this.energy + eCfg.energiaRecarga);
-                }
+                    if (frameCount % 2 === 0 && APP_SETTINGS.highGfx) this.trails.push({ x: this.segments[0].x, y: this.segments[0].y, life: 1.0 });
+                    if (Math.random() < 0.3) { this.score -= CONFIG.cobra.custoDoTurbo; let t = this.segments[this.segments.length - 1]; foods.push(new Food(t.x + (Math.random() * 10 - 5), t.y + (Math.random() * 10 - 5), 5.5, this.skin[this.segments.length % this.skin.length], true, CONFIG.cobra.custoDoTurbo)); }
+                } else { this.speed = this.conf.velocidadeBase; this.isBoosting = false; }
 
-                // Animação suave para a iluminação (lerp)
-                if (this.boostState) this.boostVisualAmt += (1 - this.boostVisualAmt) * 0.15;
-                else this.boostVisualAmt += (0 - this.boostVisualAmt) * 0.10;
+                for (let i = this.trails.length - 1; i >= 0; i--) { this.trails[i].life -= 0.05; if (this.trails[i].life <= 0) this.trails.splice(i, 1); }
 
                 if (this.isPlayer) {
-                    if (joystickActive) this.targetAngle = joystickAngle;
-                    else if (!IS_MOBILE_CLIENT) this.targetAngle = Math.atan2((mouseY - vpHeight / 2) / camera.zoom, (mouseX - vpWidth / 2) / camera.zoom);
+                    if (joystickActive) this.targetAngle = joystickAngle; else if (!IS_MOBILE_CLIENT) this.targetAngle = Math.atan2((mouseY - vpHeight / 2) / camera.zoom, (mouseX - vpWidth / 2) / camera.zoom);
+                    // Verifica os Títulos Evolutivos
+                    for (let i = EVOLUTIONS.length - 1; i >= 0; i--) {
+                        if (this.score >= EVOLUTIONS[i].score && currentEvo < i) { currentEvo = i; showEvolution(EVOLUTIONS[i]); break; }
+                    }
                 } else this.updateAI();
 
                 let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                let tS = Math.max(0.055, 0.11 - (this.radius * 0.0012)); if (this.isBoosting) tS *= 1.35;
+                let tS = Math.max(0.04, 0.08 - (this.radius * 0.0012)); if (this.isBoosting) tS *= 1.35;
                 if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
+                if (this.eatTimer > 0) this.eatTimer--;
                 if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) { this.die(false); return; }
 
-                let pX = this.x, pY = this.y, spc = this.radius * this.conf.distanciaGomos;
+                let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
 
-                // Atração magnética só para o player (bots só comem por contato)
-                const eatR2 = (this.radius + 10) ** 2; // margem de comer ligeiramente aumentada para bots
-                const atracaoR2 = CONFIG.mundo.forcaAtracao ** 2;
                 for (let i = foods.length - 1; i >= 0; i--) {
-                    let f = foods[i];
-                    let dx = this.x - f.x, dy = this.y - f.y;
-                    let d2 = dx * dx + dy * dy;
-                    // Atração magnética: apenas jogador
-                    if (this.isPlayer && d2 < atracaoR2) {
-                        let d = Math.sqrt(d2);
-                        f.x += (dx / d) * 8;
-                        f.y += (dy / d) * 8;
+                    let f = foods[i], d2 = (this.x - f.x) ** 2 + (this.y - f.y) ** 2;
+                    if (d2 < (CONFIG.mundo.forcaAtracao) ** 2) { let d = Math.sqrt(d2); f.x += (this.x - f.x) / d * 8; f.y += (this.y - f.y) / d * 8; }
+                    if (d2 < (this.radius + f.radius) ** 2) {
+                        this.score += f.value; this.eatTimer = 15; foods.splice(i, 1);
+                        if (this.isPlayer) { AudioSys.play('eat'); PLAYER_STATS.totalFood++; }
                     }
-                    const eatDist2 = this.isPlayer ? (this.radius + f.radius) ** 2 : eatR2;
-                    if (d2 < eatDist2) {
-                        this.score += f.value;
-                        foods.splice(i, 1);
-                        if (this.isPlayer) {
-                            if (f.value > 0.6) soundEat();
-                            triggerHaptic('forcaComida');
-                        }
+                }
+
+                for (let i = goldenBugs.length - 1; i >= 0; i--) {
+                    let b = goldenBugs[i], d2 = (this.x - b.x) ** 2 + (this.y - b.y) ** 2;
+                    if (d2 < (this.radius + b.radius + 15) ** 2) {
+                        this.score += b.value; this.eatTimer = 30; goldenBugs.splice(i, 1); createExplosion(b.x, b.y, '#ffdf00', 15);
+                        if (this.isPlayer) { AudioSys.play('eat'); PLAYER_STATS.totalFood += 5; }
                     }
                 }
             }
             die(dropFood = true) {
-                const survivalMs = Date.now() - (this.birthTime || Date.now());
                 this.alive = false; createExplosion(this.x, this.y, this.mainColor, 35);
+
                 if (this.isPlayer) {
-                    camera.shake = 25;
-                    triggerHaptic('forcaMorte');
-                    soundDeath();
+                    camera.shake = 25; AudioSys.play('die');
+                    PLAYER_STATS.highScore = Math.max(PLAYER_STATS.highScore, Math.floor(this.score));
+                    PLAYER_STATS.totalKills += playerKills; PLAYER_STATS.save();
+
+                    // Tela de Morte Social (Dynamic Message)
+                    let msg = "FOI QUASE...";
+                    if (this.score > 2000) msg = "BOM TRABALHO!";
+                    if (this.score > 5000) msg = "UM VERDADEIRO REI!";
+                    if (this.score > 15000) msg = "LENDÁRIO!";
+                    UI.deathMsg.innerText = msg;
+
+                    gameState = 'dead';
+                    setTimeout(() => {
+                        updateMissionsUI(); UI.deathLen.innerText = Math.floor(this.score).toLocaleString(); UI.deathKills.innerText = playerKills;
+                        if (UI.deathSize) UI.deathSize.innerText = this.segments.length;
+                        UI.death.classList.remove('hidden'); UI.lb.style.display = 'none'; UI.status.style.display = 'none'; UI.mini.style.display = 'none'; UI.ctrls.style.display = 'none';
+                    }, 1500);
                 }
                 if (dropFood) {
                     let step = 5, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num;
                     for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; foods.push(new Food(s.x + (Math.random() * 20 - 10), s.y + (Math.random() * 20 - 10), 9 + Math.min(10, val / 30), this.skin[i % this.skin.length], true, val)); }
                 }
-                if (!this.isPlayer) {
-                    recordFitness(this.genome, this.score, survivalMs);
-                }
-                if (this.isPlayer) {
-                    soundDeath();
-                    const isNewRecord = saveRecord(this.score);
-                    gameState = 'dead';
-                    setTimeout(() => {
-                        UI.deathLen.innerText = Math.floor(this.score).toLocaleString();
-                        UI.deathKills.innerText = playerKills;
-                        const rec = getRecord();
-                        UI.deathRecord.innerText = 'MELHOR: ' + rec.toLocaleString();
-                        UI.deathRecord.classList.toggle('new-record', isNewRecord);
-                        UI.death.classList.remove('hidden');
-                        UI.lb.style.display = 'none'; UI.status.style.display = 'none';
-                        UI.mini.style.display = 'none'; UI.ctrls.style.display = 'none';
-                    }, 1500);
-                }
             }
             draw(ctx) {
                 if (!this.alive) return;
 
-                // ── ILUMINAÇÃO PREMIUM DO BOOST (Smooth Fade & Denser) ──
-                if (this.boostVisualAmt > 0.01) {
-                    const bva = this.boostVisualAmt;
-                    const pulse = 0.85 + 0.15 * Math.sin(Date.now() * 0.012);
-                    const step = 2; // Maior densidade para parecer sólido (fita de neon)
+                let isRainbowUnlocked = (PLAYER_STATS.totalKills >= MISSIONS.killsReq && PLAYER_STATS.totalFood >= MISSIONS.foodReq && PLAYER_STATS.totalTime >= MISSIONS.timeReq);
+                let isRainbow = this.isPlayer && isRainbowUnlocked;
 
-                    ctx.save();
-                    ctx.globalCompositeOperation = 'lighter';
-
-                    // Camada 1: Corona (Aura larga e suave)
-                    const coronaR = this.radius * (1.8 + 0.7 * pulse) * (0.8 + 0.2 * bva);
-                    ctx.globalAlpha = 0.15 * bva * pulse;
-                    for (let i = 0; i < this.segments.length; i += step) {
-                        ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]),
-                            this.segments[i].x - coronaR, this.segments[i].y - coronaR, coronaR * 2, coronaR * 2);
-                    }
-
-                    // Camada 2: Núcleo (Brilho intenso e focado)
-                    const coreR = this.radius * (1.2 + 0.3 * pulse) * (0.9 + 0.1 * bva);
-                    ctx.globalAlpha = 0.25 * bva * pulse;
-                    for (let i = 0; i < this.segments.length; i += step) {
-                        ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]),
-                            this.segments[i].x - coreR, this.segments[i].y - coreR, coreR * 2, coreR * 2);
-                    }
-
-                    // Cabeça com brilho extra (Ponto Focal)
-                    const headR = this.radius * (2.4 + 0.4 * pulse) * bva;
-                    ctx.globalAlpha = 0.4 * bva * pulse;
-                    ctx.drawImage(TextureManager.getSegment(this.skin[0]),
-                        this.x - headR, this.y - headR, headR * 2, headR * 2);
-
-                    ctx.restore();
+                if (this.trails.length > 0 && APP_SETTINGS.highGfx) {
+                    for (let idx = 0; idx < this.trails.length; idx++) {
+                        let t = this.trails[idx]; ctx.globalAlpha = t.life * 0.4; ctx.fillStyle = isRainbow ? `hsl(${(frameCount * 4 - idx * 15) % 360}, 100%, 50%)` : this.mainColor;
+                        if (this.skinId === 31 || this.skinId === 36) {
+                            let s = this.radius * (0.8 + t.life * 0.4) * 1.5; ctx.fillRect(t.x - s / 2, t.y - s / 2, s, s);
+                        } else if (this.skinId === 13 || this.skinId === 34) {
+                            ctx.globalAlpha = t.life * 0.2; ctx.beginPath(); ctx.arc(t.x, t.y, this.radius * (1.5 + t.life * 0.8), 0, Math.PI * 2); ctx.fill();
+                        } else if (this.skinId === 4 || this.skinId === 11) {
+                            let s = this.radius * (0.5 + t.life * 0.5); ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.life * 10); ctx.beginPath(); ctx.moveTo(0, -s); ctx.lineTo(s, s); ctx.lineTo(-s, s); ctx.closePath(); ctx.fill(); ctx.restore();
+                        } else if (this.skinId === 30) {
+                            let s = this.radius * (0.4 + t.life * 0.4); ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.life * 5); ctx.beginPath(); for (let j = 0; j < 5; j++) { ctx.lineTo(Math.cos(j * 4 * Math.PI / 5) * s, Math.sin(j * 4 * Math.PI / 5) * s); } ctx.closePath(); ctx.fill(); ctx.restore();
+                        } else { ctx.beginPath(); ctx.arc(t.x, t.y, this.radius * (0.8 + t.life * 0.4), 0, Math.PI * 2); ctx.fill(); }
+                    } ctx.globalAlpha = 1.0;
                 }
 
-                // ── CORPO NORMAL ──
                 for (let i = this.segments.length - 1; i >= 0; i--) ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), this.segments[i].x - this.radius, this.segments[i].y - this.radius, this.radius * 2, this.radius * 2);
                 ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
                 let look = (joystickActive && this.isPlayer) ? joystickAngle : this.angle;
-                drawStandardEyes(ctx, this.x, this.y, this.radius, this.angle, look, this.skinId);
+                drawStandardEyes(ctx, this.x, this.y, this.radius, this.angle, look, this.skinId, this.isBoosting, this.eatTimer > 0);
+
+                ctx.save(); ctx.fillStyle = this.isPlayer ? '#ffdf00' : 'rgba(255, 255, 255, 0.5)'; ctx.font = '800 12px Poppins'; ctx.textAlign = 'center'; ctx.fillText(this.name, this.x, this.y - this.radius - 20);
+                if (this.isKing) { ctx.font = '22px Arial'; ctx.fillText('👑', this.x, this.y - this.radius - 38); } ctx.restore();
             }
         }
 
-        /* ── ENGINE ── */
-        async function enterFullscreen() {
-            try {
-                const d = document.documentElement;
-                if (d.requestFullscreen) await d.requestFullscreen();
-                else if (d.webkitRequestFullscreen) await d.webkitRequestFullscreen();
-                if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape').catch(() => { });
-            } catch (e) { console.warn("Fullscreen bloqueado pelo navegador."); }
-        }
-
-        /* 📱 HAPTIC FEEDBACK (VIBRAÇÃO)
-           Função central para controlar a sensação tátil do jogo.
-           Respeita as configurações definidas no objeto CONFIG. */
-        function triggerHaptic(type) {
-            if (!CONFIG.cobra.tato.ativo || !navigator.vibrate) return;
-            const force = CONFIG.cobra.tato[type] || 0;
-            if (force > 0) navigator.vibrate(force);
-        }
-
-        function resize() {
-            vpWidth = window.innerWidth;
-            vpHeight = window.innerHeight;
-            dpr = window.devicePixelRatio || 1;
-
-            if (gameCanvasElement) {
-                gameCanvasElement.width = vpWidth * dpr;
-                gameCanvasElement.height = vpHeight * dpr;
-                gameCanvasElement.style.width = vpWidth + 'px';
-                gameCanvasElement.style.height = vpHeight + 'px';
-            }
-            if (minimapCanvasElement) {
-                // CORRECAO BUG 3: Canvas e container sincronizados em 140px
-                minimapCanvasElement.width = 140 * dpr;
-                minimapCanvasElement.height = 140 * dpr;
-                minimapCanvasElement.style.width = '140px';
-                minimapCanvasElement.style.height = '140px';
-                mCtxElement.setTransform(1, 0, 0, 1, 0, 0);
-                mCtxElement.scale(dpr, dpr);
-            }
-            if (IS_MOBILE_CLIENT) UI.orient.style.display = vpHeight > vpWidth ? 'flex' : 'none';
-        }
-
+        // Inicializações Básicas
         function updateHUD() {
             if (gameState !== 'playing' || !player) return;
             UI.score.innerText = Math.floor(player.score).toLocaleString();
@@ -1597,52 +1228,12 @@
             UI.rank.innerText = sorted.findIndex(s => s === player) + 1; UI.total.innerText = sorted.length;
             let html = '';
             for (let i = 0; i < Math.min(10, sorted.length); i++) {
-                let s = sorted[i];
-                let col = s === player ? '#FFD60A' : getLbColor(s.mainColor);
-                html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${col}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`;
+                let s = sorted[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`;
             }
             UI.lbList.innerHTML = html;
-
-            // Minimap Overhaul: Slither.io Radar Style
-            const mSize = 140;
-            mCtxElement.clearRect(0, 0, mSize, mSize);
-            // Background & Crosshair
-            mCtxElement.beginPath(); mCtxElement.arc(mSize / 2, mSize / 2, mSize / 2 - 2, 0, Math.PI * 2);
-            mCtxElement.fillStyle = 'rgba(6,6,10,0.78)'; mCtxElement.fill();
-            mCtxElement.strokeStyle = 'rgba(255,255,255,0.08)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
-            // Reticulos
-            mCtxElement.beginPath(); mCtxElement.moveTo(mSize / 2, 0); mCtxElement.lineTo(mSize / 2, mSize);
-            mCtxElement.moveTo(0, mSize / 2); mCtxElement.lineTo(mSize, mSize / 2);
-            mCtxElement.strokeStyle = 'rgba(255,255,255,0.06)'; mCtxElement.stroke();
-
-            let sc = (mSize - 10) / (WORLD_CENTER * 2);
-            let offset = 5;
-            // Trails for other snakes
-            for (let s of act) {
-                if (s === player) continue;
-                mCtxElement.beginPath();
-                mCtxElement.arc(offset + s.x * sc, offset + s.y * sc, 1.3, 0, Math.PI * 2);
-                mCtxElement.fillStyle = 'rgba(255,255,255,0.3)';
-                mCtxElement.fill();
-                // Trail sutil puxando alguns gomos
-                if (s.segments.length > 5) {
-                    let last = s.segments[Math.min(s.segments.length - 1, 10)];
-                    mCtxElement.beginPath();
-                    mCtxElement.moveTo(offset + s.x * sc, offset + s.y * sc);
-                    mCtxElement.lineTo(offset + last.x * sc, offset + last.y * sc);
-                    mCtxElement.strokeStyle = 'rgba(255,255,255,0.1)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
-                }
-            }
-            // Player Dot: Ultra-Bright Bloom (Ajustável via Qualidade de Sombra)
-            mCtxElement.shadowBlur = CONFIG.visual.qualidadeSombra;
-            mCtxElement.shadowColor = '#fff';
-            mCtxElement.beginPath(); mCtxElement.arc(offset + player.x * sc, offset + player.y * sc, 3.2, 0, Math.PI * 2);
-            mCtxElement.fillStyle = '#fff'; mCtxElement.fill();
-            mCtxElement.shadowBlur = 0;
-
-            const ep = Math.max(0, player.energy / CONFIG.cobra.energiaMaxima);
-            UI.energyFill.style.width = (ep * 100) + '%';
-            UI.energyFill.style.background = ep > 0.4 ? 'linear-gradient(90deg, #00ff88, #FFD60A)' : (ep > 0.2 ? '#FFD60A' : '#ff4444');
+            mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
+            let sc = 140 / (WORLD_CENTER * 2);
+            for (let s of act) { mCtxElement.beginPath(); mCtxElement.arc(s.x * sc, s.y * sc, s === player ? 4 : 1.5, 0, Math.PI * 2); mCtxElement.fillStyle = s === player ? '#fff' : 'rgba(255,255,255,0.3)'; mCtxElement.fill(); }
         }
 
         function drawGrid(ctx, camX, camY, zoom) {
@@ -1663,307 +1254,161 @@
                 }
             }
             ctx.stroke();
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(camX - (vpWidth / zoom) / 2 - 100, camY - (vpHeight / zoom) / 2 - 100, vpWidth / zoom + 200, vpHeight / zoom + 200);
-            ctx.arc(WORLD_CENTER, WORLD_CENTER, WORLD_CENTER - 15, 0, Math.PI * 2, true);
-            ctx.fillStyle = 'rgba(180, 0, 0, 0.22)';
-            ctx.fill('evenodd');
-            ctx.restore();
-            ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, WORLD_CENTER, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255, 0, 0, 0.35)'; ctx.lineWidth = 30; ctx.stroke();
+            ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, WORLD_CENTER, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255, 0, 0, 0.15)'; ctx.lineWidth = 30; ctx.stroke();
         }
+
+        async function enterFullscreen() {
+            try {
+                const d = document.documentElement;
+                if (d.requestFullscreen) await d.requestFullscreen();
+                else if (d.webkitRequestFullscreen) await d.webkitRequestFullscreen();
+                if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape').catch(() => { });
+            } catch (e) { console.warn("Fullscreen bloqueado pelo navegador."); }
+        }
+
+        function resize() { vpWidth = window.innerWidth; vpHeight = window.innerHeight; dpr = window.devicePixelRatio || 1; if (gameCanvasElement) { gameCanvasElement.width = vpWidth * dpr; gameCanvasElement.height = vpHeight * dpr; gameCanvasElement.style.width = vpWidth + 'px'; gameCanvasElement.style.height = vpHeight + 'px'; } if (minimapCanvasElement) { minimapCanvasElement.width = 140 * dpr; minimapCanvasElement.height = 140 * dpr; minimapCanvasElement.style.width = '140px'; minimapCanvasElement.style.height = '140px'; mCtxElement.setTransform(1, 0, 0, 1, 0, 0); mCtxElement.scale(dpr, dpr); } if (IS_MOBILE_CLIENT) UI.orient.style.display = vpHeight > vpWidth ? 'flex' : 'none'; }
+        function showEvolution(evo) { UI.lvlTitle.innerText = evo.name; UI.lvlTitle.style.color = evo.color; UI.lvlPopup.classList.add('show'); AudioSys.play('dash'); setTimeout(() => UI.lvlPopup.classList.remove('show'), 3500); }
+        function updateMissionsUI() { let k = Math.min(PLAYER_STATS.totalKills, MISSIONS.killsReq), f = Math.min(PLAYER_STATS.totalFood, MISSIONS.foodReq), t = Math.min(PLAYER_STATS.totalTime, MISSIONS.timeReq); document.getElementById('m-desc-1').innerText = `Abates (${k}/${MISSIONS.killsReq})`; document.getElementById('m-bar-1').style.width = (k / MISSIONS.killsReq * 100) + '%'; document.getElementById('m-desc-2').innerText = `Orbes (${f}/${MISSIONS.foodReq})`; document.getElementById('m-bar-2').style.width = (f / MISSIONS.foodReq * 100) + '%'; document.getElementById('m-desc-3').innerText = `Sobrevivência (${Math.floor(t / 60)}/${Math.floor(MISSIONS.timeReq / 60)}m)`; document.getElementById('m-bar-3').style.width = (t / MISSIONS.timeReq * 100) + '%'; if (k >= MISSIONS.killsReq && f >= MISSIONS.foodReq && t >= MISSIONS.timeReq) { document.getElementById('mission-reward').classList.remove('hidden'); } }
+        function updateSkinUI() { UI.skinName.innerText = SKIN_NAMES[skinIndex]; let req = SKIN_REQUIREMENTS[skinIndex]; let isLocked = false; if (req) { if (req.type === 'score' && PLAYER_STATS.highScore < req.val) isLocked = true; if (req.type === 'kills' && PLAYER_STATS.totalKills < req.val) isLocked = true; } if (isLocked) { UI.lockOverlay.classList.remove('hidden'); UI.reqTitle.innerText = `🔒 REQUER ${req.desc}`; UI.reqStatus.innerText = req.type === 'score' ? `RECORDE ATUAL: ${PLAYER_STATS.highScore.toLocaleString()}` : `ABATES TOTAIS: ${PLAYER_STATS.totalKills}`; UI.ok.style.background = '#333333'; UI.ok.style.color = '#777777'; UI.ok.style.boxShadow = 'none'; UI.ok.style.pointerEvents = 'none'; UI.skinName.style.color = '#555'; } else { UI.lockOverlay.classList.add('hidden'); UI.ok.style.background = '#ffdf00'; UI.ok.style.color = '#000000'; UI.ok.style.boxShadow = '0 5px 20px rgba(255, 223, 0, 0.25)'; UI.ok.style.pointerEvents = 'auto'; UI.skinName.style.color = '#ffdf00'; } }
 
         function gameLoop(time) {
-            mainCtx.setTransform(1, 0, 0, 1, 0, 0);
-            mainCtx.clearRect(0, 0, gameCanvasElement.width, gameCanvasElement.height);
-            mainCtx.scale(dpr, dpr);
+            mainCtx.setTransform(1, 0, 0, 1, 0, 0); mainCtx.clearRect(0, 0, gameCanvasElement.width, gameCanvasElement.height); mainCtx.scale(dpr, dpr);
 
+            // Lógica Core de Atualização (Roda SEMPRE, mesmo no menu, para o Fundo Animado)
+            if (gameState === 'playing' && player && player.alive) {
+                player.isBoosting = isMouseDown; if (frameCount % 60 === 0) PLAYER_STATS.totalTime++;
+                camera.x += (player.x - camera.x) * 0.1; camera.y += (player.y - camera.y) * 0.1;
+                let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc']; camera.zoom += (Math.max(zV.minimo, zV.inicial - Math.pow(player.score, 0.4) * zV.fatorAfastamento) * (player.isBoosting ? 0.94 : 1) - camera.zoom) * 0.05;
+            } else if (gameState === 'menu') {
+                // CÂMARA CINEMÁTICA NO MENU
+                camera.x = WORLD_CENTER + Math.cos(time * 0.0001) * 1500;
+                camera.y = WORLD_CENTER + Math.sin(time * 0.0001) * 1500;
+                camera.zoom = 0.55;
+            }
+
+            if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
+            if (foods.length < CONFIG.mundo.quantidadeComida) spawnFood(15);
+            if (goldenBugs.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) goldenBugs.push(new GoldenBug(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
+
+            for (let s of snakes) s.update(); for (let b of goldenBugs) b.update();
+            for (let i = 0; i < snakes.length; i++) {
+                let s1 = snakes[i]; if (!s1.alive) continue;
+                for (let j = 0; j < snakes.length; j++) { let s2 = snakes[j]; if (i === j || !s2.alive) continue; let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8); for (let k = 0; k < s2.segments.length; k += 4) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } } }
+            }
+
+            snakes = snakes.filter(s => s.alive || s.isPlayer);
+            for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].life <= 0) particles.splice(i, 1); }
+            for (let ff of fireflies) ff.update();
+
+            let currentKing = null, maxScore = 500; for (let s of snakes) { if (s.alive && s.score > maxScore) { maxScore = s.score; currentKing = s; } } for (let s of snakes) { s.isKing = (s === currentKing); }
+
+            let cullingDist = Math.max(vpWidth, vpHeight) / camera.zoom / 2 + CONFIG.visual.dRender;
+            mainCtx.save(); mainCtx.translate(vpWidth / 2, vpHeight / 2);
+            if (camera.shake > 0.5) { mainCtx.translate(Math.random() * camera.shake - camera.shake / 2, Math.random() * camera.shake - camera.shake / 2); camera.shake *= 0.85; }
+            mainCtx.scale(camera.zoom, camera.zoom); mainCtx.translate(-camera.x, -camera.y);
+
+            if (APP_SETTINGS.highGfx) drawGrid(mainCtx, camera.x, camera.y, camera.zoom);
+            else { mainCtx.fillStyle = CONFIG.mundo.corFundo; mainCtx.fillRect(camera.x - (vpWidth / camera.zoom) / 2, camera.y - (vpHeight / camera.zoom) / 2, vpWidth / camera.zoom, vpHeight / camera.zoom); }
+
+            for (let ff of fireflies) { if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
+            for (let f of foods) { if (Math.hypot(f.x - camera.x, f.y - camera.y) < cullingDist) f.draw(mainCtx, time); }
+            for (let b of goldenBugs) { if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
+            for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
+
+            let dL = [...snakes].sort((a, b) => a.score - b.score);
+            for (let s of dL) { if (Math.hypot(s.x - camera.x, s.y - camera.y) < cullingDist + (s.targetLength * CONFIG.cobra.distanciaGomos)) s.draw(mainCtx); }
+            mainCtx.restore();
+
+            // RENDERIZAÇÃO ESPECÍFICA DA UI SOBRE O CANVAS
             if (gameState === 'menu') {
-                mainCtx.fillStyle = CONFIG.mundo.corFundo; mainCtx.fillRect(0, 0, vpWidth, vpHeight);
-                for (let ff of fireflies) { ff.update(); ff.draw(mainCtx, time); }
-                let grad = mainCtx.createRadialGradient(vpWidth / 2, vpHeight / 2, 0, vpWidth / 2, vpHeight / 2, vpWidth);
-                grad.addColorStop(0, 'rgba(255,255,255,0.05)'); grad.addColorStop(1, 'rgba(0,0,0,0.9)');
-                mainCtx.fillStyle = grad; mainCtx.fillRect(0, 0, vpWidth, vpHeight);
+                // O fundo semi-transparente é lidado pelo CSS, então o jogo corre limpo por baixo!
             }
             else if (gameState === 'skin-menu') {
-                mainCtx.fillStyle = '#06060a'; mainCtx.fillRect(0, 0, vpWidth, vpHeight);
-
-                let act = SKINS[skinIndex];
-                let rad = IS_MOBILE_CLIENT ? 34 : 48;
-                let len = 34; // Gomos extras para melhor visibilidade
-                let spc = rad * 0.42;
-                let headX = (vpWidth / 2) + (len * spc * 0.4); // Centralizar corpo
-                let centerY = vpHeight / 2;
-
-                // Iluminação de Fundo Vibrante
-                let skinColor = act[0];
-                let bgGlow = mainCtx.createRadialGradient(vpWidth / 2, centerY, 0, vpWidth / 2, centerY, vpWidth * 0.45);
-                bgGlow.addColorStop(0, skinColor + '40'); // Mais intenso (40 octetos)
-                bgGlow.addColorStop(1, 'rgba(6,6,10,0)');
-                mainCtx.fillStyle = bgGlow; mainCtx.fillRect(0, 0, vpWidth, vpHeight);
-
-                let segs = [];
-                for (let i = 0; i < len; i++) {
-                    segs.push({
-                        x: headX - (i * spc),
-                        y: centerY + Math.sin(time * 0.005 - i * 0.20) * (rad * 1.8)
-                    });
-                }
-
-                // Renderização Limpa e Vibrante
-                const drawPreviewSegFix = (x, y, r, color) => {
-                    mainCtx.beginPath();
-                    mainCtx.arc(x, y, r, 0, Math.PI * 2);
-                    mainCtx.fillStyle = color;
-                    mainCtx.fill();
-                    // Luz de Superfície Punchy (não escurece a cor principal)
-                    let hl = mainCtx.createRadialGradient(x - r * 0.15, y - r * 0.15, r * 0.05, x, y, r);
-                    hl.addColorStop(0, 'rgba(255,255,255,0.45)');
-                    hl.addColorStop(0.2, 'rgba(255,255,255,0.12)');
-                    hl.addColorStop(1, 'rgba(0,0,0,0)');
-                    mainCtx.fillStyle = hl;
-                    mainCtx.fill();
-                };
-
-                for (let i = segs.length - 1; i >= 0; i--) {
-                    drawPreviewSegFix(segs[i].x, segs[i].y, rad, act[i % act.length]);
-                }
-                let h = segs[0];
-                drawPreviewSegFix(h.x, h.y, rad, act[0]);
-                drawStandardEyes(mainCtx, h.x, h.y, rad, 0, 0, skinIndex);
+                mainCtx.fillStyle = 'rgba(5,5,5,0.95)'; mainCtx.fillRect(0, 0, vpWidth, vpHeight); // Fundo sólido na loja
+                let act = SKINS[skinIndex], rad = IS_MOBILE_CLIENT ? 26 : 38, len = 32, spc = rad * 0.45;
+                let headX = (vpWidth / 2) + ((len * spc) / 2), centerY = vpHeight / 2 - 20, segs = [];
+                for (let i = 0; i < len; i++) segs.push({ x: headX - (i * spc), y: centerY + Math.sin(time * 0.005 - i * 0.18) * (rad * 1.5) });
+                let isLocked = SKIN_REQUIREMENTS[skinIndex] && ((SKIN_REQUIREMENTS[skinIndex].type === 'score' && PLAYER_STATS.highScore < SKIN_REQUIREMENTS[skinIndex].val) || (SKIN_REQUIREMENTS[skinIndex].type === 'kills' && PLAYER_STATS.totalKills < SKIN_REQUIREMENTS[skinIndex].val));
+                if (isLocked) { mainCtx.filter = 'brightness(0.2) grayscale(1)'; }
+                for (let i = segs.length - 1; i >= 0; i--) mainCtx.drawImage(TextureManager.getSegment(act[i % act.length]), segs[i].x - rad, segs[i].y - rad, rad * 2, rad * 2);
+                mainCtx.drawImage(TextureManager.getSegment(act[0]), segs[0].x - rad, segs[0].y - rad, rad * 2, rad * 2);
+                drawStandardEyes(mainCtx, segs[0].x, segs[0].y, rad, 0, 0, skinIndex, false, false);
+                mainCtx.filter = 'none';
             }
             else if (gameState === 'playing' || gameState === 'dead') {
-                /*
-                 * CORRECAO BUG 4: Verifica energia mínima antes de ativar turbo do jogador.
-                 * Antes: player.isBoosting = isMouseDown  (sempre sobrescrevia, mesmo sem energia)
-                 * Agora: só ativa se tiver energia acima do mínimo, permitindo a recarga correta.
-                 */
-                if (player && player.alive) {
-                    player.isBoosting = isMouseDown && player.energy > CONFIG.cobra.energiaMinima;
-                }
-
-                if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots)
-                    snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore(), getNewGenome()));
-                if (foods.length < CONFIG.mundo.quantidadeComida) spawnFood(15);
-                for (let s of snakes) s.update();
-
-                /*
-                 * CORRECAO BUG 2: Loop de colisão corrigido.
-                 * Quando s1 morre na colisão cabeça-a-cabeça, o loop interno deve usar
-                 * 'break' (e não 'continue') para parar de verificar segmentos de s2,
-                 * evitando que s1 morra múltiplas vezes no mesmo frame.
-                 */
-                for (let i = 0; i < snakes.length; i++) {
-                    let s1 = snakes[i]; if (!s1.alive) continue;
-                    for (let j = 0; j < snakes.length; j++) {
-                        let s2 = snakes[j]; if (i === j || !s2.alive) continue;
-                        let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8);
-                        let headDist = Math.hypot(s1.x - s2.x, s1.y - s2.y);
-                        if (headDist < hitDist) {
-                            if (Math.abs(s1.score - s2.score) < s1.score * 0.1) {
-                                if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; }
-                                if (s1 === player && s2 !== player) { playerKills++; camera.shake = 15; }
-                                s1.die(true); s2.die(true);
-                                break; // CORRIGIDO: era 'continue', agora é 'break'
-                            } else if (s1.score < s2.score) {
-                                if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; }
-                                s1.die(true);
-                                break; // Sai do loop j pois s1 já morreu
-                            }
-                        }
-                        if (!s1.alive) break; // Guarda extra: sai se s1 morreu no check anterior
-                        for (let k = 3; k < s2.segments.length; k += 4) {
-                            if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) {
-                                if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; }
-                                s1.die(true); break;
-                            }
-                        }
-                        if (!s1.alive) break; // Sai do loop j após morte por segmento
-                    }
-                }
-
-                if (player && player.alive) {
-                    camera.x += (player.x - camera.x) * 0.1; camera.y += (player.y - camera.y) * 0.1;
-                    let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc'];
-                    camera.zoom += (Math.max(zV.minimo, zV.inicial - Math.pow(player.score, 0.4) * zV.fatorAfastamento) * (player.isBoosting ? 0.94 : 1) - camera.zoom) * 0.05;
-                    let sorted2 = snakes.filter(s => s.alive).sort((a, b) => b.score - a.score);
-                    let isTop1Now = sorted2[0] === player;
-                    if (isTop1Now && !wasTop1) {
-                        wasTop1 = true;
-                        soundTop1();
-                        createConfetti(vpWidth / 2, vpHeight / 2, 35);
-                        UI.top1Banner.classList.add('show');
-                        setTimeout(() => UI.top1Banner.classList.remove('show'), 3500);
-                    } else if (!isTop1Now) { wasTop1 = false; }
-                    if (player.isBoosting && frameCount % 18 === 0) soundBoost();
-                }
-                snakes = snakes.filter(s => s.alive || s.isPlayer);
-                for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].life <= 0) particles.splice(i, 1); }
-                for (let i = confetti.length - 1; i >= 0; i--) { let c = confetti[i]; c.x += c.vx; c.y += c.vy; c.vy += 0.25; c.rot += c.rotSpeed; c.life -= c.decay; if (c.life <= 0) confetti.splice(i, 1); }
-                for (let ff of fireflies) ff.update();
-
-                let cullingDist = Math.max(vpWidth, vpHeight) / camera.zoom / 2 + CONFIG.visual.dRender;
-
-                mainCtx.save(); mainCtx.translate(vpWidth / 2, vpHeight / 2);
-                if (camera.shake > 0.5) { mainCtx.translate(Math.random() * camera.shake - camera.shake / 2, Math.random() * camera.shake - camera.shake / 2); camera.shake *= 0.85; }
-                mainCtx.scale(camera.zoom, camera.zoom); mainCtx.translate(-camera.x, -camera.y);
-
-                drawGrid(mainCtx, camera.x, camera.y, camera.zoom);
-
-                for (let ff of fireflies) { if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
-                for (let f of foods) { if (Math.hypot(f.x - camera.x, f.y - camera.y) < cullingDist) f.draw(mainCtx, time); }
-                for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
-
-                let dL = [...snakes].sort((a, b) => a.score - b.score);
-                for (let s of dL) {
-                    if (Math.hypot(s.x - camera.x, s.y - camera.y) < cullingDist + (s.targetLength * s.conf.distanciaGomos)) {
-                        s.draw(mainCtx);
-                    }
-                }
-
-                mainCtx.restore();
-
-                for (let c of confetti) {
-                    mainCtx.save(); mainCtx.globalAlpha = Math.max(0, c.life);
-                    mainCtx.translate(c.x, c.y); mainCtx.rotate(c.rot);
-                    mainCtx.fillStyle = c.color;
-                    mainCtx.fillRect(-c.size / 2, -c.size / 4, c.size, c.size / 2);
-                    mainCtx.restore();
-                }
-                mainCtx.globalAlpha = 1;
-
-                if (frameCount % 10 === 0) updateHUD(); frameCount = (frameCount + 1) % 10000;
+                if (frameCount % 10 === 0) updateHUD();
             }
-            requestAnimationFrame(gameLoop);
+
+            frameCount++; requestAnimationFrame(gameLoop);
         }
 
-        /* ── EVENTOS ── */
-        window.addEventListener('resize', resize);
-        window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
-        window.addEventListener('mousedown', (e) => { if (e.button === 0) isMouseDown = true; });
-        window.addEventListener('mouseup', (e) => { if (e.button === 0) isMouseDown = false; });
+        // Configurações UI Toggle
+        UI.btnAudio.addEventListener('click', (e) => { APP_SETTINGS.audio = !APP_SETTINGS.audio; e.target.innerText = APP_SETTINGS.audio ? 'ON' : 'OFF'; e.target.classList.toggle('active'); });
+        UI.btnGfx.addEventListener('click', (e) => { APP_SETTINGS.highGfx = !APP_SETTINGS.highGfx; e.target.innerText = APP_SETTINGS.highGfx ? 'ALTOS' : 'LEVE'; e.target.classList.toggle('active'); });
+        UI.btnUi.addEventListener('click', (e) => {
+            if (APP_SETTINGS.uiOpac === 'forte') { APP_SETTINGS.uiOpac = 'suave'; e.target.innerText = 'SUAVE'; e.target.classList.remove('active'); UI.joyB.style.opacity = '0.3'; UI.boost.style.opacity = '0.3'; }
+            else { APP_SETTINGS.uiOpac = 'forte'; e.target.innerText = 'FORTE'; e.target.classList.add('active'); UI.joyB.style.opacity = '1'; UI.boost.style.opacity = '1'; }
+        });
+        UI.setBtn.addEventListener('click', () => { UI.setMod.classList.toggle('hidden'); UI.setBtn.style.transform = UI.setMod.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'; });
+        UI.closeSet.addEventListener('click', () => { UI.setMod.classList.add('hidden'); UI.setBtn.style.transform = 'rotate(0deg)'; });
 
-        UI.play.addEventListener('click', async () => {
-            triggerHaptic('forcaClique');
-            await enterFullscreen();
-            snakes = []; foods = []; fireflies = []; particles = []; confetti = []; playerKills = 0;
-            wasTop1 = false;
-            const pSpawn = getSafeSpawnPos(1500);
-            player = new Snake(pSpawn.x, pSpawn.y, UI.nick.value.trim() || "LENDA", skinIndex, true, CONFIG.mundo.spawn.jogadorInicial); snakes.push(player);
-            for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore(), getNewGenome()));
-            spawnFood(CONFIG.mundo.quantidadeComida); for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
-            gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
-            UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
-            if (IS_MOBILE_CLIENT) UI.ctrls.style.display = 'block';
+        // Compartilhar Social
+        UI.share.addEventListener('click', () => {
+            const text = `🐍 Fiz ${Math.floor(player.score).toLocaleString()} pontos e destruí ${playerKills} inimigos no Serpente - O Conto do Rei! Consegues bater o meu recorde?`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text); UI.share.innerText = "COPIADO!"; setTimeout(() => UI.share.innerText = "COMPARTILHAR", 2000);
+            } else { let input = document.createElement('textarea'); input.value = text; document.body.appendChild(input); input.select(); document.execCommand('copy'); document.body.removeChild(input); UI.share.innerText = "COPIADO!"; setTimeout(() => UI.share.innerText = "COMPARTILHAR", 2000); }
         });
 
-        UI.skins.addEventListener('click', () => { triggerHaptic('forcaClique'); gameState = 'skin-menu'; UI.start.style.display = 'none'; UI.preview.classList.remove('hidden'); UI.skinName.innerText = SKIN_NAMES[skinIndex]; });
-        UI.ok.addEventListener('click', () => { triggerHaptic('forcaClique'); UI.preview.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
-        UI.left.addEventListener('click', () => { triggerHaptic('forcaClique'); skinIndex = (skinIndex - 1 + SKINS.length) % SKINS.length; UI.skinName.innerText = SKIN_NAMES[skinIndex]; UI.skinCounter.innerText = `${skinIndex + 1} / ${SKINS.length}`; });
-        UI.right.addEventListener('click', () => { triggerHaptic('forcaClique'); skinIndex = (skinIndex + 1) % SKINS.length; UI.skinName.innerText = SKIN_NAMES[skinIndex]; UI.skinCounter.innerText = `${skinIndex + 1} / ${SKINS.length}`; });
-        UI.again.addEventListener('click', () => { triggerHaptic('forcaClique'); UI.death.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
+        // Iniciadores de Interação e Jogabilidade
+        window.addEventListener('resize', resize); window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+        window.addEventListener('mousedown', (e) => { if (e.button === 0) isMouseDown = true; }); window.addEventListener('mouseup', (e) => { if (e.button === 0) isMouseDown = false; });
 
-        /* ── JOYSTICK MULTI-TOUCH ── */
-        const JOYSTICK_DEADZONE = 8;
-        const JOYSTICK_MAX_RADIUS = 55;
-        let joystickTouchId = null;
+        UI.play.addEventListener('click', async () => {
+            AudioSys.init(); await enterFullscreen();
+            if (player) { let idx = snakes.indexOf(player); if (idx > -1) snakes.splice(idx, 1); } // Limpa jogador antigo se houver
+            playerKills = 0; currentEvo = -1;
+            player = new Snake(camera.x, camera.y, UI.nick.value.trim() || "LENDA", skinIndex, true); snakes.push(player);
+            gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
+            UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
+            if (IS_MOBILE_CLIENT) { UI.ctrls.style.display = 'block'; UI.ctrls.style.opacity = '1'; }
+        });
 
-        function updateJoystick(touch) {
-            const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2;
-            const dx = touch.clientX - cX, dy = touch.clientY - cY, dist = Math.hypot(dx, dy);
-            if (dist > JOYSTICK_DEADZONE) {
-                joystickAngle = Math.atan2(dy, dx);
-            }
-            const capD = Math.min(dist, JOYSTICK_MAX_RADIUS);
-            UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`;
-        }
+        UI.skins.addEventListener('click', () => { gameState = 'skin-menu'; UI.start.style.display = 'none'; UI.preview.classList.remove('hidden'); updateSkinUI(); });
+        UI.ok.addEventListener('click', () => { UI.preview.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
+        UI.left.addEventListener('click', () => { skinIndex = (skinIndex - 1 + SKINS.length) % SKINS.length; updateSkinUI(); });
+        UI.right.addEventListener('click', () => { skinIndex = (skinIndex + 1) % SKINS.length; updateSkinUI(); });
+        UI.again.addEventListener('click', () => { UI.death.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
 
-        UI.joyB.addEventListener('touchstart', (e) => {
-            e.preventDefault(); e.stopPropagation();
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                if (joystickTouchId === null) {
-                    joystickTouchId = e.changedTouches[i].identifier;
-                    joystickActive = true;
-                    updateJoystick(e.changedTouches[i]);
-                }
-            }
-        }, { passive: false });
+        const JOYSTICK_DEADZONE = 8, JOYSTICK_MAX_RADIUS = 55; let joystickTouchId = null;
+        function updateJoystick(touch) { const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2; const dx = touch.clientX - cX, dy = touch.clientY - cY, dist = Math.hypot(dx, dy); if (dist > JOYSTICK_DEADZONE) { joystickAngle = Math.atan2(dy, dx); } const capD = Math.min(dist, JOYSTICK_MAX_RADIUS); UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`; }
+        UI.joyB.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); for (let i = 0; i < e.changedTouches.length; i++) { if (joystickTouchId === null) { joystickTouchId = e.changedTouches[i].identifier; joystickActive = true; updateJoystick(e.changedTouches[i]); } } }, { passive: false });
+        window.addEventListener('touchmove', (e) => { if (joystickActive) { for (let i = 0; i < e.changedTouches.length; i++) { if (e.changedTouches[i].identifier === joystickTouchId) { updateJoystick(e.changedTouches[i]); e.preventDefault(); } } } }, { passive: false });
+        function releaseJoystick(e) { if (joystickActive) { for (let i = 0; i < e.changedTouches.length; i++) { if (e.changedTouches[i].identifier === joystickTouchId) { joystickActive = false; joystickTouchId = null; UI.joyH.style.transform = 'translate(-50%, -50%)'; } } } }
+        window.addEventListener('touchend', releaseJoystick); window.addEventListener('touchcancel', releaseJoystick);
 
-        window.addEventListener('touchmove', (e) => {
-            if (joystickActive) {
-                for (let i = 0; i < e.changedTouches.length; i++) {
-                    if (e.changedTouches[i].identifier === joystickTouchId) {
-                        updateJoystick(e.changedTouches[i]);
-                        e.preventDefault();
-                    }
-                }
-            }
-        }, { passive: false });
+        UI.boost.addEventListener('touchstart', (e) => { isMouseDown = true; e.stopPropagation(); e.preventDefault(); }, { passive: false });
+        UI.boost.addEventListener('touchend', (e) => { isMouseDown = false; e.stopPropagation(); e.preventDefault(); }, { passive: false });
+        UI.boost.addEventListener('touchcancel', (e) => { isMouseDown = false; e.stopPropagation(); }, { passive: false });
 
-        function releaseJoystick(e) {
-            if (joystickActive) {
-                for (let i = 0; i < e.changedTouches.length; i++) {
-                    if (e.changedTouches[i].identifier === joystickTouchId) {
-                        joystickActive = false;
-                        joystickTouchId = null;
-                        UI.joyH.style.transform = 'translate(-50%, -50%)';
-                    }
-                }
-            }
-        }
-
-        window.addEventListener('touchend', releaseJoystick);
-        window.addEventListener('touchcancel', releaseJoystick);
-
-        UI.boost.addEventListener('touchstart', (e) => {
-            isMouseDown = true;
-            e.stopPropagation(); e.preventDefault();
-        }, { passive: false });
-
-        UI.boost.addEventListener('touchend', (e) => {
-            isMouseDown = false;
-            e.stopPropagation(); e.preventDefault();
-        }, { passive: false });
-
-        UI.boost.addEventListener('touchcancel', (e) => {
-            isMouseDown = false;
-            e.stopPropagation();
-        }, { passive: false });
-
-        /* ── GESTOS (SWIPE) ── */
         let touchStartX = 0, touchStartY = 0, swipeTouchId = null;
-
-        window.addEventListener('touchstart', e => {
-            if (e.target.closest('#mobile-controls') || e.target.closest('#ui-layer > div:not(#mobile-controls)')) return;
-            if (swipeTouchId === null) {
-                swipeTouchId = e.changedTouches[0].identifier;
-                touchStartX = e.changedTouches[0].clientX;
-                touchStartY = e.changedTouches[0].clientY;
-            }
-        }, { passive: true });
-
+        window.addEventListener('touchstart', e => { if (e.target.closest('#mobile-controls') || e.target.closest('#ui-layer > div:not(#mobile-controls)')) return; if (swipeTouchId === null) { swipeTouchId = e.changedTouches[0].identifier; touchStartX = e.changedTouches[0].clientX; touchStartY = e.changedTouches[0].clientY; } }, { passive: true });
         window.addEventListener('touchend', e => {
             if (gameState !== 'playing' || !player) return;
             for (let i = 0; i < e.changedTouches.length; i++) {
                 if (e.changedTouches[i].identifier === swipeTouchId) {
-                    let dx = e.changedTouches[i].clientX - touchStartX;
-                    let dy = e.changedTouches[i].clientY - touchStartY;
+                    let dx = e.changedTouches[i].clientX - touchStartX, dy = e.changedTouches[i].clientY - touchStartY;
                     if (Math.abs(dx) > 45 || Math.abs(dy) > 45) {
-                        if (player.score > 25) {
-                            player.score -= 15;
-                            player.speed = CONFIG.cobra.mobile.velocidadeTurbo * 1.6;
-                            createExplosion(player.x, player.y, '#ffdf00', 12);
-                            setTimeout(() => { if (player && !player.isBoosting) player.speed = CONFIG.cobra.mobile.velocidadeBase; }, 200);
-                        }
-                    }
-                    swipeTouchId = null;
+                        if (player.score > 25) { player.score -= 15; player.speed = CONFIG.cobra.mobile.velocidadeTurbo * 1.6; AudioSys.play('dash'); createExplosion(player.x, player.y, '#ffdf00', 12); for (let x = 0; x < 5; x++) if (APP_SETTINGS.highGfx) player.trails.push({ x: player.x, y: player.y, life: 1.5 }); setTimeout(() => { if (player && !player.isBoosting) player.speed = CONFIG.cobra.mobile.velocidadeBase; }, 200); }
+                    } swipeTouchId = null;
                 }
             }
         });
 
-        /* ── ARRANQUE ── */
-        resize();
-        spawnFood(10);
+        // Boot Inicial (Arranque do Simulador de Fundo)
+        resize(); updateMissionsUI();
+        for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(100)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
+        spawnFood(CONFIG.mundo.quantidadeComida);
         for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
         requestAnimationFrame(gameLoop);
     </script>
