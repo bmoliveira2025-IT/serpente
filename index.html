@@ -1592,7 +1592,13 @@
             for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
 
             let dL = [...snakes].sort((a, b) => a.score - b.score);
-            for (let s of dL) { if (Math.hypot(s.x - camera.x, s.y - camera.y) < cullingDist + (s.targetLength * CONFIG.cobra.distanciaGomos)) s.draw(mainCtx); }
+            for (let s of dL) {
+                // Correção Planejada: Culling agora considera o comprimento real em pixels (segmentos * raio * espaçamento)
+                let pixelLength = s.segments.length * (s.radius * CONFIG.cobra.distanciaGomos);
+                if (Math.hypot(s.x - camera.x, s.y - camera.y) < cullingDist + pixelLength + s.radius * 2) {
+                    s.draw(mainCtx);
+                }
+            }
             mainCtx.restore();
 
             // RENDERIZAÇÃO ESPECÍFICA DA UI SOBRE O CANVAS
