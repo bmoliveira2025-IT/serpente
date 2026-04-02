@@ -869,16 +869,16 @@
 
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
-                tamanhoRaio: 8500,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
-                quantidadeBots: 115,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
+                tamanhoRaio: 7500,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
+                quantidadeBots: 90,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
                 quantidadeComida: 9500,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
                 quantidadeInsetosDourados: 5,  // (Recomendado: 5 a 30) Quantidade de "Moscas Douradas" ativas no mapa ao mesmo tempo.
-                tamanhoComidaMin: 6.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
-                tamanhoComidaMax: 9.5,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
+                tamanhoComidaMin: 5.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
+                tamanhoComidaMax: 9.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
                 forcaAtracao: 50,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
                 corGrade: 'rgba(255,255,255,0.03)', // Cor das linhas hexagonais no fundo da arena.
                 corFundo: '#050505',            // A cor do fundo (O preto "AAA" realça muito o neon do jogo).
-                tamanhoHexagono: 35             // (Recomendado: 40 a 150) O tamanho da malha desenhada no fundo.
+                tamanhoHexagono: 30             // (Recomendado: 40 a 150) O tamanho da malha desenhada no fundo.
             },
 
             // ✨ 4. EFEITOS ESPECIAIS E AMBIENTE (Detalhes Gráficos)
@@ -887,7 +887,7 @@
                 velocidadeAnimacaoComida: 0.003,// (Recomendado: 0.001 a 0.01) A velocidade com que a comida vibra/pulsa.
                 quantidadeVagalumes: 100,       // (⚠️ Limite: 250) Pontos de luz branca de fundo. +250 pode causar lentidão ligeira.
                 distanciaFugaVagalumes: 280,    // (Recomendado: 100 a 500) Distância em que as luzes se assustam com a cobra e fogem.
-                dRender: 400                    // (Técnico) Otimização. Impede renderizar o que está a mais de 400px fora do ecrã.
+                dRender: 500                    // (Técnico) Otimização. Impede renderizar o que está a mais de 400px fora do ecrã.
             }
         };
 
@@ -1028,36 +1028,36 @@
         };
 
         function drawStandardEyes(ctx, x, y, radius, angle, lookAngle, skinId, isBoosting = false, isEating = false) {
-            ctx.save(); ctx.translate(x, y); ctx.rotate(angle); 
-            
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+
             // Olhos mais centrados e frontais para o estilo Slither puro
-            let oD = radius * 0.45; 
-            let aO = Math.PI / 4;   
-            let pO = radius * 0.18; 
-            let eR = radius * 0.45; 
+            let oD = radius * 0.45;
+            let aO = Math.PI / 4;
+            let pO = radius * 0.18;
+            let eR = radius * 0.45;
             let pR = eR * 0.55; // Pupila estática
-            
+
             ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = 'white';
             if (skinId === 18) { // Ciclope
-                ctx.beginPath(); ctx.arc(radius * 0.25, 0, eR * 1.8, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); 
+                ctx.beginPath(); ctx.arc(radius * 0.25, 0, eR * 1.8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
                 ctx.beginPath(); ctx.arc(radius * 0.25 + Math.cos(lookAngle - angle) * pO, Math.sin(lookAngle - angle) * pO, pR * 1.1, 0, Math.PI * 2); ctx.fillStyle = '#111'; ctx.fill();
             } else {
-                let e1x = Math.cos(-aO) * oD + radius * 0.15, e1y = Math.sin(-aO) * oD; 
+                let e1x = Math.cos(-aO) * oD + radius * 0.15, e1y = Math.sin(-aO) * oD;
                 let e2x = Math.cos(aO) * oD + radius * 0.15, e2y = Math.sin(aO) * oD;
-                
+
                 // Globos oculares estáticos
                 ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
                 ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                
+
                 // Pupilas
                 ctx.fillStyle = '#111';
                 let lx = Math.cos(lookAngle - angle) * pO, ly = Math.sin(lookAngle - angle) * pO;
                 ctx.beginPath(); ctx.arc(e1x + lx, e1y + ly, pR, 0, Math.PI * 2); ctx.fill();
                 ctx.beginPath(); ctx.arc(e2x + lx, e2y + ly, pR, 0, Math.PI * 2); ctx.fill();
-                
+
                 // Sobrancelhas de turbo
-                if (isBoosting) { 
-                    ctx.lineWidth = radius * 0.12; ctx.strokeStyle = '#000'; ctx.lineCap = 'round'; 
+                if (isBoosting) {
+                    ctx.lineWidth = radius * 0.12; ctx.strokeStyle = '#000'; ctx.lineCap = 'round';
                     ctx.beginPath(); ctx.moveTo(e1x - eR * 0.8, e1y - eR * 0.5); ctx.lineTo(e1x + eR * 0.2, e1y - eR * 0.8); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(e2x - eR * 0.8, e2y + eR * 0.5); ctx.lineTo(e2x + eR * 0.2, e2y + eR * 0.8); ctx.stroke();
                 }
