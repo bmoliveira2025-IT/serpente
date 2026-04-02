@@ -614,6 +614,7 @@
 
         .m-rainbow-text {
             background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8b00ff);
+            background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
             animation: rainbow 3s linear infinite;
@@ -639,65 +640,7 @@
             }
         }
 
-        /* BOTÃO E MENU DE CONFIGURAÇÕES */
-        #settings-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 110;
-            transition: transform 0.3s;
-            pointer-events: auto;
-            opacity: 0.8;
-        }
 
-        #settings-btn:hover {
-            transform: rotate(90deg);
-            opacity: 1;
-        }
-
-        #settings-modal {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            padding: 25px;
-            border-radius: 20px;
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background: rgba(15, 15, 15, 0.95);
-        }
-
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            font-weight: 700;
-            color: #ccc;
-        }
-
-        .toggle-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 6px 15px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: 800;
-            font-size: 10px;
-            transition: all 0.2s;
-        }
-
-        .toggle-btn.active {
-            background: #ffdf00;
-            color: black;
-            border-color: #ffdf00;
-        }
 
         /* TÍTULOS DE EVOLUÇÃO IN-GAME */
         #level-popup {
@@ -780,20 +723,7 @@
             <div id="gesture-hint">SWIPE NA TELA PARA DASH<br>👆 👇 👈 👉</div>
         </div>
 
-        <!-- BOTAO DE CONFIGS -->
-        <div id="settings-btn">⚙️</div>
-        <div id="settings-modal" class="glass-panel hidden">
-            <h3 style="margin:0 0 15px 0; text-align:center; color:#ffdf00; font-size: 16px; letter-spacing: 1px;">
-                CONFIGURAÇÕES</h3>
-            <div class="setting-row"><span>ÁUDIO & SFX</span><button class="toggle-btn active"
-                    id="toggle-audio">ON</button></div>
-            <div class="setting-row"><span>GRÁFICOS</span><button class="toggle-btn active"
-                    id="toggle-gfx">ALTOS</button></div>
-            <div class="setting-row"><span>OPACIDADE UI</span><button class="toggle-btn active"
-                    id="toggle-ui">FORTE</button></div>
-            <button id="close-settings" class="btn-aaa"
-                style="width:100%; padding:12px; font-size:12px; margin-top:10px;">FECHAR</button>
-        </div>
+
 
         <div id="start-menu">
             <div id="missions-panel" class="glass-panel anim-slide-up delay-1">
@@ -825,7 +755,8 @@
                 style="margin-top:15px; margin-bottom: 25px; font-size:10px; font-weight: 700; letter-spacing:5px; opacity:0.3; color:#fff;">
                 O CONTO DA COROA DOURADA</div>
 
-            <input type="text" id="nickname" class="anim-slide-up delay-3" placeholder="NOME DA LENDA" maxlength="16">
+            <input type="text" id="nickname" class="anim-slide-up delay-3" placeholder="NOME DA LENDA" maxlength="16"
+                value="">
             <button id="play-btn" class="btn-aaa anim-slide-up delay-4">INICIAR JORNADA</button>
 
             <div id="skins-btn" class="anim-fade-in delay-4">
@@ -1021,7 +952,6 @@
             again: document.getElementById('play-again-btn'), share: document.getElementById('share-btn'), skinName: document.getElementById('skin-name-display'), orient: document.getElementById('orientation-overlay'),
             ctrls: document.getElementById('mobile-controls'), joyB: document.getElementById('joystick-base'), joyH: document.getElementById('joystick-handle'), boost: document.getElementById('btn-turbo'), mini: document.getElementById('minimap-wrapper'),
             lockOverlay: document.getElementById('skin-locked-overlay'), reqTitle: document.getElementById('skin-req-title'), reqStatus: document.getElementById('skin-req-status'),
-            setBtn: document.getElementById('settings-btn'), setMod: document.getElementById('settings-modal'), btnAudio: document.getElementById('toggle-audio'), btnGfx: document.getElementById('toggle-gfx'), btnUi: document.getElementById('toggle-ui'), closeSet: document.getElementById('close-settings'),
             lvlPopup: document.getElementById('level-popup'), lvlTitle: document.getElementById('level-title-text')
         };
 
@@ -1031,37 +961,106 @@
         function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / 3); for (let i = 0; i < amount; i++) particles.push(new Particle(x, y, color, Math.random() * 5 + 2)); }
         function getRandomBotScore() { const r = Math.random(); if (r < 0.5) return Math.floor(40 + Math.random() * 150); if (r < 0.8) return Math.floor(200 + Math.random() * 800); if (r < 0.95) return Math.floor(1000 + Math.random() * 2000); return Math.floor(3000 + Math.random() * 5000); }
 
+        // Utilitário: escurece/clareia uma cor hex ou rgb
+        function shadeColor(color, amount) {
+            try {
+                let col = color.trim();
+                if (col.startsWith('#')) {
+                    let num = parseInt(col.slice(1), 16);
+                    let r = Math.min(255, Math.max(0, (num >> 16) + amount));
+                    let g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amount));
+                    let b = Math.min(255, Math.max(0, (num & 0xff) + amount));
+                    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+                }
+                return col;
+            } catch (e) { return color; }
+        }
+
         const TextureManager = {
             cache: {},
             getSegment: function (color) {
                 if (this.cache[color]) return this.cache[color];
-                const c = document.createElement('canvas'); c.width = 128; c.height = 128; const cx = c.getContext('2d'); const r = 64;
-                cx.beginPath(); cx.arc(r, r, r - 2, 0, Math.PI * 2); cx.fillStyle = color; cx.fill();
-                const grad = cx.createRadialGradient(r - r * 0.2, r - r * 0.2, r * 0.1, r, r, r); grad.addColorStop(0, 'rgba(255,255,255,0.2)'); grad.addColorStop(1, 'rgba(0,0,0,0.4)'); cx.fillStyle = grad; cx.fill(); this.cache[color] = c; return c;
+                const c = document.createElement('canvas'); c.width = 128; c.height = 128; const cx = c.getContext('2d'); const r = 62;
+                cx.beginPath(); cx.arc(64, 64, r, 0, Math.PI * 2); cx.clip();
+                cx.beginPath(); cx.arc(64, 64, r, 0, Math.PI * 2); cx.fillStyle = color; cx.fill();
+                const grad = cx.createRadialGradient(64 - r * 0.2, 64 - r * 0.2, r * 0.1, 64, 64, r);
+                grad.addColorStop(0, 'rgba(255,255,255,0.2)'); grad.addColorStop(1, 'rgba(0,0,0,0.4)');
+                cx.fillStyle = grad; cx.fill();
+                this.cache[color] = c; return c;
             },
             getFood: function (color) {
                 let key = 'food_' + color; if (this.cache[key]) return this.cache[key];
-                const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const r = 32;
-                const gG = cx.createRadialGradient(r, r, r * 0.1, r, r, r); gG.addColorStop(0, color); gG.addColorStop(1, 'rgba(0,0,0,0)');
-                cx.fillStyle = gG; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill(); cx.beginPath(); cx.arc(r, r, r * 0.4, 0, Math.PI * 2); cx.fillStyle = color; cx.fill(); cx.beginPath(); cx.arc(r - 4, r - 4, 4, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.8)'; cx.fill(); this.cache[key] = c; return c;
+                const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+                const cx = c.getContext('2d');
+                const cx0 = 32, cy0 = 32, r = 22;
+                // Clip circular — nada sai fora do círculo
+                cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, Math.PI * 2); cx.clip();
+                // Halo
+                cx.globalAlpha = 0.3; cx.fillStyle = color;
+                cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, Math.PI * 2); cx.fill(); cx.globalAlpha = 1;
+                // Corpo
+                const body = cx.createRadialGradient(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.05, cx0, cy0, r);
+                body.addColorStop(0, 'rgba(255,255,255,0.95)'); body.addColorStop(0.3, color); body.addColorStop(1, shadeColor(color, -40));
+                cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill();
+                // Brilho
+                cx.beginPath(); cx.arc(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.22, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.9)'; cx.fill();
+                this.cache[key] = c; return c;
             },
             getDroppedFood: function (color) {
                 let key = 'drop_' + color; if (this.cache[key]) return this.cache[key];
-                const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const r = 32;
-                const gG = cx.createRadialGradient(r, r, r * 0.15, r, r, r); gG.addColorStop(0, 'white'); gG.addColorStop(0.4, color); gG.addColorStop(1, 'rgba(0,0,0,0)'); cx.fillStyle = gG; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill(); cx.beginPath(); cx.arc(r, r, r * 0.45, 0, Math.PI * 2); cx.fillStyle = 'white'; cx.fill(); this.cache[key] = c; return c;
+                const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+                const cx = c.getContext('2d');
+                const cx0 = 32, cy0 = 32, r = 20;
+                // Clip circular
+                cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, Math.PI * 2); cx.clip();
+                // Halo duplo
+                cx.globalAlpha = 0.45; cx.fillStyle = color; cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, Math.PI * 2); cx.fill();
+                cx.globalAlpha = 0.2; cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(cx0, cy0, r * 1.2, 0, Math.PI * 2); cx.fill(); cx.globalAlpha = 1;
+                // Corpo
+                const body = cx.createRadialGradient(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.05, cx0, cy0, r);
+                body.addColorStop(0, 'rgba(255,255,255,1)'); body.addColorStop(0.25, '#fff'); body.addColorStop(0.55, color); body.addColorStop(1, shadeColor(color, -30));
+                cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill();
+                // Brilho duplo
+                cx.beginPath(); cx.arc(cx0 - r * 0.28, cy0 - r * 0.28, r * 0.25, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.95)'; cx.fill();
+                cx.beginPath(); cx.arc(cx0 + r * 0.2, cy0 + r * 0.2, r * 0.1, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.4)'; cx.fill();
+                this.cache[key] = c; return c;
             }
         };
 
         function drawStandardEyes(ctx, x, y, radius, angle, lookAngle, skinId, isBoosting = false, isEating = false) {
-            ctx.save(); ctx.translate(x, y); ctx.rotate(angle); let oD = radius * 0.55, aO = Math.PI / 3.5, pO = radius * 0.15, eR = radius * 0.4, pR = isEating ? eR * 0.8 : eR * 0.6;
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle); 
+            
+            // Olhos mais centrados e frontais para o estilo Slither puro
+            let oD = radius * 0.45; 
+            let aO = Math.PI / 4;   
+            let pO = radius * 0.18; 
+            let eR = radius * 0.45; 
+            let pR = eR * 0.55; // Pupila estática
+            
             ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = 'white';
-            if (skinId === 18) {
-                ctx.beginPath(); ctx.arc(radius * 0.25, 0, eR * 1.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(radius * 0.25 + Math.cos(lookAngle - angle) * pO, Math.sin(lookAngle - angle) * pO, pR * 1.1, 0, Math.PI * 2); ctx.fillStyle = '#111'; ctx.fill();
+            if (skinId === 18) { // Ciclope
+                ctx.beginPath(); ctx.arc(radius * 0.25, 0, eR * 1.8, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); 
+                ctx.beginPath(); ctx.arc(radius * 0.25 + Math.cos(lookAngle - angle) * pO, Math.sin(lookAngle - angle) * pO, pR * 1.1, 0, Math.PI * 2); ctx.fillStyle = '#111'; ctx.fill();
             } else {
-                let e1x = Math.cos(-aO) * oD, e1y = Math.sin(-aO) * oD; ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                let e2x = Math.cos(aO) * oD, e2y = Math.sin(aO) * oD; ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(e1x + Math.cos(lookAngle - angle) * pO, e1y + Math.sin(lookAngle - angle) * pO, pR, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(e2x + Math.cos(lookAngle - angle) * pO, e2y + Math.sin(lookAngle - angle) * pO, pR, 0, Math.PI * 2); ctx.fill();
-                if (isBoosting && !isEating) { ctx.lineWidth = radius * 0.15; ctx.strokeStyle = '#000'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(e1x - radius * 0.3, e1y - radius * 0.2); ctx.lineTo(e1x + radius * 0.2, e1y - radius * 0.05); ctx.stroke(); ctx.beginPath(); ctx.moveTo(e2x + radius * 0.3, e2y - radius * 0.2); ctx.lineTo(e2x - radius * 0.2, e2y - radius * 0.05); ctx.stroke(); }
+                let e1x = Math.cos(-aO) * oD + radius * 0.15, e1y = Math.sin(-aO) * oD; 
+                let e2x = Math.cos(aO) * oD + radius * 0.15, e2y = Math.sin(aO) * oD;
+                
+                // Globos oculares estáticos
+                ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                
+                // Pupilas
+                ctx.fillStyle = '#111';
+                let lx = Math.cos(lookAngle - angle) * pO, ly = Math.sin(lookAngle - angle) * pO;
+                ctx.beginPath(); ctx.arc(e1x + lx, e1y + ly, pR, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(e2x + lx, e2y + ly, pR, 0, Math.PI * 2); ctx.fill();
+                
+                // Sobrancelhas de turbo
+                if (isBoosting) { 
+                    ctx.lineWidth = radius * 0.12; ctx.strokeStyle = '#000'; ctx.lineCap = 'round'; 
+                    ctx.beginPath(); ctx.moveTo(e1x - eR * 0.8, e1y - eR * 0.5); ctx.lineTo(e1x + eR * 0.2, e1y - eR * 0.8); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(e2x - eR * 0.8, e2y + eR * 0.5); ctx.lineTo(e2x + eR * 0.2, e2y + eR * 0.8); ctx.stroke();
+                }
             } ctx.restore();
         }
 
@@ -1073,19 +1072,181 @@
 
         class Food {
             constructor(x, y, r, c, isD = false, eV = 2) { this.x = x; this.y = y; this.radius = r; this.color = c; this.isDropped = isD; this.value = eV; this.wO = Math.random() * Math.PI * 2; }
-            draw(ctx, time) { let dx = this.x + Math.cos(time * CONFIG.visual.velocidadeAnimacaoComida + this.wO) * CONFIG.visual.balancoComida; let dy = this.y + Math.sin(time * CONFIG.visual.velocidadeAnimacaoComida + this.wO) * CONFIG.visual.balancoComida; let img = this.isDropped ? TextureManager.getDroppedFood(this.color) : TextureManager.getFood(this.color); ctx.drawImage(img, dx - this.radius, dy - this.radius, this.radius * 2, this.radius * 2); }
+            draw(ctx, time) {
+                // Pulso de escala suave (cresce e diminui) em vez de flutuar
+                let pulse = 1.0 + Math.sin(time * CONFIG.visual.velocidadeAnimacaoComida * 2.5 + this.wO) * (this.isDropped ? 0.18 : 0.10);
+                let r = this.radius * pulse;
+                let img = this.isDropped ? TextureManager.getDroppedFood(this.color) : TextureManager.getFood(this.color);
+                ctx.drawImage(img, this.x - r, this.y - r, r * 2, r * 2);
+            }
         }
 
         class GoldenBug {
-            constructor(x, y) { this.x = x; this.y = y; this.radius = 8; this.value = 150; this.color = '#ffdf00'; this.angle = Math.random() * Math.PI * 2; this.speed = 2.0; this.wO = Math.random() * Math.PI * 2; }
-            update() { let nearest = null, minDist = 400; for (let s of snakes) { if (!s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < minDist) { minDist = d; nearest = s; } } if (nearest && minDist < 250) { let evadeAngle = Math.atan2(this.y - nearest.y, this.x - nearest.x); let diff = evadeAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2; this.angle += diff * 0.15; this.speed = 6.5; } else { this.angle += (Math.random() - 0.5) * 0.2; this.speed = 1.5; } this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) { this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); } }
-            draw(ctx, time) { let dx = this.x + Math.cos(time * 0.01 + this.wO) * 2, dy = this.y + Math.sin(time * 0.01 + this.wO) * 2; ctx.save(); ctx.translate(dx, dy); ctx.rotate(this.angle); ctx.beginPath(); ctx.arc(0, 0, this.radius * 2.5, 0, Math.PI * 2); let g = ctx.createRadialGradient(0, 0, 0, 0, 0, this.radius * 2.5); g.addColorStop(0, 'rgba(255, 223, 0, 0.6)'); g.addColorStop(1, 'rgba(255, 223, 0, 0)'); ctx.fillStyle = g; ctx.fill(); ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#ffaa00'; ctx.stroke(); let wingAngle = Math.sin(time * 0.05) * 0.6; ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; ctx.beginPath(); ctx.ellipse(-this.radius * 0.5, -this.radius * 1.2, this.radius * 1.5, this.radius * 0.5, wingAngle, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(-this.radius * 0.5, this.radius * 1.2, this.radius * 1.5, this.radius * 0.5, -wingAngle, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+            constructor(x, y) {
+                // Variação de raridade: 70% dourado, 20% verde, 10% roxo
+                let rnd = Math.random();
+                if (rnd < 0.70) { this.color = '#ffdf00'; this.glowColor = 'rgba(255,220,0,'; this.value = 150; this.rarity = 'common'; }
+                else if (rnd < 0.90) { this.color = '#00ffaa'; this.glowColor = 'rgba(0,255,150,'; this.value = 300; this.rarity = 'rare'; }
+                else { this.color = '#cc44ff'; this.glowColor = 'rgba(180,50,255,'; this.value = 500; this.rarity = 'epic'; }
+                this.x = x; this.y = y; this.radius = this.rarity === 'epic' ? 10 : this.rarity === 'rare' ? 9 : 8;
+                this.angle = Math.random() * Math.PI * 2; this.speed = 1.5; this.targetSpeed = 1.5;
+                this.wO = Math.random() * Math.PI * 2; this.isFleeing = false;
+                this.trailPoints = [];
+            }
+            update() {
+                let nearest = null, minDist = 400;
+                for (let s of snakes) { if (!s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < minDist) { minDist = d; nearest = s; } }
+                if (nearest && minDist < 250) {
+                    let evadeAngle = Math.atan2(this.y - nearest.y, this.x - nearest.x);
+                    let diff = evadeAngle - this.angle;
+                    while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
+                    this.angle += diff * 0.18;
+                    this.targetSpeed = 7.0; this.isFleeing = true;
+                } else {
+                    this.angle += (Math.random() - 0.5) * 0.2;
+                    this.targetSpeed = 1.5; this.isFleeing = false;
+                }
+                // Aceleração gradual
+                this.speed += (this.targetSpeed - this.speed) * 0.12;
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                // Rastro ao fugir
+                if (this.isFleeing && APP_SETTINGS.highGfx) {
+                    this.trailPoints.push({ x: this.x, y: this.y, life: 1.0 });
+                }
+                for (let i = this.trailPoints.length - 1; i >= 0; i--) {
+                    this.trailPoints[i].life -= 0.08;
+                    if (this.trailPoints[i].life <= 0) this.trailPoints.splice(i, 1);
+                }
+                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) {
+                    this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
+                }
+            }
+            draw(ctx, time) {
+                // Rastro dourado ao fugir
+                for (let t of this.trailPoints) {
+                    ctx.globalAlpha = t.life * 0.4;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath(); ctx.arc(t.x, t.y, this.radius * 0.5 * t.life, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle);
+
+                // Halo pulsante (épico pulsa mais intenso)
+                let pulse = 0.5 + Math.sin(time * 0.004 + this.wO) * 0.2;
+                let glowR = this.radius * (this.rarity === 'epic' ? 3.5 : 2.8);
+                let g = ctx.createRadialGradient(0, 0, 0, 0, 0, glowR);
+                g.addColorStop(0, this.glowColor + (pulse * 0.8) + ')');
+                g.addColorStop(1, this.glowColor + '0)');
+                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, glowR, 0, Math.PI * 2); ctx.fill();
+
+                // Asas — batem rápido ao fugir, devagar em repouso
+                let wingSpeed = this.isFleeing ? 0.35 : 0.06;
+                let wingAngle = Math.sin(time * wingSpeed + this.wO) * 0.7;
+                ctx.fillStyle = this.rarity === 'epic' ? 'rgba(220,180,255,0.75)' :
+                    this.rarity === 'rare' ? 'rgba(180,255,230,0.75)' : 'rgba(255,255,255,0.72)';
+                // Asa superior esquerda
+                ctx.beginPath(); ctx.ellipse(-this.radius * 0.4, -this.radius * 1.1, this.radius * 1.6, this.radius * 0.55, -Math.PI / 4 + wingAngle, 0, Math.PI * 2); ctx.fill();
+                // Asa inferior esquerda
+                ctx.beginPath(); ctx.ellipse(-this.radius * 0.4, this.radius * 1.1, this.radius * 1.3, this.radius * 0.45, Math.PI / 4 - wingAngle, 0, Math.PI * 2); ctx.fill();
+                // Asa superior direita
+                ctx.beginPath(); ctx.ellipse(this.radius * 0.4, -this.radius * 1.1, this.radius * 1.6, this.radius * 0.55, Math.PI + Math.PI / 4 - wingAngle, 0, Math.PI * 2); ctx.fill();
+                // Asa inferior direita
+                ctx.beginPath(); ctx.ellipse(this.radius * 0.4, this.radius * 1.1, this.radius * 1.3, this.radius * 0.45, Math.PI - Math.PI / 4 + wingAngle, 0, Math.PI * 2); ctx.fill();
+
+                // Corpo oval alongado na direção do movimento
+                let bodyGrad = ctx.createRadialGradient(-this.radius * 0.2, -this.radius * 0.2, 0, 0, 0, this.radius);
+                bodyGrad.addColorStop(0, 'rgba(255,255,255,0.95)');
+                bodyGrad.addColorStop(0.4, this.color);
+                bodyGrad.addColorStop(1, shadeColor(this.color, -50));
+                ctx.fillStyle = bodyGrad;
+                ctx.beginPath(); ctx.ellipse(0, 0, this.radius * 0.75, this.radius * 1.15, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = shadeColor(this.color, -60); ctx.lineWidth = 1.2; ctx.stroke();
+
+                // Olhinhos
+                ctx.fillStyle = '#111';
+                ctx.beginPath(); ctx.arc(-this.radius * 0.28, -this.radius * 0.75, this.radius * 0.18, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(this.radius * 0.28, -this.radius * 0.75, this.radius * 0.18, 0, Math.PI * 2); ctx.fill();
+
+                // Antenas
+                ctx.strokeStyle = shadeColor(this.color, -30); ctx.lineWidth = 1; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(-this.radius * 0.2, -this.radius); ctx.quadraticCurveTo(-this.radius * 0.8, -this.radius * 1.8, -this.radius * 0.5, -this.radius * 2.2); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(this.radius * 0.2, -this.radius); ctx.quadraticCurveTo(this.radius * 0.8, -this.radius * 1.8, this.radius * 0.5, -this.radius * 2.2); ctx.stroke();
+                // Bolinhas nas antenas
+                ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(-this.radius * 0.5, -this.radius * 2.2, this.radius * 0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(this.radius * 0.5, -this.radius * 2.2, this.radius * 0.2, 0, Math.PI * 2); ctx.fill();
+
+                ctx.restore();
+            }
         }
 
         class Firefly {
-            constructor() { let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * 2 * Math.PI; this.x = WORLD_CENTER + r * Math.cos(t); this.y = WORLD_CENTER + r * Math.sin(t); this.radius = 3 + Math.random() * 3; this.angle = Math.random() * Math.PI * 2; this.speed = 1.0; this.color = '#fff'; this.offset = Math.random() * 100; }
-            update() { let dX = 0, dY = 0, count = 0; for (let s of snakes) { if (!s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < CONFIG.visual.distanciaFugaVagalumes) { dX += s.x; dY += s.y; count++; } } if (count > 0) { let away = Math.atan2(this.y - (dY / count), this.x - (dX / count)); let diff = away - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2; this.angle += diff * 0.15; this.speed = 4.5; } else { this.angle += (Math.random() - 0.5) * 0.1; this.speed = 1.2; } this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); }
-            draw(ctx, time) { let p = Math.sin(time * 0.003 + this.offset), cR = Math.max(1, this.radius + p); ctx.beginPath(); ctx.arc(this.x, this.y, cR * 4, 0, Math.PI * 2); let g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, cR * 4); g.addColorStop(0, 'rgba(255,255,255,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fill(); }
+            constructor() {
+                let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * 2 * Math.PI;
+                this.x = WORLD_CENTER + r * Math.cos(t);
+                this.y = WORLD_CENTER + r * Math.sin(t);
+                this.radius = 1.5 + Math.random() * 2;
+                this.angle = Math.random() * Math.PI * 2;
+                this.speed = 1.0; this.targetSpeed = 1.0;
+                this.offset = Math.random() * Math.PI * 2;
+                this.blinkSpeed = 0.002 + Math.random() * 0.005; // variação de frequência
+                // Cor variada: branco, azul-claro, verde-limão
+                let colorRnd = Math.random();
+                if (colorRnd < 0.55) { this.color = '255,255,255'; }
+                else if (colorRnd < 0.82) { this.color = '140,220,255'; }
+                else { this.color = '180,255,140'; }
+            }
+            update() {
+                let dX = 0, dY = 0, count = 0;
+                for (let s of snakes) {
+                    if (!s.alive) continue;
+                    let d = Math.hypot(s.x - this.x, s.y - this.y);
+                    if (d < CONFIG.visual.distanciaFugaVagalumes) { dX += s.x; dY += s.y; count++; }
+                }
+                if (count > 0) {
+                    let away = Math.atan2(this.y - (dY / count), this.x - (dX / count));
+                    let diff = away - this.angle;
+                    while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
+                    this.angle += diff * 0.15;
+                    this.targetSpeed = 4.5;
+                } else {
+                    this.angle += (Math.random() - 0.5) * 0.1;
+                    this.targetSpeed = 1.2;
+                }
+                // Aceleração gradual
+                this.speed += (this.targetSpeed - this.speed) * 0.08;
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER)
+                    this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
+            }
+            draw(ctx, time) {
+                // Piscar com frequência própria de cada vagalume
+                let blink = Math.sin(time * this.blinkSpeed + this.offset);
+                let brightness = Math.max(0, blink); // só brilha na metade positiva do ciclo
+                if (brightness < 0.05) return; // apagado — não desenha nada
+
+                let cR = Math.max(0.8, this.radius * (0.6 + brightness * 0.8));
+
+                // Halo de brilho
+                let g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, cR * 5);
+                g.addColorStop(0, `rgba(${this.color},${brightness * 0.5})`);
+                g.addColorStop(1, `rgba(${this.color},0)`);
+                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, cR * 5, 0, Math.PI * 2); ctx.fill();
+
+                // Corpinho oval
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle);
+                ctx.globalAlpha = 0.5 + brightness * 0.5;
+                ctx.fillStyle = `rgb(${this.color})`;
+                ctx.beginPath(); ctx.ellipse(0, 0, cR * 1.4, cR * 0.8, 0, 0, Math.PI * 2); ctx.fill();
+                // Barriga brilhante
+                ctx.fillStyle = `rgba(255,255,255,${brightness * 0.9})`;
+                ctx.beginPath(); ctx.arc(0, 0, cR * 0.45, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
         }
 
         class Snake {
@@ -1096,20 +1257,83 @@
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 this.segments = []; this.trails = []; this.eatTimer = 0;
-                for (let i = 0; i < this.targetLength; i++) this.segments.push({ x: x, y: y });
+                // Inicializar segmentos espalhados atrás da cabeça — o taper fica visível desde o início
+                let spc = this.conf.espessuraInicial * CONFIG.cobra.distanciaGomos;
+                for (let i = 0; i < this.targetLength; i++) {
+                    this.segments.push({
+                        x: x - Math.cos(this.angle) * spc * i,
+                        y: y - Math.sin(this.angle) * spc * i
+                    });
+                }
             }
             updateAI() {
+                // Personalidade única por nome: 0=caçador, 1=covarde, 2=rei agressivo, 3=explorador
+                if (this.aiPersonality === undefined) {
+                    const aggressive = ["Rei", "Titã", "Guardião", "Mago"];
+                    const coward = ["Vila", "Milagre", "Helena"];
+                    if (this.isKing) this.aiPersonality = 2;
+                    else if (aggressive.includes(this.name)) this.aiPersonality = 0;
+                    else if (coward.includes(this.name)) this.aiPersonality = 1;
+                    else this.aiPersonality = Math.floor(Math.random() * 4);
+                }
+                // Re-avaliar personalidade do rei dinamicamente
+                if (this.isKing) this.aiPersonality = 2;
+
                 let danger = false, evadeAngle = 0;
                 for (let other of snakes) {
                     if (other === this || !other.alive) continue;
-                    if (Math.hypot(other.x - this.x, other.y - this.y) < this.radius * 12) {
-                        for (let k = 0; k < other.segments.length; k += 10) {
-                            if (Math.hypot(other.segments[k].x - this.x, other.segments[k].y - this.y) < this.radius * 6) { danger = true; evadeAngle = Math.atan2(this.y - other.segments[k].y, this.x - other.segments[k].x); break; }
+                    let threatRadius = this.aiPersonality === 1 ? 18 : 12; // covarde deteta ameaças de longe
+                    if (Math.hypot(other.x - this.x, other.y - this.y) < this.radius * threatRadius) {
+                        for (let k = 0; k < other.segments.length; k += 8) {
+                            if (Math.hypot(other.segments[k].x - this.x, other.segments[k].y - this.y) < this.radius * 7) {
+                                danger = true; evadeAngle = Math.atan2(this.y - other.segments[k].y, this.x - other.segments[k].x); break;
+                            }
                         }
                     } if (danger) break;
                 }
-                if (danger) { this.targetAngle = evadeAngle; this.isBoosting = true; }
-                else { this.isBoosting = false; if (frameCount % 30 === 0) { let nearest = null, minDist = 700; for (let f of foods) { let d = Math.hypot(f.x - this.x, f.y - this.y); if (d < minDist) { minDist = d; nearest = f; } } if (nearest) this.targetAngle = Math.atan2(nearest.y - this.y, nearest.x - this.x); else if (Math.random() < 0.2) this.targetAngle += (Math.random() - 0.5) * 2; } }
+
+                if (danger) {
+                    if (this.aiPersonality === 2) {
+                        // Rei agressivo: não foge, tenta flanquear
+                        this.targetAngle = evadeAngle + Math.PI * 0.6;
+                        this.isBoosting = this.score > 200;
+                    } else if (this.aiPersonality === 0) {
+                        // Caçador: foge só se for muito menor, senão avança
+                        let nearEnemy = snakes.find(s => s !== this && s.alive && Math.hypot(s.x - this.x, s.y - this.y) < this.radius * 12);
+                        if (nearEnemy && nearEnemy.score > this.score * 1.5) { this.targetAngle = evadeAngle; this.isBoosting = true; }
+                        else { this.targetAngle = evadeAngle + Math.PI; this.isBoosting = this.score > 100; }
+                    } else {
+                        this.targetAngle = evadeAngle; this.isBoosting = true;
+                    }
+                } else {
+                    this.isBoosting = false;
+                    let updateInterval = this.aiPersonality === 3 ? 45 : 25; // explorador muda direção menos
+                    if (frameCount % updateInterval === 0) {
+                        if (this.aiPersonality === 2 && player && player.alive) {
+                            // Rei: persegue o jogador se perto
+                            let dToPlayer = Math.hypot(player.x - this.x, player.y - this.y);
+                            if (dToPlayer < 1800) { this.targetAngle = Math.atan2(player.y - this.y, player.x - this.x); this.isBoosting = dToPlayer < 800 && this.score > player.score * 0.7; }
+                            else { let nearest = null, minDist = 900; for (let f of foods) { let d = Math.hypot(f.x - this.x, f.y - this.y); if (d < minDist) { minDist = d; nearest = f; } } if (nearest) this.targetAngle = Math.atan2(nearest.y - this.y, nearest.x - this.x); }
+                        } else if (this.aiPersonality === 0) {
+                            // Caçador: busca comida grande ou bots pequenos
+                            let bestTarget = null, bestScore = -1;
+                            for (let f of foods) { let d = Math.hypot(f.x - this.x, f.y - this.y); let s = f.value / Math.max(1, d); if (s > bestScore) { bestScore = s; bestTarget = { x: f.x, y: f.y }; } }
+                            for (let s of snakes) { if (s === this || !s.alive || s.score > this.score * 0.8) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < 600 && s.score / d > bestScore * 0.5) bestTarget = { x: s.x, y: s.y }; }
+                            if (bestTarget) this.targetAngle = Math.atan2(bestTarget.y - this.y, bestTarget.x - this.x);
+                            else if (Math.random() < 0.15) this.targetAngle += (Math.random() - 0.5) * 1.2;
+                        } else if (this.aiPersonality === 3) {
+                            // Explorador: serpenteia em padrão diferente
+                            let nearest = null, minDist = 1200; for (let f of foods) { let d = Math.hypot(f.x - this.x, f.y - this.y); if (d < minDist) { minDist = d; nearest = f; } }
+                            if (nearest) this.targetAngle = Math.atan2(nearest.y - this.y, nearest.x - this.x) + Math.sin(frameCount * 0.03) * 0.4;
+                            else this.targetAngle += (Math.random() - 0.5) * 1.5;
+                        } else {
+                            // Padrão: vai para comida próxima
+                            let nearest = null, minDist = 700; for (let f of foods) { let d = Math.hypot(f.x - this.x, f.y - this.y); if (d < minDist) { minDist = d; nearest = f; } }
+                            if (nearest) this.targetAngle = Math.atan2(nearest.y - this.y, nearest.x - this.x);
+                            else if (Math.random() < 0.2) this.targetAngle += (Math.random() - 0.5) * 2;
+                        }
+                    }
+                }
                 if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER - 600) this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
             }
             update() {
@@ -1210,13 +1434,50 @@
                     } ctx.globalAlpha = 1.0;
                 }
 
-                for (let i = this.segments.length - 1; i >= 0; i--) ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), this.segments[i].x - this.radius, this.segments[i].y - this.radius, this.radius * 2, this.radius * 2);
-                ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+                // Renderização: corpo liso como um cilindro (estilo slither original)
+                const totalSegs = this.segments.length;
+                for (let i = totalSegs - 1; i >= 0; i--) {
+                    let seg = this.segments[i];
+                    let r = Math.max(1.5, this.radius);
+                    ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), seg.x - r, seg.y - r, r * 2, r * 2);
+                }
+                // Cabeça — agora com o mesmo raio do corpo para formato cilíndrico contínuo
+                let headR = this.radius;
+                ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - headR, this.y - headR, headR * 2, headR * 2);
                 let look = (joystickActive && this.isPlayer) ? joystickAngle : this.angle;
-                drawStandardEyes(ctx, this.x, this.y, this.radius, this.angle, look, this.skinId, this.isBoosting, this.eatTimer > 0);
+                drawStandardEyes(ctx, this.x, this.y, headR, this.angle, look, this.skinId, this.isBoosting, this.eatTimer > 0);
 
-                ctx.save(); ctx.fillStyle = this.isPlayer ? '#ffdf00' : 'rgba(255, 255, 255, 0.5)'; ctx.font = '800 12px Poppins'; ctx.textAlign = 'center'; ctx.fillText(this.name, this.x, this.y - this.radius - 20);
-                if (this.isKing) { ctx.font = '22px Arial'; ctx.fillText('👑', this.x, this.y - this.radius - 38); } ctx.restore();
+                ctx.save(); ctx.fillStyle = this.isPlayer ? '#ffdf00' : 'rgba(255, 255, 255, 0.5)'; ctx.font = '800 12px Poppins'; ctx.textAlign = 'center'; ctx.fillText(this.name, this.x, this.y - headR - 20);
+                if (this.isKing) {
+                    let now = performance.now();
+                    let bob = Math.sin(now * 0.004) * 3;
+                    let cx = this.x, cy = this.y - headR - 52 + bob;
+                    let cr = 13;
+                    // Brilho pulsante
+                    let glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr * 2.5);
+                    glow.addColorStop(0, `rgba(255,223,0,${0.35 + Math.sin(now * 0.006) * 0.15})`);
+                    glow.addColorStop(1, 'rgba(255,223,0,0)');
+                    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, cr * 2.5, 0, Math.PI * 2); ctx.fill();
+                    // Coroa desenhada vetorialmente
+                    ctx.fillStyle = '#ffdf00';
+                    ctx.strokeStyle = '#cc9900';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - cr, cy + cr * 0.5);
+                    ctx.lineTo(cx - cr, cy - cr * 0.3);
+                    ctx.lineTo(cx - cr * 0.45, cy + cr * 0.1);
+                    ctx.lineTo(cx, cy - cr);
+                    ctx.lineTo(cx + cr * 0.45, cy + cr * 0.1);
+                    ctx.lineTo(cx + cr, cy - cr * 0.3);
+                    ctx.lineTo(cx + cr, cy + cr * 0.5);
+                    ctx.closePath(); ctx.fill(); ctx.stroke();
+                    // Joias pequenas nos 3 picos
+                    let gems = [[cx, cy - cr - 3], [cx - cr - 2, cy - cr * 0.3 - 2], [cx + cr + 2, cy - cr * 0.3 - 2]];
+                    let gemColors = ['#ff4444', '#44aaff', '#44ff88'];
+                    for (let g = 0; g < gems.length; g++) {
+                        ctx.fillStyle = gemColors[g]; ctx.beginPath(); ctx.arc(gems[g][0], gems[g][1], 2.5, 0, Math.PI * 2); ctx.fill();
+                    }
+                } ctx.restore();
             }
         }
 
@@ -1277,8 +1538,23 @@
             // Lógica Core de Atualização (Roda SEMPRE, mesmo no menu, para o Fundo Animado)
             if (gameState === 'playing' && player && player.alive) {
                 player.isBoosting = isMouseDown; if (frameCount % 60 === 0) PLAYER_STATS.totalTime++;
-                camera.x += (player.x - camera.x) * 0.1; camera.y += (player.y - camera.y) * 0.1;
-                let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc']; camera.zoom += (Math.max(zV.minimo, zV.inicial - Math.pow(player.score, 0.4) * zV.fatorAfastamento) * (player.isBoosting ? 0.94 : 1) - camera.zoom) * 0.05;
+
+                // 1. LOOK-AHEAD: câmera antecipa a direção do movimento
+                let lookAheadStrength = player.isBoosting ? 120 : 75;
+                let targetCamX = player.x + Math.cos(player.angle) * lookAheadStrength;
+                let targetCamY = player.y + Math.sin(player.angle) * lookAheadStrength;
+                let camLerp = player.isBoosting ? 0.10 : 0.07;
+                camera.x += (targetCamX - camera.x) * camLerp;
+                camera.y += (targetCamY - camera.y) * camLerp;
+
+                // 2. ZOOM BASEADO NO TAMANHO REAL (radius), não no score
+                let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc'];
+                let sizeZoom = Math.max(zV.minimo, zV.inicial - (player.radius - (IS_MOBILE_CLIENT ? CONFIG.cobra.mobile.espessuraInicial : CONFIG.cobra.pc.espessuraInicial)) * 0.028);
+
+                // 3. TURBO EMPURRA CÂMERA PARA FRENTE — zoom out extra ao turbinar
+                let turboZoomMult = player.isBoosting ? 0.88 : 1.0;
+                let targetZoom = sizeZoom * turboZoomMult;
+                camera.zoom += (targetZoom - camera.zoom) * 0.06;
             } else if (gameState === 'menu') {
                 // CÂMARA CINEMÁTICA NO MENU
                 camera.x = WORLD_CENTER + Math.cos(time * 0.0001) * 1500;
@@ -1342,15 +1618,7 @@
             frameCount++; requestAnimationFrame(gameLoop);
         }
 
-        // Configurações UI Toggle
-        UI.btnAudio.addEventListener('click', (e) => { APP_SETTINGS.audio = !APP_SETTINGS.audio; e.target.innerText = APP_SETTINGS.audio ? 'ON' : 'OFF'; e.target.classList.toggle('active'); });
-        UI.btnGfx.addEventListener('click', (e) => { APP_SETTINGS.highGfx = !APP_SETTINGS.highGfx; e.target.innerText = APP_SETTINGS.highGfx ? 'ALTOS' : 'LEVE'; e.target.classList.toggle('active'); });
-        UI.btnUi.addEventListener('click', (e) => {
-            if (APP_SETTINGS.uiOpac === 'forte') { APP_SETTINGS.uiOpac = 'suave'; e.target.innerText = 'SUAVE'; e.target.classList.remove('active'); UI.joyB.style.opacity = '0.3'; UI.boost.style.opacity = '0.3'; }
-            else { APP_SETTINGS.uiOpac = 'forte'; e.target.innerText = 'FORTE'; e.target.classList.add('active'); UI.joyB.style.opacity = '1'; UI.boost.style.opacity = '1'; }
-        });
-        UI.setBtn.addEventListener('click', () => { UI.setMod.classList.toggle('hidden'); UI.setBtn.style.transform = UI.setMod.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'; });
-        UI.closeSet.addEventListener('click', () => { UI.setMod.classList.add('hidden'); UI.setBtn.style.transform = 'rotate(0deg)'; });
+
 
         // Compartilhar Social
         UI.share.addEventListener('click', () => {
@@ -1407,6 +1675,9 @@
 
         // Boot Inicial (Arranque do Simulador de Fundo)
         resize(); updateMissionsUI();
+        // Restaurar nick guardado
+        UI.nick.value = localStorage.getItem('serpente_nick') || '';
+        UI.nick.addEventListener('input', () => localStorage.setItem('serpente_nick', UI.nick.value.trim()));
         for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(100)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
         spawnFood(CONFIG.mundo.quantidadeComida);
         for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
