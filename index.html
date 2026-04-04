@@ -1467,10 +1467,10 @@
                     }
                 }
 
-                for (let i = goldenBugs.length - 1; i >= 0; i--) {
-                    let b = goldenBugs[i], d2 = (this.x - b.x) ** 2 + (this.y - b.y) ** 2;
+                for (let i = butterflies.length - 1; i >= 0; i--) {
+                    let b = butterflies[i], d2 = (this.x - b.x) ** 2 + (this.y - b.y) ** 2;
                     if (d2 < (this.radius + b.radius + 15) ** 2) {
-                        this.score += b.value; this.eatTimer = 30; goldenBugs.splice(i, 1); createExplosion(b.x, b.y, '#ffdf00', 15);
+                        this.score += b.value; this.eatTimer = 30; butterflies.splice(i, 1); createExplosion(b.x, b.y, '#ffdf00', 15);
                         if (this.isPlayer) { AudioSys.play('eat'); PLAYER_STATS.totalFood += 5; }
                     }
                 }
