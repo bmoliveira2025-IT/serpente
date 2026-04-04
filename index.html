@@ -881,6 +881,14 @@
                     velocidadeBase: 3.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 8.5        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
+                bots: {
+                    espessuraInicial: 12,       // (Recomendado: 10 a 18) Grossura inicial dos Bots.
+                    espessuraMaxima: 30,        // (Recomendado: 25 a 45) Tamanho máximo que um Bot pode atingir.
+                    comprimentoInicial: 16,     // (Recomendado: 10 a 30) Quantos gomos um Bot tem ao nascer.
+                    comprimentoMaximo: 350,     // (⚠️ Limite: 500) Máximo de gomos para Bots (afeta performance).
+                    velocidadeBase: 3.5,        // (Recomendado: 2.5 a 5.0) Velocidade de cruzeiro dos Bots.
+                    velocidadeTurbo: 9.0        // (Recomendado: 7.0 a 12.0) Velocidade de fuga/caça dos Bots.
+                },
                 // Variáveis Comuns a todas as plataformas:
                 distanciaGomos: 0.22,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.22 é ideal).
                 pontosParaEngrossar: 130,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
@@ -1341,7 +1349,8 @@
         class Snake {
             constructor(x, y, n, sI, isP = false, startScore = 40) {
                 this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
-                this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle; this.conf = IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc;
+                this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle;
+                this.conf = isP ? (IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc) : CONFIG.cobra.bots;
                 this.speed = this.conf.velocidadeBase; this.isBoosting = false; this.score = startScore;
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
