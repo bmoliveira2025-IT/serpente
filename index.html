@@ -991,7 +991,30 @@
         };
 
         function getRandomPosInCircle(p = 50) { let r = Math.sqrt(Math.random()) * (WORLD_CENTER - p), t = Math.random() * 2 * Math.PI; return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) }; }
-        function getSafeSpawnPos(minD) { let p, safe = false, att = 0; while (!safe && att < 50) { p = getRandomPosInCircle(300); safe = true; if (player && player.alive && Math.hypot(player.x - p.x, player.y - p.y) < minD) safe = false; att++; } return p; }
+        function getSafeSpawnPos(minD) {
+            let p, safe = false, att = 0;
+            while (!safe && att < 100) {
+                p = getRandomPosInCircle(300);
+                safe = true;
+                // Gradualmente reduz a exigência se não encontrar espaço após muitas tentativas
+                let checkD = (att > 80) ? minD * 0.4 : (att > 50) ? minD * 0.7 : minD;
+                for (let s of snakes) {
+                    if (!s.alive) continue;
+                    // Verifica distância da cabeça
+                    let d = Math.hypot(s.x - p.x, s.y - p.y);
+                    if (d < checkD) { safe = false; break; }
+                    // Verifica segmentos do corpo (amostrado para não pesar processamento)
+                    for (let i = 10; i < s.segments.length; i += 20) {
+                        if (Math.hypot(s.segments[i].x - p.x, s.segments[i].y - p.y) < checkD * 0.6) {
+                            safe = false; break;
+                        }
+                    }
+                    if (!safe) break;
+                }
+                att++;
+            }
+            return p;
+        }
         function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(20); foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)])); } }
         function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / 3); for (let i = 0; i < amount; i++) particles.push(new Particle(x, y, color, Math.random() * 5 + 2)); }
         function getRandomBotScore() { const r = Math.random(); if (r < 0.5) return Math.floor(40 + Math.random() * 150); if (r < 0.8) return Math.floor(200 + Math.random() * 800); if (r < 0.95) return Math.floor(1000 + Math.random() * 2000); return Math.floor(3000 + Math.random() * 5000); }
@@ -1677,7 +1700,10 @@
             AudioSys.init(); await enterFullscreen();
             if (player) { let idx = snakes.indexOf(player); if (idx > -1) snakes.splice(idx, 1); } // Limpa jogador antigo se houver
             playerKills = 0; currentEvo = -1;
-            player = new Snake(camera.x, camera.y, UI.nick.value.trim() || "LENDA", skinIndex, true); snakes.push(player);
+            const spawn = getSafeSpawnPos(1200);
+            player = new Snake(spawn.x, spawn.y, UI.nick.value.trim() || "LENDA", skinIndex, true);
+            camera.x = spawn.x; camera.y = spawn.y; // Sincroniza câmara para evitar "pulo" no início
+            snakes.push(player);
             gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
             UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
             if (IS_MOBILE_CLIENT) { UI.ctrls.style.display = 'block'; UI.ctrls.style.opacity = '1'; }
@@ -1719,7 +1745,7 @@
         // Restaurar nick guardado
         UI.nick.value = localStorage.getItem('serpente_nick') || '';
         UI.nick.addEventListener('input', () => localStorage.setItem('serpente_nick', UI.nick.value.trim()));
-        for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(100)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
+        for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(800)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
         spawnFood(CONFIG.mundo.quantidadeComida);
         for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
         requestAnimationFrame(gameLoop);
