@@ -870,7 +870,7 @@
                     espessuraMaxima: 30,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
                     comprimentoInicial: 15,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
                     comprimentoMaximo: 350,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
-                    velocidadeBase: 3.6,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
+                    velocidadeBase: 3.9,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
                     velocidadeTurbo: 9.8        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
@@ -878,7 +878,7 @@
                     espessuraMaxima: 28,        // (Recomendado: 20 a 35) Limite de grossura em Telemóveis.
                     comprimentoInicial: 14,     // (Recomendado: 10 a 30) Comprimento inicial mais curto no Mobile.
                     comprimentoMaximo: 360,     // (⚠️ Limite: 500) Máximo no mobile para evitar sobreaquecimento do aparelho.
-                    velocidadeBase: 3.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeBase: 4.0,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 8.5        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 bots: {
@@ -893,7 +893,8 @@
                 distanciaGomos: 0.22,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.22 é ideal).
                 pontosParaEngrossar: 130,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
                 pontosParaCrescer: 4,          // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
-                custoDoTurbo: 1.5               // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
+                custoDoTurbo: 1.5,              // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
+                pontosIniciais: 40               // (Recomendado: 10 a 100) Todos nascem iguais para um crescimento natural e justo.
             },
 
             // 🔍 2. CONFIGURAÇÕES DA CÂMARA (Visão do Jogador)
@@ -916,6 +917,17 @@
                 quantidadeBots: 99,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
                 quantidadeComida: 6500,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
                 quantidadeInsetosDourados: 20,  // Cantidade de "Borboletas" exuberantes ativas.
+                distribuicaoBots: {
+                    // Probabilidade de cada categoria nascer (Soma deve ser 1.0)
+                    probabilidades: { pequeno: 0.50, medio: 0.30, grande: 0.15, gigante: 0.05 },
+                    // Intervalo de Pontuação [min, max] para cada categoria
+                    pontos: {
+                        pequeno: [40, 190],
+                        medio: [200, 1000],
+                        grande: [1000, 3000],
+                        gigante: [3000, 8000]
+                    }
+                },
                 tamanhoComidaMin: 5.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
                 tamanhoComidaMax: 8.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
                 forcaAtracao: 50,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
@@ -999,6 +1011,13 @@
         };
 
         function getRandomPosInCircle(p = 50) { let r = Math.sqrt(Math.random()) * (WORLD_CENTER - p), t = Math.random() * 2 * Math.PI; return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) }; }
+        function getRandomBotScore() {
+            const dist = CONFIG.mundo.distribuicaoBots; const r = Math.random(); let cat = 'pequeno';
+            if (r < dist.probabilidades.gigante) cat = 'gigante';
+            else if (r < dist.probabilidades.gigante + dist.probabilidades.grande) cat = 'grande';
+            else if (r < dist.probabilidades.gigante + dist.probabilidades.grande + dist.probabilidades.medio) cat = 'medio';
+            const range = dist.pontos[cat]; return range[0] + Math.random() * (range[1] - range[0]);
+        }
         function getSafeSpawnPos(minD) {
             let p, safe = false, att = 0;
             while (!safe && att < 100) {
@@ -1025,7 +1044,7 @@
         }
         function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(20); foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)])); } }
         function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / 3); for (let i = 0; i < amount; i++) particles.push(new Particle(x, y, color, Math.random() * 5 + 2)); }
-        function getRandomBotScore() { const r = Math.random(); if (r < 0.5) return Math.floor(40 + Math.random() * 150); if (r < 0.8) return Math.floor(200 + Math.random() * 800); if (r < 0.95) return Math.floor(1000 + Math.random() * 2000); return Math.floor(3000 + Math.random() * 5000); }
+
 
         // Utilitário: escurece/clareia uma cor hex ou rgb
         function shadeColor(color, amount) {
@@ -1096,54 +1115,29 @@
         function drawPremiumEyes(ctx, x, y, radius, angle, lookAngle, skinId, isBoosting = false, isEating = false) {
             ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
 
-            // Ridges Orbital (Sobrancelhas/Cavidade Ocular) para profundidade
-            ctx.globalAlpha = 0.35;
-            ctx.fillStyle = '#000';
-            let ridgeW = radius * 0.52, ridgeH = radius * 0.48;
-            let ridgeX = radius * 0.15;
-            ctx.beginPath(); ctx.ellipse(ridgeX + radius * 0.3, -radius * 0.4, ridgeW, ridgeH, -0.4, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.ellipse(ridgeX + radius * 0.3, radius * 0.4, ridgeW, ridgeH, 0.4, 0, Math.PI * 2); ctx.fill();
-            ctx.globalAlpha = 1.0;
+            // Olhos Frontais e Bem Afastados (Estilo Slither.io Icônico)
+            let eyX = radius * 0.65; // Empurrado para a frente da cabeça
+            let eyY = radius * 0.51; // Bem afastados para as laterais
+            let eyR = radius * 0.43; // Grandes e muito expressivos
+            let pupR = eyR * 0.60;
 
-            let eyX = radius * 0.42, eyY = radius * 0.4;
-            let eyR = radius * 0.45;
-            let pupR = eyR * 0.55;
-
-            // Globos Oculares (Branco com degradê suave)
-            const drawEye = (ex, ey, side) => {
-                let g = ctx.createRadialGradient(ex + side * 5, ey - 5, 0, ex, ey, eyR);
-                g.addColorStop(0, '#fff'); g.addColorStop(1, '#ddd');
-                ctx.fillStyle = g; ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = 1.2;
+            const drawEye = (ex, ey) => {
+                // Globo Ocular
+                ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.3;
                 ctx.beginPath(); ctx.arc(ex, ey, eyR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-                // Pupila (Com profundidade e Glint)
+                // Pupila Sólida (Interativa - Segue o Cursor/Joystick)
                 ctx.save();
-                let lookX = Math.cos(lookAngle - angle) * (eyR * 0.3);
-                let lookY = Math.sin(lookAngle - angle) * (eyR * 0.3);
-                
-                // Sombra da pupila
-                ctx.fillStyle = '#111';
-                ctx.beginPath(); ctx.arc(ex + lookX, ey + lookY, pupR, 0, Math.PI * 2); ctx.fill();
-                
-                // Brilho (Glint) Reflexo "L" de premium
-                ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.9;
-                ctx.beginPath(); ctx.arc(ex + lookX - pupR * 0.3, ey + lookY - pupR * 0.3, pupR * 0.25, 0, Math.PI * 2); ctx.fill();
+                let lx = Math.cos(lookAngle - angle) * (eyR * 0.45); // Aumentado para um olhar mais expressivo
+                let ly = Math.sin(lookAngle - angle) * (eyR * 0.45);
+                ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(ex + lx, ey + ly, pupR, 0, Math.PI * 2); ctx.fill();
+                // Pequeno brilho discreto que simula profundidade
+                ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.arc(ex + lx - pupR * 0.3, ey + ly - pupR * 0.3, pupR * 0.25, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
             };
 
-            if (skinId === 18) { // Ciclope: Um único olho gigante central
-                drawEye(radius * 0.4, 0, 1);
-            } else {
-                drawEye(eyX, -eyY, -1); drawEye(eyX, eyY, 1);
-            }
-            
-            // Sobrancelhas Agressivas (Só no Boost)
-            if (isBoosting) {
-                ctx.strokeStyle = '#000'; ctx.lineWidth = radius * 0.15; ctx.lineCap = 'round';
-                ctx.beginPath(); ctx.moveTo(eyX - eyR * 0.5, -eyY - eyR * 0.8); ctx.lineTo(eyX + eyR * 0.8, -eyY - eyR * 0.5); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(eyX - eyR * 0.5, eyY + eyR * 0.8); ctx.lineTo(eyX + eyR * 0.8, eyY + eyR * 0.5); ctx.stroke();
-            }
-
+            if (skinId === 18) drawEye(radius * 0.7, 0);
+            else { drawEye(eyX, -eyY); drawEye(eyX, eyY); }
             ctx.restore();
         }
 
@@ -1364,7 +1358,7 @@
         }
 
         class Snake {
-            constructor(x, y, n, sI, isP = false, startScore = 40) {
+            constructor(x, y, n, sI, isP = false, startScore = CONFIG.cobra.pontosIniciais) {
                 this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
                 this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle;
                 this.conf = isP ? (IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc) : CONFIG.cobra.bots;
@@ -1558,47 +1552,33 @@
                     let r = Math.max(1.5, this.radius);
                     ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), seg.x - r, seg.y - r, r * 2, r * 2);
                 }
-                // Renderização da Cabeça Premium (Formato de Espada/Organic)
-                let headR = this.radius;
+                // Renderização da Cabeça Unificada com o Corpo
+                let headR = this.radius * 1.1; // Cabeça levemente maior para foco visual
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
 
-                // Língua (Animação ocasional ou ao comer)
+                // Língua (Animada por baixo da cabeça)
                 if (this.eatTimer > 0 || Math.sin(frameCount * 0.1 + this.score) > 0.94) {
                     ctx.strokeStyle = '#ff4444'; ctx.lineWidth = headR * 0.15; ctx.lineCap = 'round';
                     let tLen = headR * 0.8 + Math.sin(frameCount * 0.5) * (headR * 0.4);
-                    ctx.beginPath(); ctx.moveTo(headR * 0.8, 0); ctx.lineTo(headR * 0.8 + tLen, 0);
-                    // Ponta bífida
-                    ctx.moveTo(headR * 0.8 + tLen, 0); ctx.lineTo(headR * 0.8 + tLen + 5, -3);
-                    ctx.moveTo(headR * 0.8 + tLen, 0); ctx.lineTo(headR * 0.8 + tLen + 5, 3);
+                    ctx.beginPath(); ctx.moveTo(headR * 0.6, 0); ctx.lineTo(headR * 0.6 + tLen, 0);
                     ctx.stroke();
                 }
 
-                // Sombra da cabeça para volume
-                ctx.shadowBlur = headR * 0.5; ctx.shadowColor = 'rgba(0,0,0,0.5)';
-                
-                // Shape da Cabeça (Spade Shape)
-                let headGrad = ctx.createRadialGradient(-headR * 0.2, -headR * 0.2, 0, 0, 0, headR * 1.5);
-                headGrad.addColorStop(0, this.mainColor);
-                headGrad.addColorStop(1, shadeColor(this.mainColor, -40));
-                ctx.fillStyle = headGrad;
-                
-                ctx.beginPath();
-                ctx.moveTo(headR * 1.3, 0); // Ponta do nariz
-                ctx.bezierCurveTo(headR * 1.1, -headR * 1.1, -headR * 0.5, -headR * 1.2, -headR * 0.8, -headR * 0.7); // Topo
-                ctx.lineTo(-headR * 0.8, headR * 0.7); // Base reta (conecta com corpo)
-                ctx.bezierCurveTo(-headR * 0.5, headR * 1.2, headR * 1.1, headR * 1.1, headR * 1.3, 0); // Baixo
-                ctx.fill();
-                
-                // Highlight Superior para brilho "3D"
-                ctx.shadowBlur = 0; ctx.globalAlpha = 0.2;
-                ctx.fillStyle = '#fff';
-                ctx.beginPath(); ctx.ellipse(headR * 0.3, -headR * 0.3, headR * 0.6, headR * 0.3, -0.5, 0, Math.PI * 2); ctx.fill();
-                ctx.globalAlpha = 1.0;
+                // Sombra do gomo da cabeça
+                ctx.shadowBlur = headR * 0.5; ctx.shadowColor = 'rgba(0,0,0,0.4)';
+
+                // O Gomo da Cabeça (Mesma Textura do Corpo para cor idêntica)
+                let headTex = TextureManager.getSegment(this.skin[0]);
+                ctx.drawImage(headTex, -headR, -headR, headR * 2, headR * 2);
+
                 ctx.restore();
 
-                let look = (joystickActive && this.isPlayer) ? joystickAngle : this.angle;
+                let look = this.angle;
+                if (this.isPlayer) {
+                    look = (joystickActive) ? joystickAngle : this.targetAngle;
+                }
                 drawPremiumEyes(ctx, this.x, this.y, headR, this.angle, look, this.skinId, this.isBoosting, this.eatTimer > 0);
 
                 ctx.save(); ctx.fillStyle = this.isPlayer ? '#ffdf00' : 'rgba(255, 255, 255, 0.5)'; ctx.font = '800 12px Poppins'; ctx.textAlign = 'center'; ctx.fillText(this.name, this.x, this.y - headR - 20);
@@ -1716,7 +1696,7 @@
                 camera.zoom = 0.55;
             }
 
-            if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
+            if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, CONFIG.cobra.pontosIniciais));
             if (foods.length < CONFIG.mundo.quantidadeComida) spawnFood(15);
             if (butterflies.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
@@ -1768,7 +1748,7 @@
                 if (isLocked) { mainCtx.filter = 'brightness(0.2) grayscale(1)'; }
                 for (let i = segs.length - 1; i >= 0; i--) mainCtx.drawImage(TextureManager.getSegment(act[i % act.length]), segs[i].x - rad, segs[i].y - rad, rad * 2, rad * 2);
                 mainCtx.drawImage(TextureManager.getSegment(act[0]), segs[0].x - rad, segs[0].y - rad, rad * 2, rad * 2);
-                drawStandardEyes(mainCtx, segs[0].x, segs[0].y, rad, 0, 0, skinIndex, false, false);
+                drawPremiumEyes(mainCtx, segs[0].x, segs[0].y, rad, 0, Math.sin(time * 0.001) * 0.5, skinIndex, false, false);
                 mainCtx.filter = 'none';
             }
             else if (gameState === 'playing' || gameState === 'dead') {
@@ -1841,7 +1821,7 @@
         // Restaurar nick guardado
         UI.nick.value = localStorage.getItem('serpente_nick') || '';
         UI.nick.addEventListener('input', () => localStorage.setItem('serpente_nick', UI.nick.value.trim()));
-        for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(800)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
+        for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(800)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, CONFIG.cobra.pontosIniciais));
         spawnFood(CONFIG.mundo.quantidadeComida);
         for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
         requestAnimationFrame(gameLoop);
