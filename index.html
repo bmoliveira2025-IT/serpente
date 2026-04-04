@@ -1073,6 +1073,23 @@
                 cx.fillStyle = grad; cx.fill();
                 this.cache[color] = c; return c;
             },
+            getGridPattern: function (size, color) {
+                const key = 'grid_' + size + '_' + color;
+                if (this.cache[key]) return this.cache[key];
+                const c = document.createElement('canvas');
+                const h = size * Math.sqrt(3), w = size * 1.5;
+                c.width = w * 2; c.height = h;
+                const cx = c.getContext('2d');
+                cx.strokeStyle = color; cx.lineWidth = 1;
+                const drawHex = (x, y) => {
+                    cx.beginPath(); cx.moveTo(x + size, y);
+                    for (let i = 1; i <= 6; i++) cx.lineTo(x + size * Math.cos(i * Math.PI / 3), y + size * Math.sin(i * Math.PI / 3));
+                    cx.stroke();
+                };
+                drawHex(0, 0); drawHex(w, h / 2); drawHex(w * 2, 0); drawHex(0, h);
+                const pattern = mainCtx.createPattern(c, 'repeat');
+                this.cache[key] = pattern; return pattern;
+            },
             getFood: function (color) {
                 let key = 'food_' + color; if (this.cache[key]) return this.cache[key];
                 const c = document.createElement('canvas'); c.width = 64; c.height = 64;
@@ -1467,7 +1484,12 @@
                     for (let i = EVOLUTIONS.length - 1; i >= 0; i--) {
                         if (this.score >= EVOLUTIONS[i].score && currentEvo < i) { currentEvo = i; showEvolution(EVOLUTIONS[i]); break; }
                     }
-                } else this.updateAI();
+                } else {
+                    // Otimização: Bots longe do jogador processam IA com menos frequência (Throttling)
+                    let dToPlayer = player ? Math.hypot(player.x - this.x, player.y - this.y) : 2000;
+                    let throttleRate = dToPlayer > 2000 ? 10 : (dToPlayer > 1000 ? 5 : 1);
+                    if (frameCount % throttleRate === 0) this.updateAI();
+                }
 
                 let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
                 let tS = Math.max(0.04, 0.08 - (this.radius * 0.0012)); if (this.isBoosting) tS *= 1.35;
@@ -1566,8 +1588,10 @@
                     ctx.stroke();
                 }
 
-                // Sombra do gomo da cabeça
-                ctx.shadowBlur = headR * 0.5; ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                // Sombra da cabeça (Apenas para o jogador ou rei, para poupar FPS)
+                if (this.isPlayer || this.isKing) {
+                    ctx.shadowBlur = headR * 0.5; ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                }
 
                 // O Gomo da Cabeça (Mesma Textura do Corpo para cor idêntica)
                 let headTex = TextureManager.getSegment(this.skin[0]);
@@ -1632,24 +1656,33 @@
         }
 
         function drawGrid(ctx, camX, camY, zoom) {
-            ctx.fillStyle = CONFIG.mundo.corFundo; ctx.fillRect(camX - (vpWidth / zoom) / 2, camY - (vpHeight / zoom) / 2, vpWidth / zoom, vpHeight / zoom);
-            let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, 0, WORLD_CENTER, WORLD_CENTER, WORLD_CENTER);
-            grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, WORLD_CENTER * 2, WORLD_CENTER * 2);
+            const viewportW = vpWidth / zoom, viewportH = vpHeight / zoom;
+            const startX = camX - viewportW / 2, startY = camY - viewportH / 2;
+            
+            // 1. Fundo Sólido
+            ctx.fillStyle = CONFIG.mundo.corFundo; ctx.fillRect(startX, startY, viewportW, viewportH);
+            
+            // 2. Grade Hexagonal Otimizada (Pattern Caching)
+            const size = CONFIG.mundo.tamanhoHexagono;
+            const gridPattern = TextureManager.getGridPattern(size, CONFIG.mundo.corGrade);
+            ctx.save();
+            ctx.fillStyle = gridPattern;
+            ctx.translate(0, 0); // O pattern já alinha com o mundo
+            ctx.fillRect(startX, startY, viewportW, viewportH);
+            ctx.restore();
 
-            const size = CONFIG.mundo.tamanhoHexagono; const h = size * Math.sqrt(3); const w = size * 1.5;
-            let sC = Math.floor((camX - (vpWidth / zoom) / 2) / w) - 1; let eC = Math.ceil((camX + (vpWidth / zoom) / 2) / w) + 1;
-            let sR = Math.floor((camY - (vpHeight / zoom) / 2) / h) - 1; let eR = Math.ceil((camY + (vpHeight / zoom) / 2) / h) + 1;
-
-            ctx.beginPath(); ctx.strokeStyle = CONFIG.mundo.corGrade; ctx.lineWidth = 1;
-            for (let c = sC; c <= eC; c++) {
-                for (let r = sR; r <= eR; r++) {
-                    let x = c * w, y = r * h + (c % 2 ? h / 2 : 0);
-                    ctx.moveTo(x + size, y); for (let i = 1; i <= 6; i++) ctx.lineTo(x + size * Math.cos(i * Math.PI / 3), y + size * Math.sin(i * Math.PI / 3));
-                }
+            // 3. Vinheta/Gradiente de Centro (Opcional, apenas se HighGfx)
+            if (APP_SETTINGS.highGfx) {
+                let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, 0, WORLD_CENTER, WORLD_CENTER, WORLD_CENTER);
+                grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = grad; ctx.fillRect(startX, startY, viewportW, viewportH);
             }
-            ctx.stroke();
-            ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, WORLD_CENTER, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255, 0, 0, 0.15)'; ctx.lineWidth = 30; ctx.stroke();
+            
+            // Borda da Arena (Apenas se visível)
+            if (Math.hypot(camX - WORLD_CENTER, camY - WORLD_CENTER) > WORLD_CENTER - 1500) {
+                ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, WORLD_CENTER, 0, Math.PI * 2); 
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.15)'; ctx.lineWidth = 30; ctx.stroke();
+            }
         }
 
         async function enterFullscreen() {
