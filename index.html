@@ -265,53 +265,58 @@
             justify-content: center;
             pointer-events: auto;
             z-index: 100;
-        }
-
-        /* TELA DE MORTE E BOTÕES RESPONSIVOS */
-        #death-screen h2 {
-            color: #ffdf00 !important;
-            font-size: clamp(30px, 8vw, 65px);
-            font-weight: 800;
-            text-shadow: 0 0 30px rgba(255, 223, 0, 0.4);
-            margin: 0 10px 5px 10px;
-            line-height: 1.1;
-        }
-
-        #death-msg {
-            font-size: clamp(14px, 4vw, 20px);
-            font-weight: 700;
-            color: white;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-        }
-
-        .death-stats-box {
-            padding: clamp(20px, 5vw, 40px) clamp(20px, 8vw, 80px);
-            border-radius: clamp(15px, 4vw, 30px);
-            margin-bottom: clamp(15px, 5vw, 30px);
-            text-align: center;
-            border-color: #ffdf00;
-            background: rgba(0, 0, 0, 0.8);
-            width: 85%;
-            max-width: 450px;
+            gap: clamp(10px, 2.5vh, 25px);
+            padding: 20px;
             box-sizing: border-box;
         }
 
+        #death-screen h2 {
+            color: #ffdf00 !important;
+            font-size: clamp(28px, 7vw, 65px);
+            font-weight: 800;
+            text-shadow: 0 0 30px rgba(255, 223, 0, 0.4);
+            margin: 0;
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        #death-msg {
+            font-size: clamp(13px, 3.5vw, 20px);
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        .death-stats-box {
+            padding: clamp(15px, 4vh, 40px) clamp(20px, 6vw, 80px);
+            border-radius: clamp(15px, 4vw, 30px);
+            text-align: center;
+            border: 1px solid rgba(255, 223, 0, 0.3);
+            background: rgba(0, 0, 0, 0.85);
+            width: 95%;
+            max-width: 450px;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
         #death-length {
-            font-size: clamp(40px, 12vw, 75px);
+            font-size: clamp(38px, 10vh, 75px);
             font-weight: 800;
             color: #ffdf00;
             text-shadow: 0 0 20px rgba(255, 223, 0, 0.5);
             line-height: 1.2;
-            margin: 5px 0;
+            margin: 2px 0;
         }
 
         /* Botões lado a lado */
         .btn-row {
             display: flex;
-            gap: 15px;
-            width: 85%;
-            max-width: 350px;
+            gap: 12px;
+            width: 95%;
+            max-width: 380px;
         }
 
         .btn-half {
@@ -686,6 +691,36 @@
         .hidden {
             display: none !important;
         }
+
+        /* AJUSTES PARA TELAS CURTAS (LANDSCAPE MOBILE) */
+        @media (max-height: 480px) {
+            #death-screen {
+                gap: 8px;
+                padding: 10px;
+            }
+
+            .death-stats-box {
+                padding: 10px 20px;
+                border-radius: 15px;
+            }
+
+            #death-length {
+                font-size: 32px;
+            }
+
+            .btn-half {
+                padding: 10px 0;
+            }
+
+            #death-screen h2 {
+                font-size: 24px;
+            }
+
+            #death-msg {
+                font-size: 11px;
+                letter-spacing: 1px;
+            }
+        }
     </style>
 </head>
 
@@ -834,15 +869,15 @@
                     espessuraInicial: 18,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
                     espessuraMaxima: 30,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
                     comprimentoInicial: 15,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
-                    comprimentoMaximo: 400,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
+                    comprimentoMaximo: 350,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
                     velocidadeBase: 3.6,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
                     velocidadeTurbo: 9.8        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
-                    espessuraInicial: 13,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
+                    espessuraInicial: 11,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
                     espessuraMaxima: 28,        // (Recomendado: 20 a 35) Limite de grossura em Telemóveis.
                     comprimentoInicial: 14,     // (Recomendado: 10 a 30) Comprimento inicial mais curto no Mobile.
-                    comprimentoMaximo: 380,     // (⚠️ Limite: 500) Máximo no mobile para evitar sobreaquecimento do aparelho.
+                    comprimentoMaximo: 360,     // (⚠️ Limite: 500) Máximo no mobile para evitar sobreaquecimento do aparelho.
                     velocidadeBase: 3.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 8.5        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
@@ -870,11 +905,11 @@
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
                 tamanhoRaio: 7500,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
-                quantidadeBots: 90,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
+                quantidadeBots: 99,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
                 quantidadeComida: 9500,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
-                quantidadeInsetosDourados: 5,  // (Recomendado: 5 a 30) Quantidade de "Moscas Douradas" ativas no mapa ao mesmo tempo.
+                quantidadeInsetosDourados: 15,  // (Recomendado: 5 a 30) Quantidade de "Moscas Douradas" ativas no mapa ao mesmo tempo.
                 tamanhoComidaMin: 5.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
-                tamanhoComidaMax: 9.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
+                tamanhoComidaMax: 8.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
                 forcaAtracao: 50,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
                 corGrade: 'rgba(255,255,255,0.03)', // Cor das linhas hexagonais no fundo da arena.
                 corFundo: '#050505',            // A cor do fundo (O preto "AAA" realça muito o neon do jogo).
@@ -883,7 +918,7 @@
 
             // ✨ 4. EFEITOS ESPECIAIS E AMBIENTE (Detalhes Gráficos)
             visual: {
-                balancoComida: 4.5,             // (Recomendado: 0 a 10) Efeito que faz a comida "tremer" ou flutuar ligeiramente.
+                balancoComida: 4.0,             // (Recomendado: 0 a 10) Efeito que faz a comida "tremer" ou flutuar ligeiramente.
                 velocidadeAnimacaoComida: 0.003,// (Recomendado: 0.001 a 0.01) A velocidade com que a comida vibra/pulsa.
                 quantidadeVagalumes: 100,       // (⚠️ Limite: 250) Pontos de luz branca de fundo. +250 pode causar lentidão ligeira.
                 distanciaFugaVagalumes: 280,    // (Recomendado: 100 a 500) Distância em que as luzes se assustam com a cobra e fogem.
