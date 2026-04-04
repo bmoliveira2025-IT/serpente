@@ -882,19 +882,19 @@
                     velocidadeTurbo: 8.5        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 bots: {
-                    espessuraInicial: 12,       // (Recomendado: 10 a 18) Grossura inicial dos Bots.
-                    espessuraMaxima: 30,        // (Recomendado: 25 a 45) Tamanho máximo que um Bot pode atingir.
-                    comprimentoInicial: 16,     // (Recomendado: 10 a 30) Quantos gomos um Bot tem ao nascer.
-                    comprimentoMaximo: 350,     // (⚠️ Limite: 500) Máximo de gomos para Bots (afeta performance).
-                    velocidadeBase: 3.5,        // (Recomendado: 2.5 a 5.0) Velocidade de cruzeiro dos Bots.
-                    velocidadeTurbo: 9.0        // (Recomendado: 7.0 a 12.0) Velocidade de fuga/caça dos Bots.
+                    espessuraInicial: 11,       // (Recomendado: 10 a 18) Grossura inicial dos Bots.
+                    espessuraMaxima: 28,        // (Recomendado: 25 a 45) Tamanho máximo que um Bot pode atingir.
+                    comprimentoInicial: 14,     // (Recomendado: 10 a 30) Quantos gomos um Bot tem ao nascer.
+                    comprimentoMaximo: 360,     // (⚠️ Limite: 500) Máximo de gomos para Bots (afeta performance).
+                    velocidadeBase: 3.7,        // (Recomendado: 2.5 a 5.0) Velocidade de cruzeiro dos Bots.
+                    velocidadeTurbo: 8.5        // (Recomendado: 7.0 a 12.0) Velocidade de fuga/caça dos Bots.
                 },
                 // Variáveis Comuns a todas as plataformas:
                 distanciaGomos: 0.22,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.22 é ideal).
                 pontosParaEngrossar: 130,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
-                pontosParaCrescer: 4,          // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
+                pontosParaCrescer: 3,          // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
                 custoDoTurbo: 1.5,              // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
-                pontosIniciais: 40               // (Recomendado: 10 a 100) Todos nascem iguais para um crescimento natural e justo.
+                pontosIniciais: 20               // (Recomendado: 10 a 100) Todos nascem iguais para um crescimento natural e justo.
             },
 
             // 🔍 2. CONFIGURAÇÕES DA CÂMARA (Visão do Jogador)
@@ -919,7 +919,7 @@
                 quantidadeInsetosDourados: 20,  // Cantidade de "Borboletas" exuberantes ativas.
                 distribuicaoBots: {
                     // Probabilidade de cada categoria nascer (Soma deve ser 1.0)
-                    probabilidades: { pequeno: 0.50, medio: 0.30, grande: 0.15, gigante: 0.05 },
+                    probabilidades: { pequeno: 0.100, medio: 0.00, grande: 0.00, gigante: 0.00 },
                     // Intervalo de Pontuação [min, max] para cada categoria
                     pontos: {
                         pequeno: [40, 190],
