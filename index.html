@@ -907,7 +907,7 @@
                 tamanhoRaio: 7500,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
                 quantidadeBots: 99,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
                 quantidadeComida: 9500,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
-                quantidadeInsetosDourados: 15,  // (Recomendado: 5 a 30) Quantidade de "Moscas Douradas" ativas no mapa ao mesmo tempo.
+                quantidadeInsetosDourados: 20,  // Cantidade de "Borboletas" exuberantes ativas.
                 tamanhoComidaMin: 5.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
                 tamanhoComidaMax: 8.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
                 forcaAtracao: 50,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
@@ -970,7 +970,7 @@
             }
         };
 
-        let snakes = [], foods = [], fireflies = [], particles = [], goldenBugs = [], player = null;
+        let snakes = [], foods = [], fireflies = [], particles = [], butterflies = [], player = null;
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
         let joystickActive = false, joystickAngle = 0, skinIndex = 0;
@@ -1139,106 +1139,137 @@
             }
         }
 
-        class GoldenBug {
+        class Butterfly {
             constructor(x, y) {
-                // Variação de raridade: 70% dourado, 20% verde, 10% roxo
                 let rnd = Math.random();
                 if (rnd < 0.70) { this.color = '#ffdf00'; this.glowColor = 'rgba(255,220,0,'; this.value = 150; this.rarity = 'common'; }
-                else if (rnd < 0.90) { this.color = '#00ffaa'; this.glowColor = 'rgba(0,255,150,'; this.value = 300; this.rarity = 'rare'; }
-                else { this.color = '#cc44ff'; this.glowColor = 'rgba(180,50,255,'; this.value = 500; this.rarity = 'epic'; }
-                this.x = x; this.y = y; this.radius = this.rarity === 'epic' ? 10 : this.rarity === 'rare' ? 9 : 8;
-                this.angle = Math.random() * Math.PI * 2; this.speed = 1.5; this.targetSpeed = 1.5;
+                else if (rnd < 0.90) { this.color = '#00ffaa'; this.glowColor = 'rgba(0,255,150,'; this.value = 350; this.rarity = 'rare'; }
+                else { this.color = '#cc44ff'; this.glowColor = 'rgba(180,50,255,'; this.value = 600; this.rarity = 'epic'; }
+                this.x = x; this.y = y; this.radius = this.rarity === 'epic' ? 12 : this.rarity === 'rare' ? 10 : 9;
+                this.angle = Math.random() * Math.PI * 2; this.speed = 1.8; this.targetSpeed = 1.8;
                 this.wO = Math.random() * Math.PI * 2; this.isFleeing = false;
                 this.trailPoints = [];
+                this.phase = Math.random() * Math.PI * 2;
             }
             update() {
-                let nearest = null, minDist = 400;
+                let nearest = null, minDist = 450;
                 for (let s of snakes) { if (!s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < minDist) { minDist = d; nearest = s; } }
-                if (nearest && minDist < 250) {
+                if (nearest && minDist < 300) {
                     let evadeAngle = Math.atan2(this.y - nearest.y, this.x - nearest.x);
                     let diff = evadeAngle - this.angle;
                     while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                    this.angle += diff * 0.18;
-                    this.targetSpeed = 7.0; this.isFleeing = true;
+                    this.angle += diff * 0.15;
+                    this.targetSpeed = 6.5; this.isFleeing = true;
                 } else {
-                    this.angle += (Math.random() - 0.5) * 0.2;
-                    this.targetSpeed = 1.5; this.isFleeing = false;
+                    // Movimento de borboleta: fluttering (oscilando o ângulo)
+                    this.angle += Math.sin(performance.now() * 0.002 + this.phase) * 0.05 + (Math.random() - 0.5) * 0.1;
+                    this.targetSpeed = 1.8 + Math.sin(performance.now() * 0.005 + this.phase) * 0.5;
+                    this.isFleeing = false;
                 }
-                // Aceleração gradual
-                this.speed += (this.targetSpeed - this.speed) * 0.12;
+                this.speed += (this.targetSpeed - this.speed) * 0.1;
                 this.x += Math.cos(this.angle) * this.speed;
                 this.y += Math.sin(this.angle) * this.speed;
-                // Rastro ao fugir
-                if (this.isFleeing && APP_SETTINGS.highGfx) {
-                    this.trailPoints.push({ x: this.x, y: this.y, life: 1.0 });
+
+                if (this.isFleeing || APP_SETTINGS.highGfx) {
+                    if (frameCount % 2 === 0) this.trailPoints.push({ x: this.x, y: this.y, life: 1.0, size: Math.random() * 3 + 1 });
                 }
                 for (let i = this.trailPoints.length - 1; i >= 0; i--) {
-                    this.trailPoints[i].life -= 0.08;
+                    this.trailPoints[i].life -= 0.04;
                     if (this.trailPoints[i].life <= 0) this.trailPoints.splice(i, 1);
                 }
-                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) {
+                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER - 200) {
                     this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
                 }
             }
             draw(ctx, time) {
-                // Rastro dourado ao fugir
+                // Rastro de poeira estelar (sparkles)
                 for (let t of this.trailPoints) {
-                    ctx.globalAlpha = t.life * 0.4;
+                    ctx.globalAlpha = t.life * 0.6;
                     ctx.fillStyle = this.color;
-                    ctx.beginPath(); ctx.arc(t.x, t.y, this.radius * 0.5 * t.life, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath();
+                    if (this.rarity === 'epic' && Math.random() > 0.5) {
+                        // Desenha uma pequena estrela/brilho
+                        let s = t.size * t.life;
+                        ctx.moveTo(t.x, t.y - s); ctx.lineTo(t.x + s/2, t.y - s/2); ctx.lineTo(t.x + s, t.y); ctx.lineTo(t.x + s/2, t.y + s/2);
+                        ctx.lineTo(t.x, t.y + s); ctx.lineTo(t.x - s/2, t.y + s/2); ctx.lineTo(t.x - s, t.y); ctx.lineTo(t.x - s/2, t.y - s/2);
+                    } else {
+                        ctx.arc(t.x, t.y, t.size * t.life, 0, Math.PI * 2);
+                    }
+                    ctx.fill();
                 }
                 ctx.globalAlpha = 1;
 
-                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle);
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle + Math.PI / 2); // Orienta para o movimento
 
-                // Halo pulsante (épico pulsa mais intenso)
-                let pulse = 0.5 + Math.sin(time * 0.004 + this.wO) * 0.2;
-                let glowR = this.radius * (this.rarity === 'epic' ? 3.5 : 2.8);
-                let g = ctx.createRadialGradient(0, 0, 0, 0, 0, glowR);
-                g.addColorStop(0, this.glowColor + (pulse * 0.8) + ')');
+                // Efeito de bater asas (wing flap)
+                let flap = Math.sin(time * 0.015); // Velocidade do bater de asas
+                let flapScale = 0.3 + Math.abs(flap) * 0.7;
+
+                // Brilho sob a borboleta
+                let g = ctx.createRadialGradient(0, 0, 0, 0, 0, this.radius * 3);
+                g.addColorStop(0, this.glowColor + '0.4)');
                 g.addColorStop(1, this.glowColor + '0)');
-                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, glowR, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, this.radius * 3, 0, Math.PI * 2); ctx.fill();
 
-                // Asas — batem rápido ao fugir, devagar em repouso
-                let wingSpeed = this.isFleeing ? 0.35 : 0.06;
-                let wingAngle = Math.sin(time * wingSpeed + this.wO) * 0.7;
-                ctx.fillStyle = this.rarity === 'epic' ? 'rgba(220,180,255,0.75)' :
-                    this.rarity === 'rare' ? 'rgba(180,255,230,0.75)' : 'rgba(255,255,255,0.72)';
-                // Asa superior esquerda
-                ctx.beginPath(); ctx.ellipse(-this.radius * 0.4, -this.radius * 1.1, this.radius * 1.6, this.radius * 0.55, -Math.PI / 4 + wingAngle, 0, Math.PI * 2); ctx.fill();
-                // Asa inferior esquerda
-                ctx.beginPath(); ctx.ellipse(-this.radius * 0.4, this.radius * 1.1, this.radius * 1.3, this.radius * 0.45, Math.PI / 4 - wingAngle, 0, Math.PI * 2); ctx.fill();
-                // Asa superior direita
-                ctx.beginPath(); ctx.ellipse(this.radius * 0.4, -this.radius * 1.1, this.radius * 1.6, this.radius * 0.55, Math.PI + Math.PI / 4 - wingAngle, 0, Math.PI * 2); ctx.fill();
-                // Asa inferior direita
-                ctx.beginPath(); ctx.ellipse(this.radius * 0.4, this.radius * 1.1, this.radius * 1.3, this.radius * 0.45, Math.PI - Math.PI / 4 + wingAngle, 0, Math.PI * 2); ctx.fill();
+                // Desenho das Asas (SVG Estilizado no Canvas)
+                ctx.lineWidth = 1.5;
+                ctx.lineJoin = 'round';
+                
+                // Asas Esquerdas
+                ctx.save();
+                ctx.scale(flapScale, 1);
+                this.drawWing(ctx, -1, this.color);
+                ctx.restore();
 
-                // Corpo oval alongado na direção do movimento
-                let bodyGrad = ctx.createRadialGradient(-this.radius * 0.2, -this.radius * 0.2, 0, 0, 0, this.radius);
-                bodyGrad.addColorStop(0, 'rgba(255,255,255,0.95)');
-                bodyGrad.addColorStop(0.4, this.color);
-                bodyGrad.addColorStop(1, shadeColor(this.color, -50));
-                ctx.fillStyle = bodyGrad;
-                ctx.beginPath(); ctx.ellipse(0, 0, this.radius * 0.75, this.radius * 1.15, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = shadeColor(this.color, -60); ctx.lineWidth = 1.2; ctx.stroke();
+                // Asas Direitas
+                ctx.save();
+                ctx.scale(flapScale, 1);
+                this.drawWing(ctx, 1, this.color);
+                ctx.restore();
 
-                // Olhinhos
-                ctx.fillStyle = '#111';
-                ctx.beginPath(); ctx.arc(-this.radius * 0.28, -this.radius * 0.75, this.radius * 0.18, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(this.radius * 0.28, -this.radius * 0.75, this.radius * 0.18, 0, Math.PI * 2); ctx.fill();
+                // Corpo
+                let bodyG = ctx.createLinearGradient(0, -this.radius, 0, this.radius);
+                bodyG.addColorStop(0, '#111'); bodyG.addColorStop(0.5, '#333'); bodyG.addColorStop(1, '#000');
+                ctx.fillStyle = bodyG;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.radius * 0.2, this.radius * 1.2, 0, 0, Math.PI * 2);
+                ctx.fill();
 
                 // Antenas
-                ctx.strokeStyle = shadeColor(this.color, -30); ctx.lineWidth = 1; ctx.lineCap = 'round';
-                ctx.beginPath(); ctx.moveTo(-this.radius * 0.2, -this.radius); ctx.quadraticCurveTo(-this.radius * 0.8, -this.radius * 1.8, -this.radius * 0.5, -this.radius * 2.2); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(this.radius * 0.2, -this.radius); ctx.quadraticCurveTo(this.radius * 0.8, -this.radius * 1.8, this.radius * 0.5, -this.radius * 2.2); ctx.stroke();
-                // Bolinhas nas antenas
-                ctx.fillStyle = this.color;
-                ctx.beginPath(); ctx.arc(-this.radius * 0.5, -this.radius * 2.2, this.radius * 0.2, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(this.radius * 0.5, -this.radius * 2.2, this.radius * 0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(-1, -this.radius * 0.8); ctx.quadraticCurveTo(-4, -this.radius * 1.8, -2, -this.radius * 2.2); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(1, -this.radius * 0.8); ctx.quadraticCurveTo(4, -this.radius * 1.8, 2, -this.radius * 2.2); ctx.stroke();
 
                 ctx.restore();
             }
+
+            drawWing(ctx, side, color) {
+                ctx.fillStyle = color;
+                ctx.strokeStyle = shadeColor(color, -60);
+                
+                // Asa Superior
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(side * this.radius * 3, -this.radius * 2, side * this.radius * 4, this.radius, 0, this.radius * 0.5);
+                ctx.fill(); ctx.stroke();
+
+                // Asa Inferior
+                ctx.beginPath();
+                ctx.moveTo(0, this.radius * 0.3);
+                ctx.bezierCurveTo(side * this.radius * 2.5, this.radius * 0.5, side * this.radius * 3, this.radius * 2.5, 0, this.radius * 1.2);
+                ctx.fill(); ctx.stroke();
+
+                // Detalhes Internos das Asas (Padronagem)
+                ctx.globalAlpha = 0.3;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(side * this.radius * 1.5, -this.radius * 0.5, this.radius * 0.4, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(side * this.radius * 1.2, this.radius * 0.8, this.radius * 0.3, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1;
+            }
         }
+
 
         class Firefly {
             constructor() {
@@ -1622,9 +1653,9 @@
 
             if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, getRandomBotScore()));
             if (foods.length < CONFIG.mundo.quantidadeComida) spawnFood(15);
-            if (goldenBugs.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) goldenBugs.push(new GoldenBug(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
+            if (butterflies.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
-            for (let s of snakes) s.update(); for (let b of goldenBugs) b.update();
+            for (let s of snakes) s.update(); for (let b of butterflies) b.update();
             for (let i = 0; i < snakes.length; i++) {
                 let s1 = snakes[i]; if (!s1.alive) continue;
                 for (let j = 0; j < snakes.length; j++) { let s2 = snakes[j]; if (i === j || !s2.alive) continue; let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8); for (let k = 0; k < s2.segments.length; k += 4) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } } }
@@ -1646,7 +1677,7 @@
 
             for (let ff of fireflies) { if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
             for (let f of foods) { if (Math.hypot(f.x - camera.x, f.y - camera.y) < cullingDist) f.draw(mainCtx, time); }
-            for (let b of goldenBugs) { if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
+            for (let b of butterflies) { if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
             for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
 
             let dL = [...snakes].sort((a, b) => a.score - b.score);
