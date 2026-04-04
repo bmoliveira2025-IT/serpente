@@ -914,7 +914,7 @@
             mundo: {
                 tamanhoRaio: 7500,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
                 quantidadeBots: 99,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
-                quantidadeComida: 9500,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
+                quantidadeComida: 6500,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
                 quantidadeInsetosDourados: 20,  // Cantidade de "Borboletas" exuberantes ativas.
                 tamanhoComidaMin: 5.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
                 tamanhoComidaMax: 8.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
@@ -1093,41 +1093,58 @@
             }
         };
 
-        function drawStandardEyes(ctx, x, y, radius, angle, lookAngle, skinId, isBoosting = false, isEating = false) {
+        function drawPremiumEyes(ctx, x, y, radius, angle, lookAngle, skinId, isBoosting = false, isEating = false) {
             ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
 
-            // Olhos mais centrados e frontais para o estilo Slither puro
-            let oD = radius * 0.45;
-            let aO = Math.PI / 4;
-            let pO = radius * 0.18;
-            let eR = radius * 0.45;
-            let pR = eR * 0.55; // Pupila estática
+            // Ridges Orbital (Sobrancelhas/Cavidade Ocular) para profundidade
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = '#000';
+            let ridgeW = radius * 0.52, ridgeH = radius * 0.48;
+            let ridgeX = radius * 0.15;
+            ctx.beginPath(); ctx.ellipse(ridgeX + radius * 0.3, -radius * 0.4, ridgeW, ridgeH, -0.4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(ridgeX + radius * 0.3, radius * 0.4, ridgeW, ridgeH, 0.4, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 1.0;
 
-            ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = 'white';
-            if (skinId === 18) { // Ciclope
-                ctx.beginPath(); ctx.arc(radius * 0.25, 0, eR * 1.8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(radius * 0.25 + Math.cos(lookAngle - angle) * pO, Math.sin(lookAngle - angle) * pO, pR * 1.1, 0, Math.PI * 2); ctx.fillStyle = '#111'; ctx.fill();
-            } else {
-                let e1x = Math.cos(-aO) * oD + radius * 0.15, e1y = Math.sin(-aO) * oD;
-                let e2x = Math.cos(aO) * oD + radius * 0.15, e2y = Math.sin(aO) * oD;
+            let eyX = radius * 0.42, eyY = radius * 0.4;
+            let eyR = radius * 0.45;
+            let pupR = eyR * 0.55;
 
-                // Globos oculares estáticos
-                ctx.beginPath(); ctx.arc(e1x, e1y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.beginPath(); ctx.arc(e2x, e2y, eR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            // Globos Oculares (Branco com degradê suave)
+            const drawEye = (ex, ey, side) => {
+                let g = ctx.createRadialGradient(ex + side * 5, ey - 5, 0, ex, ey, eyR);
+                g.addColorStop(0, '#fff'); g.addColorStop(1, '#ddd');
+                ctx.fillStyle = g; ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = 1.2;
+                ctx.beginPath(); ctx.arc(ex, ey, eyR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-                // Pupilas
+                // Pupila (Com profundidade e Glint)
+                ctx.save();
+                let lookX = Math.cos(lookAngle - angle) * (eyR * 0.3);
+                let lookY = Math.sin(lookAngle - angle) * (eyR * 0.3);
+                
+                // Sombra da pupila
                 ctx.fillStyle = '#111';
-                let lx = Math.cos(lookAngle - angle) * pO, ly = Math.sin(lookAngle - angle) * pO;
-                ctx.beginPath(); ctx.arc(e1x + lx, e1y + ly, pR, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(e2x + lx, e2y + ly, pR, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(ex + lookX, ey + lookY, pupR, 0, Math.PI * 2); ctx.fill();
+                
+                // Brilho (Glint) Reflexo "L" de premium
+                ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.9;
+                ctx.beginPath(); ctx.arc(ex + lookX - pupR * 0.3, ey + lookY - pupR * 0.3, pupR * 0.25, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            };
 
-                // Sobrancelhas de turbo
-                if (isBoosting) {
-                    ctx.lineWidth = radius * 0.12; ctx.strokeStyle = '#000'; ctx.lineCap = 'round';
-                    ctx.beginPath(); ctx.moveTo(e1x - eR * 0.8, e1y - eR * 0.5); ctx.lineTo(e1x + eR * 0.2, e1y - eR * 0.8); ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(e2x - eR * 0.8, e2y + eR * 0.5); ctx.lineTo(e2x + eR * 0.2, e2y + eR * 0.8); ctx.stroke();
-                }
-            } ctx.restore();
+            if (skinId === 18) { // Ciclope: Um único olho gigante central
+                drawEye(radius * 0.4, 0, 1);
+            } else {
+                drawEye(eyX, -eyY, -1); drawEye(eyX, eyY, 1);
+            }
+            
+            // Sobrancelhas Agressivas (Só no Boost)
+            if (isBoosting) {
+                ctx.strokeStyle = '#000'; ctx.lineWidth = radius * 0.15; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(eyX - eyR * 0.5, -eyY - eyR * 0.8); ctx.lineTo(eyX + eyR * 0.8, -eyY - eyR * 0.5); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(eyX - eyR * 0.5, eyY + eyR * 0.8); ctx.lineTo(eyX + eyR * 0.8, eyY + eyR * 0.5); ctx.stroke();
+            }
+
+            ctx.restore();
         }
 
         class Particle {
@@ -1198,8 +1215,8 @@
                     if (this.rarity === 'epic' && Math.random() > 0.5) {
                         // Desenha uma pequena estrela/brilho
                         let s = t.size * t.life;
-                        ctx.moveTo(t.x, t.y - s); ctx.lineTo(t.x + s/2, t.y - s/2); ctx.lineTo(t.x + s, t.y); ctx.lineTo(t.x + s/2, t.y + s/2);
-                        ctx.lineTo(t.x, t.y + s); ctx.lineTo(t.x - s/2, t.y + s/2); ctx.lineTo(t.x - s, t.y); ctx.lineTo(t.x - s/2, t.y - s/2);
+                        ctx.moveTo(t.x, t.y - s); ctx.lineTo(t.x + s / 2, t.y - s / 2); ctx.lineTo(t.x + s, t.y); ctx.lineTo(t.x + s / 2, t.y + s / 2);
+                        ctx.lineTo(t.x, t.y + s); ctx.lineTo(t.x - s / 2, t.y + s / 2); ctx.lineTo(t.x - s, t.y); ctx.lineTo(t.x - s / 2, t.y - s / 2);
                     } else {
                         ctx.arc(t.x, t.y, t.size * t.life, 0, Math.PI * 2);
                     }
@@ -1224,7 +1241,7 @@
                 // Desenho das Asas (SVG Estilizado no Canvas)
                 ctx.lineWidth = 1.5;
                 ctx.lineJoin = 'round';
-                
+
                 // Asas Esquerdas
                 ctx.save();
                 ctx.scale(flapScale, 1);
@@ -1256,7 +1273,7 @@
             drawWing(ctx, side, color) {
                 ctx.fillStyle = color;
                 ctx.strokeStyle = shadeColor(color, -60);
-                
+
                 // Asa Superior
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
@@ -1355,6 +1372,8 @@
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 this.segments = []; this.trails = []; this.eatTimer = 0;
+                this.tongueTime = 0; // Para animação da língua fixa
+
                 // Inicializar segmentos espalhados atrás da cabeça — o taper fica visível desde o início
                 let spc = this.conf.espessuraInicial * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.targetLength; i++) {
@@ -1539,11 +1558,48 @@
                     let r = Math.max(1.5, this.radius);
                     ctx.drawImage(TextureManager.getSegment(this.skin[i % this.skin.length]), seg.x - r, seg.y - r, r * 2, r * 2);
                 }
-                // Cabeça — agora com o mesmo raio do corpo para formato cilíndrico contínuo
+                // Renderização da Cabeça Premium (Formato de Espada/Organic)
                 let headR = this.radius;
-                ctx.drawImage(TextureManager.getSegment(this.skin[0]), this.x - headR, this.y - headR, headR * 2, headR * 2);
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // Língua (Animação ocasional ou ao comer)
+                if (this.eatTimer > 0 || Math.sin(frameCount * 0.1 + this.score) > 0.94) {
+                    ctx.strokeStyle = '#ff4444'; ctx.lineWidth = headR * 0.15; ctx.lineCap = 'round';
+                    let tLen = headR * 0.8 + Math.sin(frameCount * 0.5) * (headR * 0.4);
+                    ctx.beginPath(); ctx.moveTo(headR * 0.8, 0); ctx.lineTo(headR * 0.8 + tLen, 0);
+                    // Ponta bífida
+                    ctx.moveTo(headR * 0.8 + tLen, 0); ctx.lineTo(headR * 0.8 + tLen + 5, -3);
+                    ctx.moveTo(headR * 0.8 + tLen, 0); ctx.lineTo(headR * 0.8 + tLen + 5, 3);
+                    ctx.stroke();
+                }
+
+                // Sombra da cabeça para volume
+                ctx.shadowBlur = headR * 0.5; ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                
+                // Shape da Cabeça (Spade Shape)
+                let headGrad = ctx.createRadialGradient(-headR * 0.2, -headR * 0.2, 0, 0, 0, headR * 1.5);
+                headGrad.addColorStop(0, this.mainColor);
+                headGrad.addColorStop(1, shadeColor(this.mainColor, -40));
+                ctx.fillStyle = headGrad;
+                
+                ctx.beginPath();
+                ctx.moveTo(headR * 1.3, 0); // Ponta do nariz
+                ctx.bezierCurveTo(headR * 1.1, -headR * 1.1, -headR * 0.5, -headR * 1.2, -headR * 0.8, -headR * 0.7); // Topo
+                ctx.lineTo(-headR * 0.8, headR * 0.7); // Base reta (conecta com corpo)
+                ctx.bezierCurveTo(-headR * 0.5, headR * 1.2, headR * 1.1, headR * 1.1, headR * 1.3, 0); // Baixo
+                ctx.fill();
+                
+                // Highlight Superior para brilho "3D"
+                ctx.shadowBlur = 0; ctx.globalAlpha = 0.2;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.ellipse(headR * 0.3, -headR * 0.3, headR * 0.6, headR * 0.3, -0.5, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1.0;
+                ctx.restore();
+
                 let look = (joystickActive && this.isPlayer) ? joystickAngle : this.angle;
-                drawStandardEyes(ctx, this.x, this.y, headR, this.angle, look, this.skinId, this.isBoosting, this.eatTimer > 0);
+                drawPremiumEyes(ctx, this.x, this.y, headR, this.angle, look, this.skinId, this.isBoosting, this.eatTimer > 0);
 
                 ctx.save(); ctx.fillStyle = this.isPlayer ? '#ffdf00' : 'rgba(255, 255, 255, 0.5)'; ctx.font = '800 12px Poppins'; ctx.textAlign = 'center'; ctx.fillText(this.name, this.x, this.y - headR - 20);
                 if (this.isKing) {
