@@ -1778,7 +1778,12 @@
             playerKills = 0; currentEvo = -1;
             const spawn = getSafeSpawnPos(1200);
             player = new Snake(spawn.x, spawn.y, UI.nick.value.trim() || "LENDA", skinIndex, true);
-            camera.x = spawn.x; camera.y = spawn.y; // Sincroniza câmara para evitar "pulo" no início
+            // Sincronização Instantânea da Câmera (Evita "surto" de zoom ou pulo no início)
+            let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc'];
+            camera.zoom = zV.inicial;
+            camera.x = player.x + Math.cos(player.angle) * 75; // Já inicia compensando o "look-ahead"
+            camera.y = player.y + Math.sin(player.angle) * 75;
+            isMouseDown = false; // Reset de segurança do turbo
             snakes.push(player);
             gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
             UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
