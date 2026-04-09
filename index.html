@@ -558,8 +558,13 @@
         }
 
         @keyframes pulse-turbo {
-            from { box-shadow: 0 0 15px rgba(255, 223, 0, 0.4); }
-            to { box-shadow: 0 0 30px rgba(255, 223, 0, 0.7); }
+            from {
+                box-shadow: 0 0 15px rgba(255, 223, 0, 0.4);
+            }
+
+            to {
+                box-shadow: 0 0 30px rgba(255, 223, 0, 0.7);
+            }
         }
 
         #gesture-hint {
@@ -1021,8 +1026,8 @@
                     espessuraMaxima: 26,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 45,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 350,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 2.3,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
-                    velocidadeTurbo: 3.8        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
+                    velocidadeBase: 2.0,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeTurbo: 4.0        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
                 distanciaGomos: 0.07,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
@@ -1293,7 +1298,7 @@
         // ═══════════════════════════════════════════════════════════════
         const ParticlePool = {
             pool: [],
-            get: function(x, y, color, s) {
+            get: function (x, y, color, s) {
                 let p;
                 if (this.pool.length > 0) {
                     p = this.pool.pop();
@@ -1303,15 +1308,15 @@
                 }
                 return p;
             },
-            recycle: function(p) {
+            recycle: function (p) {
                 if (this.pool.length < 500) this.pool.push(p);
             }
         };
 
         function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(15, 600); foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)])); } }
-        function createExplosion(x, y, color, amount) { 
-            if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2)); 
-            for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2)); 
+        function createExplosion(x, y, color, amount) {
+            if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2));
+            for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2));
         }
 
 
@@ -1491,9 +1496,9 @@
                 this.size = 2 + Math.random() * 3;
                 this.dead = false;
             }
-            update() { 
-                this.x += this.vx; this.y += this.vy; 
-                this.life -= this.decay; 
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                this.life -= this.decay;
                 if (this.life <= 0) this.dead = true;
             }
             draw(ctx) { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; }
@@ -2269,13 +2274,13 @@
             UI.lbList.innerHTML = html;
             mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
             let sc = 70 / currentArenaRadius;
-            for (let s of act) { 
-                mCtxElement.beginPath(); 
+            for (let s of act) {
+                mCtxElement.beginPath();
                 let mX = 70 + (s.x - WORLD_CENTER) * sc;
                 let mY = 70 + (s.y - WORLD_CENTER) * sc;
-                mCtxElement.arc(mX, mY, s === player ? 4 : 1.5, 0, Math.PI * 2); 
-                mCtxElement.fillStyle = s === player ? '#fff' : 'rgba(255,255,255,0.3)'; 
-                mCtxElement.fill(); 
+                mCtxElement.arc(mX, mY, s === player ? 4 : 1.5, 0, Math.PI * 2);
+                mCtxElement.fillStyle = s === player ? '#fff' : 'rgba(255,255,255,0.3)';
+                mCtxElement.fill();
             }
         }
 
@@ -2288,7 +2293,7 @@
             // Só processa se a borda estiver perto (com margem para o Glow suave)
             if (distFromCenter + viewDiag > currentArenaRadius - 300) {
                 ctx.save();
-                
+
                 const glowWidth = 140; // Espessura da transição/suavização
                 const pulse = Math.sin(performance.now() * 0.0025) * 0.06;
                 const baseOpacity = 0.22 + pulse;
@@ -2358,11 +2363,11 @@
             const now = performance.now();
             const delta = now - lastFrameTime;
             lastFrameTime = now;
-            
+
             if (frameCount > 60) { // Espera estabilizar
                 frameTimeBuffer.push(delta);
                 if (frameTimeBuffer.length > 20) frameTimeBuffer.shift();
-                
+
                 // Se a média do frame time for > 22ms (aprox < 45fps)
                 let avg = frameTimeBuffer.reduce((a, b) => a + b, 0) / frameTimeBuffer.length;
                 if (avg > 22 && APP_SETTINGS.highGfx && !APP_SETTINGS.performanceMode) {
@@ -2466,11 +2471,11 @@
             snakes = snakes.filter(s => s.alive || s.isPlayer);
             // Partículas: limitar quantidade no mobile e usar Pool
             let maxParticles = IS_MOBILE_CLIENT ? 40 : 250;
-            for (let i = particles.length - 1; i >= 0; i--) { 
-                particles[i].update(); 
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
                 if (particles[i].dead) {
                     ParticlePool.recycle(particles[i]);
-                    particles.splice(i, 1); 
+                    particles.splice(i, 1);
                 }
             }
             if (particles.length > maxParticles) {
@@ -2487,9 +2492,9 @@
             mainCtx.scale(camera.zoom, camera.zoom); mainCtx.translate(-camera.x, -camera.y);
 
             if (APP_SETTINGS.highGfx) drawGrid(mainCtx, camera.x, camera.y, camera.zoom);
-            else { 
+            else {
                 const vW = vpWidth / camera.zoom, vH = vpHeight / camera.zoom;
-                mainCtx.fillStyle = CONFIG.mundo.corFundo; 
+                mainCtx.fillStyle = CONFIG.mundo.corFundo;
                 mainCtx.fillRect(camera.x - vW / 2, camera.y - vH / 2, vW, vH);
                 drawArenaBoundary(mainCtx, camera.x, camera.y, camera.zoom); // Garantir borda sempre visível
             }
