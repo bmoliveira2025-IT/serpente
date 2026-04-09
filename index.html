@@ -228,7 +228,8 @@
                 gap: 1px;
                 background: rgba(0, 0, 0, 0.08);
                 border-color: rgba(255, 255, 255, 0.04);
-                backdrop-filter: blur(3px);
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
             }
 
             #lb-list {
@@ -677,6 +678,8 @@
                 padding: 8px 10px;
                 gap: 5px;
                 transform: none;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
             }
 
             #missions-panel>div:first-child {
@@ -702,6 +705,17 @@
                 width: 50px;
                 height: 4px;
                 flex-shrink: 0;
+            }
+
+            /* PERFORMANCE: Desativar backdrop-filter em TODOS os painéis mobile */
+            .glass-panel,
+            .death-stats-box,
+            #nickname,
+            .btn-share,
+            #joystick-base,
+            .action-btn {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
             }
         }
 
@@ -937,6 +951,7 @@
          * =========================================================================================
          */
         const IS_MOBILE_CLIENT = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024;
+        const MOBILE_DPR_CAP = 1.5; // Limita resolução do canvas em mobile para evitar saturação GPU
 
         const CONFIG = {
             // 🐍 1. CONFIGURAÇÕES DA SERPENTE (Física, Velocidade e Crescimento)
@@ -985,9 +1000,9 @@
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
                 tamanhoRaio: 3600,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
-                quantidadeBots: 20,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
-                quantidadeComida: 11000,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
-                quantidadeInsetosDourados: 16,  // Cantidade de "Borboletas" exuberantes ativas.
+                quantidadeBots: IS_MOBILE_CLIENT ? 12 : 20,             // Mobile: 12, PC: 20
+                quantidadeComida: IS_MOBILE_CLIENT ? 4000 : 11000,      // Mobile: 4k orbes, PC: 11k orbes
+                quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 6 : 16,   // Menos borboletas no mobile
                 distribuicaoBots: {
                     // Probabilidade de cada categoria nascer (Soma deve ser 1.0)
                     probabilidades: { pequeno: 0.90, medio: 0.10, grande: 0.00, gigante: 0.00 },
@@ -1020,13 +1035,13 @@
             visual: {
                 balancoComida: 22.0,             // (Recomendado: 0 a 10) Efeito que faz a comida "tremer" ou flutuar ligeiramente.
                 velocidadeAnimacaoComida: 0.003,// (Recomendado: 0.001 a 0.01) A velocidade com que a comida vibra/pulsa.
-                quantidadeVagalumes: 100,       // (⚠️ Limite: 250) Pontos de luz branca de fundo. +250 pode causar lentidão ligeira.
+                quantidadeVagalumes: IS_MOBILE_CLIENT ? 20 : 100,       // Mobile: 20, PC: 100
                 distanciaFugaVagalumes: 180,    // (Recomendado: 100 a 500) Distância em que as luzes se assustam com a cobra e fogem.
                 dRender: 500                    // (Técnico) Otimização. Impede renderizar o que está a mais de 400px fora do ecrã.
             }
         };
 
-        let APP_SETTINGS = { audio: true, highGfx: true, uiOpac: 'forte' };
+        let APP_SETTINGS = { audio: true, highGfx: !IS_MOBILE_CLIENT, uiOpac: 'forte' };
 
         const WORLD_CENTER = CONFIG.mundo.tamanhoRaio;
         const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã"];
@@ -1079,7 +1094,38 @@
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
         let joystickActive = false, joystickAngle = 0, skinIndex = 0;
-        let vpWidth = window.innerWidth, vpHeight = window.innerHeight, dpr = window.devicePixelRatio || 1;
+        let vpWidth = window.innerWidth, vpHeight = window.innerHeight, dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, MOBILE_DPR_CAP) : (window.devicePixelRatio || 1);
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🗺️ SPATIAL HASH — Acelera busca de comida de O(n) para O(1)
+        // ═══════════════════════════════════════════════════════════════
+        const FOOD_CELL_SIZE = 200;
+        let foodGrid = {};
+        function foodGridKey(x, y) { return ((x / FOOD_CELL_SIZE) | 0) + ',' + ((y / FOOD_CELL_SIZE) | 0); }
+        function rebuildFoodGrid() {
+            foodGrid = {};
+            for (let i = 0; i < foods.length; i++) {
+                let f = foods[i];
+                if (f.dead) continue;
+                let key = foodGridKey(f.x, f.y);
+                if (!foodGrid[key]) foodGrid[key] = [];
+                foodGrid[key].push(i);
+            }
+        }
+        function getNearbyFoodIndices(x, y, radius) {
+            let results = [];
+            let cx = (x / FOOD_CELL_SIZE) | 0, cy = (y / FOOD_CELL_SIZE) | 0;
+            let cellRange = Math.ceil(radius / FOOD_CELL_SIZE);
+            for (let dx = -cellRange; dx <= cellRange; dx++) {
+                for (let dy = -cellRange; dy <= cellRange; dy++) {
+                    let key = (cx + dx) + ',' + (cy + dy);
+                    if (foodGrid[key]) {
+                        for (let idx of foodGrid[key]) results.push(idx);
+                    }
+                }
+            }
+            return results;
+        }
 
         const gameCanvasElement = document.getElementById('gameCanvas'); const mainCtx = gameCanvasElement.getContext('2d', { alpha: false });
         const minimapCanvasElement = document.getElementById('minimap'); const mCtxElement = minimapCanvasElement.getContext('2d');
@@ -1345,7 +1391,7 @@
                 this.x += Math.cos(this.angle) * this.speed;
                 this.y += Math.sin(this.angle) * this.speed;
 
-                if (this.isFleeing || APP_SETTINGS.highGfx) {
+                if (!IS_MOBILE_CLIENT && (this.isFleeing || APP_SETTINGS.highGfx)) {
                     if (frameCount % 2 === 0) this.trailPoints.push({ x: this.x, y: this.y, life: 1.0, size: Math.random() * 3 + 1 });
                 }
                 for (let i = this.trailPoints.length - 1; i >= 0; i--) {
@@ -1357,6 +1403,25 @@
                 }
             }
             draw(ctx, time) {
+                // MOBILE: Renderização simplificada (círculo com glow básico)
+                if (IS_MOBILE_CLIENT) {
+                    // Glow simples
+                    ctx.globalAlpha = 0.5;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2); ctx.fill();
+                    // Corpo sólido
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill();
+                    // Brilho central
+                    ctx.fillStyle = '#fff';
+                    ctx.globalAlpha = 0.8;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 0.35, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
+                    return;
+                }
+
+                // PC: Renderização completa com asas e rastro
                 // Rastro de poeira estelar (sparkles)
                 for (let t of this.trailPoints) {
                     ctx.globalAlpha = t.life * 0.6;
@@ -1463,6 +1528,12 @@
                 else { this.color = '180,255,140'; }
             }
             update() {
+                // MOBILE: atualiza vagalumes com menos frequência
+                if (IS_MOBILE_CLIENT && frameCount % 3 !== 0) {
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed;
+                    return;
+                }
                 let dX = 0, dY = 0, count = 0;
                 for (let s of snakes) {
                     if (!s.alive) continue;
@@ -1494,7 +1565,16 @@
 
                 let cR = Math.max(0.8, this.radius * (0.6 + brightness * 0.8));
 
-                // Halo de brilho
+                // MOBILE: Apenas ponto simples sem gradiente
+                if (IS_MOBILE_CLIENT) {
+                    ctx.globalAlpha = 0.4 + brightness * 0.6;
+                    ctx.fillStyle = `rgb(${this.color})`;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, cR * 1.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
+                    return;
+                }
+
+                // PC: Halo de brilho completo com gradiente
                 let g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, cR * 5);
                 g.addColorStop(0, `rgba(${this.color},${brightness * 0.5})`);
                 g.addColorStop(1, `rgba(${this.color},0)`);
@@ -1692,7 +1772,11 @@
                         if (s.score > this.score * 1.3 && d < threatDist) { threat = s; threatDist = d; }
                     }
                 }
-                for (let f of foods) {
+                // Busca de comida otimizada com Spatial Hash (apenas células próximas)
+                let nearbyIndices = getNearbyFoodIndices(this.x, this.y, 600);
+                for (let idx of nearbyIndices) {
+                    let f = foods[idx];
+                    if (!f || f.dead) continue;
                     let d = Math.hypot(f.x - this.x, f.y - this.y);
                     let scoreVal = (f.value * (f.isDropped ? 3 : 1)) / Math.max(1, d);
                     if (scoreVal > bestFoodScore) { bestFoodScore = scoreVal; nearestFood = f; }
@@ -1853,11 +1937,16 @@
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
 
-                for (let i = foods.length - 1; i >= 0; i--) {
-                    let f = foods[i], d2 = (this.x - f.x) ** 2 + (this.y - f.y) ** 2;
+                // Colisão de comida otimizada com Spatial Hash
+                let eatRadius = Math.max(CONFIG.mundo.forcaAtracao, this.radius + 15);
+                let nearFoodIdx = getNearbyFoodIndices(this.x, this.y, eatRadius);
+                for (let i of nearFoodIdx) {
+                    let f = foods[i];
+                    if (!f || f.dead) continue;
+                    let d2 = (this.x - f.x) ** 2 + (this.y - f.y) ** 2;
                     if (d2 < (CONFIG.mundo.forcaAtracao) ** 2) { let d = Math.sqrt(d2); f.x += (this.x - f.x) / d * 8; f.y += (this.y - f.y) / d * 8; }
                     if (d2 < (this.radius + f.radius) ** 2) {
-                        this.score += f.value; this.eatTimer = 15; foods.splice(i, 1);
+                        this.score += f.value; this.eatTimer = 15; f.dead = true; // Tombstone pattern
                         if (this.isPlayer) { AudioSys.play('eat'); PLAYER_STATS.totalFood++; }
                     }
                 }
@@ -1925,8 +2014,8 @@
                 const totalSegs = this.segments.length;
                 let headR = this.radius;
 
-                // Pass 1: Sombra Projetada (Drop Shadow Global da cobra)
-                if (this.isPlayer || this.isKing) {
+                // Pass 1: Sombra Projetada (Drop Shadow Global da cobra) — APENAS PC
+                if (!IS_MOBILE_CLIENT && (this.isPlayer || this.isKing)) {
                     ctx.globalAlpha = 0.35;
                     let shadowBase = TextureManager.getSegment('#000000');
                     let offY = this.radius * 0.25;
@@ -2082,7 +2171,7 @@
             } catch (e) { console.warn("Fullscreen bloqueado pelo navegador."); }
         }
 
-        function resize() { vpWidth = window.innerWidth; vpHeight = window.innerHeight; dpr = window.devicePixelRatio || 1; if (gameCanvasElement) { gameCanvasElement.width = vpWidth * dpr; gameCanvasElement.height = vpHeight * dpr; gameCanvasElement.style.width = vpWidth + 'px'; gameCanvasElement.style.height = vpHeight + 'px'; } if (minimapCanvasElement) { minimapCanvasElement.width = 140 * dpr; minimapCanvasElement.height = 140 * dpr; minimapCanvasElement.style.width = '140px'; minimapCanvasElement.style.height = '140px'; mCtxElement.setTransform(1, 0, 0, 1, 0, 0); mCtxElement.scale(dpr, dpr); } if (IS_MOBILE_CLIENT) UI.orient.style.display = vpHeight > vpWidth ? 'flex' : 'none'; }
+        function resize() { vpWidth = window.innerWidth; vpHeight = window.innerHeight; dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, MOBILE_DPR_CAP) : (window.devicePixelRatio || 1); if (gameCanvasElement) { gameCanvasElement.width = vpWidth * dpr; gameCanvasElement.height = vpHeight * dpr; gameCanvasElement.style.width = vpWidth + 'px'; gameCanvasElement.style.height = vpHeight + 'px'; } if (minimapCanvasElement) { minimapCanvasElement.width = 140 * dpr; minimapCanvasElement.height = 140 * dpr; minimapCanvasElement.style.width = '140px'; minimapCanvasElement.style.height = '140px'; mCtxElement.setTransform(1, 0, 0, 1, 0, 0); mCtxElement.scale(dpr, dpr); } if (IS_MOBILE_CLIENT) UI.orient.style.display = vpHeight > vpWidth ? 'flex' : 'none'; }
         function showEvolution(evo) { UI.lvlTitle.innerText = evo.name; UI.lvlTitle.style.color = evo.color; UI.lvlPopup.classList.add('show'); AudioSys.play('dash'); setTimeout(() => UI.lvlPopup.classList.remove('show'), 3500); }
         function updateMissionsUI() { let k = Math.min(PLAYER_STATS.totalKills, MISSIONS.killsReq), f = Math.min(PLAYER_STATS.totalFood, MISSIONS.foodReq), t = Math.min(PLAYER_STATS.totalTime, MISSIONS.timeReq); document.getElementById('m-desc-1').innerText = `Abates (${k}/${MISSIONS.killsReq})`; document.getElementById('m-bar-1').style.width = (k / MISSIONS.killsReq * 100) + '%'; document.getElementById('m-desc-2').innerText = `Orbes (${f}/${MISSIONS.foodReq})`; document.getElementById('m-bar-2').style.width = (f / MISSIONS.foodReq * 100) + '%'; document.getElementById('m-desc-3').innerText = `Sobrevivência (${Math.floor(t / 60)}/${Math.floor(MISSIONS.timeReq / 60)}m)`; document.getElementById('m-bar-3').style.width = (t / MISSIONS.timeReq * 100) + '%'; if (k >= MISSIONS.killsReq && f >= MISSIONS.foodReq && t >= MISSIONS.timeReq) { document.getElementById('mission-reward').classList.remove('hidden'); } }
         function updateSkinUI() { UI.skinName.innerText = SKIN_NAMES[skinIndex]; let req = SKIN_REQUIREMENTS[skinIndex]; let isLocked = false; if (req) { if (req.type === 'score' && PLAYER_STATS.highScore < req.val) isLocked = true; if (req.type === 'kills' && PLAYER_STATS.totalKills < req.val) isLocked = true; } if (isLocked) { UI.lockOverlay.classList.remove('hidden'); UI.reqTitle.innerText = `🔒 REQUER ${req.desc}`; UI.reqStatus.innerText = req.type === 'score' ? `RECORDE ATUAL: ${PLAYER_STATS.highScore.toLocaleString()}` : `ABATES TOTAIS: ${PLAYER_STATS.totalKills}`; UI.ok.style.background = '#333333'; UI.ok.style.color = '#777777'; UI.ok.style.boxShadow = 'none'; UI.ok.style.pointerEvents = 'none'; UI.skinName.style.color = '#555'; } else { UI.lockOverlay.classList.add('hidden'); UI.ok.style.background = '#ffdf00'; UI.ok.style.color = '#000000'; UI.ok.style.boxShadow = '0 5px 20px rgba(255, 223, 0, 0.25)'; UI.ok.style.pointerEvents = 'auto'; UI.skinName.style.color = '#ffdf00'; } }
@@ -2118,17 +2207,33 @@
             }
 
             if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, CONFIG.cobra.pontosIniciais));
-            if (foods.length < CONFIG.mundo.quantidadeComida) spawnFood(15);
+
+            // Limpeza batch de comida morta (tombstone) a cada 60 frames
+            if (frameCount % 60 === 0) foods = foods.filter(f => !f.dead);
+            let activeFoodCount = 0;
+            for (let i = 0; i < foods.length; i++) if (!foods[i].dead) activeFoodCount++;
+            if (activeFoodCount < CONFIG.mundo.quantidadeComida) spawnFood(IS_MOBILE_CLIENT ? 8 : 15);
             if (butterflies.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
+            // Rebuild spatial hash para comida (barato: ~1-2ms para 4-11k items)
+            rebuildFoodGrid();
+
             for (let s of snakes) s.update(); for (let b of butterflies) b.update();
+            // Colisão cobra-cobra com step adaptativo no mobile
+            let segStep = IS_MOBILE_CLIENT ? 6 : 4;
             for (let i = 0; i < snakes.length; i++) {
                 let s1 = snakes[i]; if (!s1.alive) continue;
-                for (let j = 0; j < snakes.length; j++) { let s2 = snakes[j]; if (i === j || !s2.alive) continue; let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8); for (let k = 0; k < s2.segments.length; k += 4) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } } }
+                for (let j = 0; j < snakes.length; j++) { let s2 = snakes[j]; if (i === j || !s2.alive) continue; let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8);
+                    // Pré-filtro: cabeças muito distantes = skip
+                    if (Math.abs(s1.x - s2.x) > hitDist + s2.segments.length * 2 && Math.abs(s1.y - s2.y) > hitDist + s2.segments.length * 2) continue;
+                    for (let k = 0; k < s2.segments.length; k += segStep) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } } }
             }
 
             snakes = snakes.filter(s => s.alive || s.isPlayer);
+            // Partículas: limitar quantidade no mobile
+            let maxParticles = IS_MOBILE_CLIENT ? 50 : 300;
             for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].life <= 0) particles.splice(i, 1); }
+            if (particles.length > maxParticles) particles.splice(0, particles.length - maxParticles);
             for (let ff of fireflies) ff.update();
 
             let currentKing = null, maxScore = 500; for (let s of snakes) { if (s.alive && s.score > maxScore) { maxScore = s.score; currentKing = s; } } for (let s of snakes) { s.isKing = (s === currentKing); }
@@ -2142,7 +2247,7 @@
             else { mainCtx.fillStyle = CONFIG.mundo.corFundo; mainCtx.fillRect(camera.x - (vpWidth / camera.zoom) / 2, camera.y - (vpHeight / camera.zoom) / 2, vpWidth / camera.zoom, vpHeight / camera.zoom); }
 
             for (let ff of fireflies) { if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
-            for (let f of foods) { if (Math.hypot(f.x - camera.x, f.y - camera.y) < cullingDist) f.draw(mainCtx, time); }
+            for (let f of foods) { if (!f.dead && Math.hypot(f.x - camera.x, f.y - camera.y) < cullingDist) f.draw(mainCtx, time); }
             for (let b of butterflies) { if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
             for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
 
@@ -2173,7 +2278,8 @@
                 mainCtx.filter = 'none';
             }
             else if (gameState === 'playing' || gameState === 'dead') {
-                if (frameCount % 10 === 0) updateHUD();
+                let hudThrottle = IS_MOBILE_CLIENT ? 30 : 10;
+                if (frameCount % hudThrottle === 0) updateHUD();
             }
 
             frameCount++; requestAnimationFrame(gameLoop);
