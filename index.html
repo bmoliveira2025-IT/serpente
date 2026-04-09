@@ -1097,9 +1097,25 @@
         let lastFrameTime = performance.now();
         let frameTimeBuffer = []; // Para média móvel de FPS
 
-        const WORLD_CENTER = CONFIG.mundo.tamanhoRaio;
+        const WORLD_CENTER = CONFIG.mundo.tamanhoRaio; // Centro Fixo (3600, 3600)
+        let currentArenaRadius = CONFIG.mundo.tamanhoRaio;
+        let targetArenaRadius = CONFIG.mundo.tamanhoRaio;
         const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã"];
-        const PALETTE_COLORS = ['#ffdf00', '#ffffff', '#aaaaaa', '#666666', '#ffaa00', '#cccccc', '#ffcc00', '#dddddd', '#888888'];
+        const PALETTE_COLORS = [
+            '#39ff14', // Neon Green
+            '#00ffff', // Cyan
+            '#ff00ff', // Magenta
+            '#007bff', // Electric Blue
+            '#ff4500', // Orange Red
+            '#ff8800', // Vivid Orange
+            '#8a2be2', // Blue Violet
+            '#ff69b4', // Hot Pink
+            '#ffdf00', // Gold
+            '#ffffff', // Pure White
+            '#00ff88', // Spring Green
+            '#7a28cb', // Purple
+            '#ff0055'  // Deep Pink
+        ];
 
         const SKINS = [
             ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#009c3b', '#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222'],
@@ -1240,7 +1256,7 @@
             lvlPopup: document.getElementById('level-popup'), lvlTitle: document.getElementById('level-title-text')
         };
 
-        function getRandomPosInCircle(p = 50, bonusRadius = 0) { let r = Math.sqrt(Math.random()) * (WORLD_CENTER + bonusRadius - p), t = Math.random() * 2 * Math.PI; return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) }; }
+        function getRandomPosInCircle(p = 50, bonusRadius = 0) { let r = Math.sqrt(Math.random()) * (currentArenaRadius + bonusRadius - p), t = Math.random() * 2 * Math.PI; return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) }; }
         function getRandomBotScore() {
             const dist = CONFIG.mundo.distribuicaoBots; const r = Math.random(); let cat = 'pequeno';
             if (r < dist.probabilidades.gigante) cat = 'gigante';
@@ -1292,7 +1308,7 @@
             }
         };
 
-        function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(20, 2500); foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)])); } }
+        function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(15, 600); foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)])); } }
         function createExplosion(x, y, color, amount) { 
             if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2)); 
             for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2)); 
@@ -1532,7 +1548,7 @@
                     this.trailPoints[i].life -= 0.04;
                     if (this.trailPoints[i].life <= 0) this.trailPoints.splice(i, 1);
                 }
-                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER - 200) {
+                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > currentArenaRadius - 150) {
                     this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
                 }
             }
@@ -1688,7 +1704,7 @@
                 this.speed += (this.targetSpeed - this.speed) * 0.08;
                 this.x += Math.cos(this.angle) * this.speed;
                 this.y += Math.sin(this.angle) * this.speed;
-                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER)
+                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > currentArenaRadius)
                     this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
             }
             draw(ctx, time) {
@@ -1868,7 +1884,7 @@
 
                 // ── 3a. BORDAS DA ARENA ───────────────────────────────────────────────
                 let distToCenter = Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER);
-                if (distToCenter > WORLD_CENTER - 700) {
+                if (distToCenter > currentArenaRadius - 700) {
                     this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x) + (Math.random() - 0.5) * 0.3;
                     return;
                 }
@@ -2066,7 +2082,7 @@
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
                 if (this.eatTimer > 0) this.eatTimer--;
-                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > WORLD_CENTER) { this.die(false); return; }
+                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > currentArenaRadius) { this.die(false); return; }
 
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
@@ -2252,8 +2268,48 @@
             }
             UI.lbList.innerHTML = html;
             mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
-            let sc = 140 / (WORLD_CENTER * 2);
-            for (let s of act) { mCtxElement.beginPath(); mCtxElement.arc(s.x * sc, s.y * sc, s === player ? 4 : 1.5, 0, Math.PI * 2); mCtxElement.fillStyle = s === player ? '#fff' : 'rgba(255,255,255,0.3)'; mCtxElement.fill(); }
+            let sc = 70 / currentArenaRadius;
+            for (let s of act) { 
+                mCtxElement.beginPath(); 
+                let mX = 70 + (s.x - WORLD_CENTER) * sc;
+                let mY = 70 + (s.y - WORLD_CENTER) * sc;
+                mCtxElement.arc(mX, mY, s === player ? 4 : 1.5, 0, Math.PI * 2); 
+                mCtxElement.fillStyle = s === player ? '#fff' : 'rgba(255,255,255,0.3)'; 
+                mCtxElement.fill(); 
+            }
+        }
+
+        function drawArenaBoundary(ctx, camX, camY, zoom) {
+            const viewportW = vpWidth / zoom, viewportH = vpHeight / zoom;
+            const startX = camX - viewportW / 2, startY = camY - viewportH / 2;
+            const viewDiag = Math.sqrt(viewportW * viewportW + viewportH * viewportH) / 2;
+            const distFromCenter = Math.hypot(camX - WORLD_CENTER, camY - WORLD_CENTER);
+
+            // Só processa se a borda estiver perto (com margem para o Glow suave)
+            if (distFromCenter + viewDiag > currentArenaRadius - 300) {
+                ctx.save();
+                
+                const glowWidth = 140; // Espessura da transição/suavização
+                const pulse = Math.sin(performance.now() * 0.0025) * 0.06;
+                const baseOpacity = 0.22 + pulse;
+
+                // Gradiente Radial que cria o efeito "Aura/Fumaça" na borda
+                let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, currentArenaRadius - glowWidth, WORLD_CENTER, WORLD_CENTER, currentArenaRadius + glowWidth);
+                grad.addColorStop(0, 'rgba(255, 0, 0, 0)');                         // Interno (Seguro)
+                grad.addColorStop(0.4, `rgba(255, 0, 0, ${baseOpacity * 0.5})`);      // Início do Esfumaçado
+                grad.addColorStop(0.5, `rgba(255, 0, 0, ${baseOpacity + 0.15})`);    // Linha de Limite (Glow)
+                grad.addColorStop(0.6, `rgba(255, 0, 0, ${baseOpacity * 0.8})`);      // Queda de intensidade
+                grad.addColorStop(1, 'rgba(255, 0, 0, 0.22)');                       // Zona de Perigo Profunda
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.rect(startX, startY, viewportW, viewportH);
+                // "Furo" no centro para performance: não pintamos o miolo da arena
+                ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius - glowWidth, 0, Math.PI * 2, true);
+                ctx.fill();
+
+                ctx.restore();
+            }
         }
 
         function drawGrid(ctx, camX, camY, zoom) {
@@ -2274,26 +2330,13 @@
             ctx.fillRect(startX, startY, viewportW, viewportH);
             ctx.restore();
 
-            // 3. Vinheta/Gradiente de Centro (Opcional, apenas se HighGfx)
-            if (APP_SETTINGS.highGfx) {
-                let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, 0, WORLD_CENTER, WORLD_CENTER, WORLD_CENTER);
-                grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                ctx.fillStyle = grad; ctx.fillRect(startX, startY, viewportW, viewportH);
-            }
+            // 3. Vinheta/Gradiente de Centro
+            let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, 0, WORLD_CENTER, WORLD_CENTER, currentArenaRadius);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = grad; ctx.fillRect(startX, startY, viewportW, viewportH);
 
-            // Borda da Arena (Apenas se visível)
-            if (Math.hypot(camX - WORLD_CENTER, camY - WORLD_CENTER) > WORLD_CENTER - 1500) {
-                // Zona Fora da Fronteira - Fundo Vermelho
-                ctx.fillStyle = 'rgba(255, 0, 0, 0.22)';
-                ctx.beginPath();
-                ctx.rect(startX, startY, viewportW, viewportH);
-                ctx.arc(WORLD_CENTER, WORLD_CENTER, WORLD_CENTER, 0, Math.PI * 2, true);
-                ctx.fill();
-
-                // Linha vermelha pulsante da fronteira
-                ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, WORLD_CENTER, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)'; ctx.lineWidth = 30; ctx.stroke();
-            }
+            // Borda da Arena (Chamada Independente agora)
+            drawArenaBoundary(ctx, camX, camY, zoom);
         }
 
         async function enterFullscreen() {
@@ -2359,6 +2402,12 @@
             }
 
             if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, CONFIG.cobra.pontosIniciais));
+
+            // Cálculo Dinâmico do Raio (Expansão do Mapa)
+            const totalScoreOnMap = snakes.reduce((sum, s) => sum + (s.alive ? s.score : 0), 0);
+            targetArenaRadius = CONFIG.mundo.tamanhoRaio + (totalScoreOnMap / 28);
+            // Interpolação super suave para ser "singela"
+            currentArenaRadius += (targetArenaRadius - currentArenaRadius) * 0.005;
 
             // Limpeza batch de comida morta (tombstone) a cada 60 frames
             if (frameCount % 60 === 0) foods = foods.filter(f => !f.dead);
@@ -2438,7 +2487,12 @@
             mainCtx.scale(camera.zoom, camera.zoom); mainCtx.translate(-camera.x, -camera.y);
 
             if (APP_SETTINGS.highGfx) drawGrid(mainCtx, camera.x, camera.y, camera.zoom);
-            else { mainCtx.fillStyle = CONFIG.mundo.corFundo; mainCtx.fillRect(camera.x - (vpWidth / camera.zoom) / 2, camera.y - (vpHeight / camera.zoom) / 2, vpWidth / camera.zoom, vpHeight / camera.zoom); }
+            else { 
+                const vW = vpWidth / camera.zoom, vH = vpHeight / camera.zoom;
+                mainCtx.fillStyle = CONFIG.mundo.corFundo; 
+                mainCtx.fillRect(camera.x - vW / 2, camera.y - vH / 2, vW, vH);
+                drawArenaBoundary(mainCtx, camera.x, camera.y, camera.zoom); // Garantir borda sempre visível
+            }
 
             for (let ff of fireflies) { if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
             for (let f of foods) { if (!f.dead && Math.hypot(f.x - camera.x, f.y - camera.y) < cullingDist) f.draw(mainCtx, time); }
