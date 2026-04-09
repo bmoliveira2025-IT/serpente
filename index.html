@@ -479,16 +479,23 @@
 
         #joystick-base {
             position: absolute;
-            bottom: 35px;
-            left: 35px;
             width: 110px;
             height: 110px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(4px);
-            pointer-events: auto;
+            pointer-events: none;
             touch-action: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 2000;
+        }
+
+        #joystick-base.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
 
         #joystick-handle {
@@ -537,6 +544,22 @@
             height: 65px;
             color: #ffdf00;
             border-color: rgba(255, 223, 0, 0.3);
+            box-shadow: 0 0 0 rgba(255, 223, 0, 0);
+            transition: all 0.2s;
+        }
+
+        #btn-turbo.boosting {
+            transform: scale(1.15);
+            background: rgba(255, 223, 0, 0.25);
+            border-color: #ffdf00;
+            box-shadow: 0 0 25px rgba(255, 223, 0, 0.5);
+            color: #fff;
+            animation: pulse-turbo 1s infinite alternate;
+        }
+
+        @keyframes pulse-turbo {
+            from { box-shadow: 0 0 15px rgba(255, 223, 0, 0.4); }
+            to { box-shadow: 0 0 30px rgba(255, 223, 0, 0.7); }
         }
 
         #gesture-hint {
@@ -716,6 +739,35 @@
             .action-btn {
                 backdrop-filter: none !important;
                 -webkit-backdrop-filter: none !important;
+            }
+
+            .logo-container {
+                font-size: clamp(28px, 9vw, 50px) !important;
+                gap: 8px !important;
+                margin-top: 5px !important;
+                margin-bottom: 0px !important;
+            }
+
+            .logo-container div {
+                font-size: 0.8em;
+            }
+
+            .subtitle {
+                font-size: 7px !important;
+                letter-spacing: 2px !important;
+                margin-top: 5px !important;
+                margin-bottom: 10px !important;
+            }
+
+            #nickname {
+                margin-bottom: 15px !important;
+                padding: 10px 20px !important;
+                font-size: 11px !important;
+            }
+
+            .btn-aaa {
+                padding: 12px 30px !important;
+                font-size: 14px !important;
             }
         }
 
@@ -966,11 +1018,11 @@
                 },
                 mobile: {
                     espessuraInicial: 11,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
-                    espessuraMaxima: 30,        // (Recomendado: 20 a 35) Limite de grossura em Telemóveis.
-                    comprimentoInicial: 55,     // (Recomendado: 10 a 30) Comprimento inicial mais curto no Mobile.
-                    comprimentoMaximo: 450,     // (⚠️ Limite: 500) Máximo no mobile para evitar sobreaquecimento do aparelho.
-                    velocidadeBase: 2.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
-                    velocidadeTurbo: 4.0        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
+                    espessuraMaxima: 26,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
+                    comprimentoInicial: 45,     // [REDUZIDO] Início mais ágil para mobile.
+                    comprimentoMaximo: 350,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
+                    velocidadeBase: 2.3,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeTurbo: 3.8        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
                 distanciaGomos: 0.07,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
@@ -1041,7 +1093,9 @@
             }
         };
 
-        let APP_SETTINGS = { audio: true, highGfx: !IS_MOBILE_CLIENT, uiOpac: 'forte' };
+        let APP_SETTINGS = { audio: true, highGfx: !IS_MOBILE_CLIENT, uiOpac: 'forte', performanceMode: false };
+        let lastFrameTime = performance.now();
+        let frameTimeBuffer = []; // Para média móvel de FPS
 
         const WORLD_CENTER = CONFIG.mundo.tamanhoRaio;
         const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã"];
@@ -1090,6 +1144,13 @@
             }
         };
 
+        const Haptic = {
+            vibrate: function (ms) { if (IS_MOBILE_CLIENT && navigator.vibrate) navigator.vibrate(ms); },
+            soft: function () { this.vibrate(10); },
+            medium: function () { this.vibrate(35); },
+            strong: function () { this.vibrate(70); }
+        };
+
         let snakes = [], foods = [], fireflies = [], particles = [], butterflies = [], player = null;
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
@@ -1121,6 +1182,44 @@
                     let key = (cx + dx) + ',' + (cy + dy);
                     if (foodGrid[key]) {
                         for (let idx of foodGrid[key]) results.push(idx);
+                    }
+                }
+            }
+            return results;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🐍 SEGMENT HASH — Acelera colisão de cobras de O(N*M) para O(1)
+        // ═══════════════════════════════════════════════════════════════
+        const SEGMENT_CELL_SIZE = 250;
+        let segmentGrid = {};
+        function rebuildSegmentGrid() {
+            segmentGrid = {};
+            for (let i = 0; i < snakes.length; i++) {
+                let s = snakes[i];
+                if (!s.alive) continue;
+                // Apenas as células onde a cobra ocupa espaço
+                // Para economia, vamos iterar os gomos e registrar na grade
+                for (let k = 0; k < s.segments.length; k += 8) { // Passo maior para registro na grade
+                    let seg = s.segments[k];
+                    let key = ((seg.x / SEGMENT_CELL_SIZE) | 0) + ',' + ((seg.y / SEGMENT_CELL_SIZE) | 0);
+                    if (!segmentGrid[key]) segmentGrid[key] = [];
+                    // Evita duplicatas da mesma cobra na mesma célula
+                    if (segmentGrid[key][segmentGrid[key].length - 1] !== i) {
+                        segmentGrid[key].push(i);
+                    }
+                }
+            }
+        }
+        function getNearbySnakesIndices(x, y, radius) {
+            let results = new Set();
+            let cx = (x / SEGMENT_CELL_SIZE) | 0, cy = (y / SEGMENT_CELL_SIZE) | 0;
+            let cellRange = Math.ceil(radius / SEGMENT_CELL_SIZE);
+            for (let dx = -cellRange; dx <= cellRange; dx++) {
+                for (let dy = -cellRange; dy <= cellRange; dy++) {
+                    let key = (cx + dx) + ',' + (cy + dy);
+                    if (segmentGrid[key]) {
+                        for (let idx of segmentGrid[key]) results.add(idx);
                     }
                 }
             }
@@ -1173,8 +1272,31 @@
             }
             return p;
         }
+        // ═══════════════════════════════════════════════════════════════
+        // 🎇 PARTICLE POOL — Reutiliza objetos para evitar GC pauses
+        // ═══════════════════════════════════════════════════════════════
+        const ParticlePool = {
+            pool: [],
+            get: function(x, y, color, s) {
+                let p;
+                if (this.pool.length > 0) {
+                    p = this.pool.pop();
+                    p.init(x, y, color, s);
+                } else {
+                    p = new Particle(x, y, color, s);
+                }
+                return p;
+            },
+            recycle: function(p) {
+                if (this.pool.length < 500) this.pool.push(p);
+            }
+        };
+
         function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(20, 2500); foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)])); } }
-        function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / 3); for (let i = 0; i < amount; i++) particles.push(new Particle(x, y, color, Math.random() * 5 + 2)); }
+        function createExplosion(x, y, color, amount) { 
+            if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2)); 
+            for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2)); 
+        }
 
 
         // Utilitário: escurece/clareia uma cor hex ou rgb
@@ -1344,8 +1466,20 @@
         }
 
         class Particle {
-            constructor(x, y, color, s) { this.x = x; this.y = y; this.color = color; let a = Math.random() * Math.PI * 2; this.vx = Math.cos(a) * s; this.vy = Math.sin(a) * s; this.life = 1.0; this.decay = 0.02 + Math.random() * 0.02; this.size = 2 + Math.random() * 3; }
-            update() { this.x += this.vx; this.y += this.vy; this.life -= this.decay; }
+            constructor(x, y, color, s) { this.init(x, y, color, s); }
+            init(x, y, color, s) {
+                this.x = x; this.y = y; this.color = color;
+                let a = Math.random() * Math.PI * 2;
+                this.vx = Math.cos(a) * s; this.vy = Math.sin(a) * s;
+                this.life = 1.0; this.decay = 0.02 + Math.random() * 0.02;
+                this.size = 2 + Math.random() * 3;
+                this.dead = false;
+            }
+            update() { 
+                this.x += this.vx; this.y += this.vy; 
+                this.life -= this.decay; 
+                if (this.life <= 0) this.dead = true;
+            }
             draw(ctx) { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; }
         }
 
@@ -1947,7 +2081,7 @@
                     if (d2 < (CONFIG.mundo.forcaAtracao) ** 2) { let d = Math.sqrt(d2); f.x += (this.x - f.x) / d * 8; f.y += (this.y - f.y) / d * 8; }
                     if (d2 < (this.radius + f.radius) ** 2) {
                         this.score += f.value; this.eatTimer = 15; f.dead = true; // Tombstone pattern
-                        if (this.isPlayer) { AudioSys.play('eat'); PLAYER_STATS.totalFood++; }
+                        if (this.isPlayer) { AudioSys.play('eat'); Haptic.soft(); PLAYER_STATS.totalFood++; }
                     }
                 }
 
@@ -1963,7 +2097,7 @@
                 this.alive = false; createExplosion(this.x, this.y, this.mainColor, 35);
 
                 if (this.isPlayer) {
-                    camera.shake = 25; AudioSys.play('die');
+                    camera.shake = 25; AudioSys.play('die'); Haptic.strong();
                     PLAYER_STATS.highScore = Math.max(PLAYER_STATS.highScore, Math.floor(this.score));
                     PLAYER_STATS.totalKills += playerKills; PLAYER_STATS.save();
 
@@ -2177,6 +2311,24 @@
         function updateSkinUI() { UI.skinName.innerText = SKIN_NAMES[skinIndex]; let req = SKIN_REQUIREMENTS[skinIndex]; let isLocked = false; if (req) { if (req.type === 'score' && PLAYER_STATS.highScore < req.val) isLocked = true; if (req.type === 'kills' && PLAYER_STATS.totalKills < req.val) isLocked = true; } if (isLocked) { UI.lockOverlay.classList.remove('hidden'); UI.reqTitle.innerText = `🔒 REQUER ${req.desc}`; UI.reqStatus.innerText = req.type === 'score' ? `RECORDE ATUAL: ${PLAYER_STATS.highScore.toLocaleString()}` : `ABATES TOTAIS: ${PLAYER_STATS.totalKills}`; UI.ok.style.background = '#333333'; UI.ok.style.color = '#777777'; UI.ok.style.boxShadow = 'none'; UI.ok.style.pointerEvents = 'none'; UI.skinName.style.color = '#555'; } else { UI.lockOverlay.classList.add('hidden'); UI.ok.style.background = '#ffdf00'; UI.ok.style.color = '#000000'; UI.ok.style.boxShadow = '0 5px 20px rgba(255, 223, 0, 0.25)'; UI.ok.style.pointerEvents = 'auto'; UI.skinName.style.color = '#ffdf00'; } }
 
         function gameLoop(time) {
+            // Adaptive Performance Monitoring
+            const now = performance.now();
+            const delta = now - lastFrameTime;
+            lastFrameTime = now;
+            
+            if (frameCount > 60) { // Espera estabilizar
+                frameTimeBuffer.push(delta);
+                if (frameTimeBuffer.length > 20) frameTimeBuffer.shift();
+                
+                // Se a média do frame time for > 22ms (aprox < 45fps)
+                let avg = frameTimeBuffer.reduce((a, b) => a + b, 0) / frameTimeBuffer.length;
+                if (avg > 22 && APP_SETTINGS.highGfx && !APP_SETTINGS.performanceMode) {
+                    APP_SETTINGS.highGfx = false;
+                    APP_SETTINGS.performanceMode = true;
+                    console.warn("Performance baixa detectada. Reduzindo qualidade visual.");
+                }
+            }
+
             mainCtx.setTransform(1, 0, 0, 1, 0, 0); mainCtx.clearRect(0, 0, gameCanvasElement.width, gameCanvasElement.height); mainCtx.scale(dpr, dpr);
 
             // Lógica Core de Atualização (Roda SEMPRE, mesmo no menu, para o Fundo Animado)
@@ -2215,27 +2367,67 @@
             if (activeFoodCount < CONFIG.mundo.quantidadeComida) spawnFood(IS_MOBILE_CLIENT ? 8 : 15);
             if (butterflies.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
-            // Rebuild spatial hash para comida (barato: ~1-2ms para 4-11k items)
+            // Rebuild spatial hash para comida e segmentos
             rebuildFoodGrid();
+            rebuildSegmentGrid();
 
-            for (let s of snakes) s.update(); for (let b of butterflies) b.update();
-            // Colisão cobra-cobra com step adaptativo no mobile
-            let segStep = IS_MOBILE_CLIENT ? 6 : 4;
+            for (let s of snakes) s.update();
+            for (let b of butterflies) b.update();
+
+            // Colisão cobra-cobra otimizada com Spatial Hash
+            let segStep = IS_MOBILE_CLIENT ? 8 : 4; // Passo maior em mobile
             for (let i = 0; i < snakes.length; i++) {
-                let s1 = snakes[i]; if (!s1.alive) continue;
-                for (let j = 0; j < snakes.length; j++) {
-                    let s2 = snakes[j]; if (i === j || !s2.alive) continue; let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8);
-                    // Pré-filtro: cabeças muito distantes = skip
-                    if (Math.abs(s1.x - s2.x) > hitDist + s2.segments.length * 2 && Math.abs(s1.y - s2.y) > hitDist + s2.segments.length * 2) continue;
-                    for (let k = 0; k < s2.segments.length; k += segStep) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } }
+                let s1 = snakes[i];
+                if (!s1.alive) continue;
+
+                // Busca apenas cobras em células vizinhas (O(1) amortizado)
+                let searchRadius = s1.radius + 150;
+                let nearSnakesIdx = getNearbySnakesIndices(s1.x, s1.y, searchRadius);
+
+                for (let j of nearSnakesIdx) {
+                    let s2 = snakes[j];
+                    if (i === j || !s2.alive) continue;
+
+                    let hitDist = (s1.radius * 0.85) + (s2.radius * 0.85);
+
+                    // Distância rápida entre cabeças antes de checar segmentos
+                    if (Math.abs(s1.x - s2.x) < 300 && Math.abs(s1.y - s2.y) < 300) {
+                        // Colisão cabeça-cabeça (raro e mortal)
+                        if (Math.hypot(s1.x - s2.x, s1.y - s2.y) < hitDist) {
+                            if (s1.score > s2.score) s2.die(true); else s1.die(true);
+                        }
+                    }
+
+                    // Checa colisão da cabeça de S1 com o corpo de S2
+                    for (let k = 0; k < s2.segments.length; k += segStep) {
+                        let seg = s2.segments[k];
+                        // Otimização: AABB check antes de Hypot (caro)
+                        if (Math.abs(s1.x - seg.x) < hitDist && Math.abs(s1.y - seg.y) < hitDist) {
+                            if (Math.hypot(s1.x - seg.x, s1.y - seg.y) < hitDist) {
+                                if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; }
+                                s1.die(true);
+                                break;
+                            }
+                        }
+                    }
+                    if (!s1.alive) break;
                 }
             }
 
             snakes = snakes.filter(s => s.alive || s.isPlayer);
-            // Partículas: limitar quantidade no mobile
-            let maxParticles = IS_MOBILE_CLIENT ? 50 : 300;
-            for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].life <= 0) particles.splice(i, 1); }
-            if (particles.length > maxParticles) particles.splice(0, particles.length - maxParticles);
+            // Partículas: limitar quantidade no mobile e usar Pool
+            let maxParticles = IS_MOBILE_CLIENT ? 40 : 250;
+            for (let i = particles.length - 1; i >= 0; i--) { 
+                particles[i].update(); 
+                if (particles[i].dead) {
+                    ParticlePool.recycle(particles[i]);
+                    particles.splice(i, 1); 
+                }
+            }
+            if (particles.length > maxParticles) {
+                let overflow = particles.splice(0, particles.length - maxParticles);
+                overflow.forEach(p => ParticlePool.recycle(p));
+            }
             for (let ff of fireflies) ff.update();
 
             let currentKing = null, maxScore = 500; for (let s of snakes) { if (s.alive && s.score > maxScore) { maxScore = s.score; currentKing = s; } } for (let s of snakes) { s.isKing = (s === currentKing); }
@@ -2325,27 +2517,109 @@
         UI.right.addEventListener('click', () => { skinIndex = (skinIndex + 1) % SKINS.length; updateSkinUI(); });
         UI.again.addEventListener('click', () => { UI.death.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
 
-        const JOYSTICK_DEADZONE = 8, JOYSTICK_MAX_RADIUS = 55; let joystickTouchId = null;
-        function updateJoystick(touch) { const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2; const dx = touch.clientX - cX, dy = touch.clientY - cY, dist = Math.hypot(dx, dy); if (dist > JOYSTICK_DEADZONE) { joystickAngle = Math.atan2(dy, dx); } const capD = Math.min(dist, JOYSTICK_MAX_RADIUS); UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`; }
-        UI.joyB.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); for (let i = 0; i < e.changedTouches.length; i++) { if (joystickTouchId === null) { joystickTouchId = e.changedTouches[i].identifier; joystickActive = true; updateJoystick(e.changedTouches[i]); } } }, { passive: false });
-        window.addEventListener('touchmove', (e) => { if (joystickActive) { for (let i = 0; i < e.changedTouches.length; i++) { if (e.changedTouches[i].identifier === joystickTouchId) { updateJoystick(e.changedTouches[i]); e.preventDefault(); } } } }, { passive: false });
-        function releaseJoystick(e) { if (joystickActive) { for (let i = 0; i < e.changedTouches.length; i++) { if (e.changedTouches[i].identifier === joystickTouchId) { joystickActive = false; joystickTouchId = null; UI.joyH.style.transform = 'translate(-50%, -50%)'; } } } }
-        window.addEventListener('touchend', releaseJoystick); window.addEventListener('touchcancel', releaseJoystick);
+        const JOYSTICK_DEADZONE = 5, JOYSTICK_MAX_RADIUS = 50; let joystickTouchId = null;
+        function updateJoystick(touch) {
+            const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2;
+            const dx = touch.clientX - cX, dy = touch.clientY - cY, dist = Math.hypot(dx, dy);
+            if (dist > JOYSTICK_DEADZONE) { joystickAngle = Math.atan2(dy, dx); }
+            const capD = Math.min(dist, JOYSTICK_MAX_RADIUS);
+            UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`;
+        }
 
-        UI.boost.addEventListener('touchstart', (e) => { isMouseDown = true; e.stopPropagation(); e.preventDefault(); }, { passive: false });
-        UI.boost.addEventListener('touchend', (e) => { isMouseDown = false; e.stopPropagation(); e.preventDefault(); }, { passive: false });
-        UI.boost.addEventListener('touchcancel', (e) => { isMouseDown = false; e.stopPropagation(); }, { passive: false });
+        window.addEventListener('touchstart', (e) => {
+            if (gameState !== 'playing' || !player) return;
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                // Joystick na metade esquerda
+                if (touch.clientX < vpWidth / 2 && joystickTouchId === null) {
+                    joystickTouchId = touch.identifier;
+                    joystickActive = true;
+                    UI.joyB.style.left = touch.clientX + 'px';
+                    UI.joyB.style.top = touch.clientY + 'px';
+                    UI.joyB.classList.add('active');
+                    updateJoystick(touch);
+                    Haptic.soft();
+                }
+            }
+        }, { passive: false });
 
-        let touchStartX = 0, touchStartY = 0, swipeTouchId = null;
-        window.addEventListener('touchstart', e => { if (e.target.closest('#mobile-controls') || e.target.closest('#ui-layer > div:not(#mobile-controls)')) return; if (swipeTouchId === null) { swipeTouchId = e.changedTouches[0].identifier; touchStartX = e.changedTouches[0].clientX; touchStartY = e.changedTouches[0].clientY; } }, { passive: true });
+        window.addEventListener('touchmove', (e) => {
+            if (joystickActive) {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === joystickTouchId) {
+                        updateJoystick(e.changedTouches[i]);
+                        e.preventDefault();
+                    }
+                }
+            }
+        }, { passive: false });
+
+        function releaseJoystick(e) {
+            if (joystickActive) {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === joystickTouchId) {
+                        joystickActive = false;
+                        joystickTouchId = null;
+                        UI.joyB.classList.remove('active');
+                        UI.joyH.style.transform = 'translate(-50%, -50%)';
+                    }
+                }
+            }
+        }
+        window.addEventListener('touchend', releaseJoystick);
+        window.addEventListener('touchcancel', releaseJoystick);
+
+        UI.boost.addEventListener('touchstart', (e) => {
+            isMouseDown = true;
+            UI.boost.classList.add('boosting');
+            Haptic.medium();
+            e.stopPropagation();
+            e.preventDefault();
+        }, { passive: false });
+
+        UI.boost.addEventListener('touchend', (e) => {
+            isMouseDown = false;
+            UI.boost.classList.remove('boosting');
+            e.stopPropagation();
+            e.preventDefault();
+        }, { passive: false });
+
+        UI.boost.addEventListener('touchcancel', (e) => {
+            isMouseDown = false;
+            UI.boost.classList.remove('boosting');
+            e.stopPropagation();
+        }, { passive: false });
+
+        let touchStartX = 0, touchStartY = 0, swipeTouchId = null, swipeStartTime = 0;
+        window.addEventListener('touchstart', e => {
+            if (e.target.closest('#btn-turbo') || e.target.closest('#joystick-base')) return;
+            if (swipeTouchId === null) {
+                swipeTouchId = e.changedTouches[0].identifier;
+                touchStartX = e.changedTouches[0].clientX;
+                touchStartY = e.changedTouches[0].clientY;
+                swipeStartTime = performance.now();
+            }
+        }, { passive: true });
+
         window.addEventListener('touchend', e => {
             if (gameState !== 'playing' || !player) return;
             for (let i = 0; i < e.changedTouches.length; i++) {
                 if (e.changedTouches[i].identifier === swipeTouchId) {
                     let dx = e.changedTouches[i].clientX - touchStartX, dy = e.changedTouches[i].clientY - touchStartY;
-                    if (Math.abs(dx) > 45 || Math.abs(dy) > 45) {
-                        if (player.score > 25) { player.score -= 15; player.speed = CONFIG.cobra.mobile.velocidadeTurbo * 1.6; AudioSys.play('dash'); createExplosion(player.x, player.y, '#ffdf00', 12); for (let x = 0; x < 5; x++) if (APP_SETTINGS.highGfx) player.trails.push({ x: player.x, y: player.y, life: 1.5 }); setTimeout(() => { if (player && !player.isBoosting) player.speed = CONFIG.cobra.mobile.velocidadeBase; }, 200); }
-                    } swipeTouchId = null;
+                    let dt = performance.now() - swipeStartTime;
+                    // Swipe rápido e longo o suficiente
+                    if (dt < 300 && (Math.abs(dx) > 50 || Math.abs(dy) > 50)) {
+                        if (player.score > 25) {
+                            player.score -= 15;
+                            player.speed = CONFIG.cobra.mobile.velocidadeTurbo * 1.8;
+                            AudioSys.play('dash');
+                            Haptic.medium();
+                            createExplosion(player.x, player.y, '#ffdf00', 12);
+                            for (let x = 0; x < 6; x++) if (APP_SETTINGS.highGfx) player.trails.push({ x: player.x, y: player.y, life: 1.8 });
+                            setTimeout(() => { if (player && !player.isBoosting) player.speed = CONFIG.cobra.mobile.velocidadeBase; }, 250);
+                        }
+                    }
+                    swipeTouchId = null;
                 }
             }
         });
