@@ -1007,8 +1007,9 @@
          * Pode alterar todos os números abaixo sem medo, respeitando os limites indicados.
          * =========================================================================================
          */
-        const IS_MOBILE_CLIENT = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024;
-        const MOBILE_DPR_CAP = 1.5; // Limita resolução do canvas em mobile para evitar saturação GPU
+        const IS_MOBILE_CLIENT = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024 || ('ontouchstart' in window);
+        const MOBILE_DPR_CAP = 1.6; // Refinado para melhor nitidez mantendo performance
+        console.log(`%c 🎮 MODO DETECTADO: ${IS_MOBILE_CLIENT ? 'MOBILE' : 'PC'} `, `background: ${IS_MOBILE_CLIENT ? '#ff0055' : '#007bff'}; color: white; font-weight: bold; border-radius: 4px; padding: 2px 8px;`);
 
         const CONFIG = {
             // 🐍 1. CONFIGURAÇÕES DA SERPENTE (Física, Velocidade e Crescimento)
@@ -1016,9 +1017,9 @@
                 pc: {
                     espessuraInicial: 18,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
                     espessuraMaxima: 30,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
-                    comprimentoInicial: 55,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
+                    comprimentoInicial: 60,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
                     comprimentoMaximo: 450,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
-                    velocidadeBase: 2.0,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
+                    velocidadeBase: 2.4,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
                     velocidadeTurbo: 4.0        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
@@ -1026,7 +1027,7 @@
                     espessuraMaxima: 26,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 45,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 350,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 1.0,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeBase: 1.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 4.0        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
@@ -1084,7 +1085,7 @@
                 mobile: {
                     corGrade: '#2c529e', // Cor do fundo no telemóvel
                     corFundo: '#0a1128', // Fundo real no telemóvel
-                    tamanhoHexagono: 13  // Tamanho da malha no telemóvel
+                    tamanhoHexagono: 25  // [OTIMIZADO] Tamanho equilibrado para performance visual no mobile
                 }
             },
 
@@ -1387,8 +1388,8 @@
 
                 this.cache[color] = c; return c;
             },
-            getGridPattern: function (size, color) {
-                const key = 'grid_' + size + '_' + color;
+            getGridPattern: function (size, color, isLite = false) {
+                const key = 'grid_' + size + '_' + color + (isLite ? '_lite' : '');
                 if (this.cache[key]) return this.cache[key];
                 const c = document.createElement('canvas');
                 const h = size * Math.sqrt(3), w = size * 1.5;
@@ -1398,19 +1399,29 @@
                     cx.beginPath(); cx.moveTo(x + size, y);
                     for (let i = 1; i <= 6; i++) cx.lineTo(x + size * Math.cos(i * Math.PI / 3), y + size * Math.sin(i * Math.PI / 3));
                     cx.closePath();
-                    // Fundo da cor 'color' para o hexágono
-                    cx.fillStyle = color;
-                    cx.fill();
-                    // Borda grossa escura
-                    cx.strokeStyle = '#050a14';
-                    cx.lineWidth = size * 0.32;
-                    cx.stroke();
-                    // Gradiente sutil interno para profundidade
-                    let grad = cx.createRadialGradient(x, y, 0, x, y, size);
-                    grad.addColorStop(0, 'rgba(255,255,255,0.06)');
-                    grad.addColorStop(1, 'rgba(0,0,0,0.30)');
-                    cx.fillStyle = grad;
-                    cx.fill();
+
+                    if (!isLite) {
+                        // Fundo da cor 'color' para o hexágono
+                        cx.fillStyle = color;
+                        cx.fill();
+                        // Borda grossa escura
+                        cx.strokeStyle = '#050a14';
+                        cx.lineWidth = size * 0.32;
+                        cx.stroke();
+                        // Gradiente sutil interno para profundidade
+                        let grad = cx.createRadialGradient(x, y, 0, x, y, size);
+                        grad.addColorStop(0, 'rgba(255,255,255,0.06)');
+                        grad.addColorStop(1, 'rgba(0,0,0,0.30)');
+                        cx.fillStyle = grad;
+                        cx.fill();
+                    } else {
+                        // MODO LITE: Apenas contorno sutil
+                        cx.strokeStyle = color; // Usa a cor da grade, mas sem preenchimento
+                        cx.lineWidth = 1;
+                        cx.globalAlpha = 0.2; // Bem discreto para performance e visual
+                        cx.stroke();
+                        cx.globalAlpha = 1;
+                    }
                 };
                 drawHex(0, 0); drawHex(w, h / 2); drawHex(w * 2, 0); drawHex(0, h); drawHex(w * 2, h);
                 const pattern = mainCtx.createPattern(c, 'repeat');
@@ -1505,13 +1516,27 @@
         }
 
         class Food {
-            constructor(x, y, r, c, isD = false, eV = 2) { this.x = x; this.y = y; this.radius = r; this.color = c; this.isDropped = isD; this.value = eV; this.wO = Math.random() * Math.PI * 2; }
+            constructor(x, y, r, c, isD = false, eV = 2) {
+                this.x = x; this.y = y; this.radius = r; this.color = c; this.isDropped = isD; this.value = eV;
+                this.wO = Math.random() * Math.PI * 2;
+                this.wX = Math.random() * Math.PI * 2; // Fase X para o boiar
+                this.wY = Math.random() * Math.PI * 2; // Fase Y para o boiar
+                this.dead = false;
+                this.attractSpeed = 0;
+            }
             draw(ctx, time) {
-                // Pulso de escala suave (cresce e diminui) em vez de flutuar
-                let pulse = 1.0 + Math.sin(time * CONFIG.visual.velocidadeAnimacaoComida * 2.5 + this.wO) * (this.isDropped ? 0.18 : 0.10);
+                // 1. Efeito de Flutuação (Drift) — Calculado no desenho para performance
+                let driftX = Math.sin(time * 0.0012 + this.wX) * 4;
+                let driftY = Math.cos(time * 0.0015 + this.wY) * 3;
+                
+                // 2. Pulso de escala suave
+                let pulseBase = this.isDropped ? 0.20 : 0.12;
+                let pulseFreq = this.isDropped ? 3.0 : 2.2;
+                let pulse = 1.0 + Math.sin(time * CONFIG.visual.velocidadeAnimacaoComida * pulseFreq + this.wO) * pulseBase;
+                
                 let r = this.radius * pulse;
                 let img = this.isDropped ? TextureManager.getDroppedFood(this.color) : TextureManager.getFood(this.color);
-                ctx.drawImage(img, this.x - r, this.y - r, r * 2, r * 2);
+                ctx.drawImage(img, (this.x + driftX) - r, (this.y + driftY) - r, r * 2, r * 2);
             }
         }
 
@@ -2054,7 +2079,7 @@
                 this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 if (this.segments.length < this.targetLength) this.segments.push({ x: this.segments[this.segments.length - 1].x, y: this.segments[this.segments.length - 1].y });
 
-                if (this.isBoosting && this.score > 50) {
+                if (this.isBoosting && this.score > 30) {
                     this.speed = this.conf.velocidadeTurbo;
                     if (frameCount % 2 === 0 && APP_SETTINGS.highGfx) this.trails.push({ x: this.segments[0].x, y: this.segments[0].y, life: 1.0 });
                     if (Math.random() < CONFIG.cobra.chanceOrbeTurbo) {
@@ -2082,7 +2107,7 @@
                 }
 
                 let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                let tS = Math.max(0.06, 0.09 - (this.radius * 0.0010)); if (this.isBoosting) tS *= 1.35;
+                let tS = Math.max(0.06, 0.08 - (this.radius * 0.0011)); if (this.isBoosting) tS *= 1.35;
                 if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
@@ -2098,11 +2123,25 @@
                 for (let i of nearFoodIdx) {
                     let f = foods[i];
                     if (!f || f.dead) continue;
-                    let d2 = (this.x - f.x) ** 2 + (this.y - f.y) ** 2;
-                    if (d2 < (CONFIG.mundo.forcaAtracao) ** 2) { let d = Math.sqrt(d2); f.x += (this.x - f.x) / d * 8; f.y += (this.y - f.y) / d * 8; }
-                    if (d2 < (this.radius + f.radius) ** 2) {
-                        this.score += f.value; this.eatTimer = 15; f.dead = true; // Tombstone pattern
-                        if (this.isPlayer) { AudioSys.play('eat'); Haptic.soft(); PLAYER_STATS.totalFood++; }
+                    let dx = f.x - this.x, dy = f.y - this.y, dist = Math.sqrt(dx * dx + dy * dy);
+                    let hitDist = (this.radius * 0.82) + f.radius;
+
+                    if (dist < eatRadius) {
+                        // 🧲 Magnetismo com aceleração progressiva
+                        f.attractSpeed = Math.min(12, f.attractSpeed + 0.7);
+                        let pullStrength = 1.0 - (dist / (eatRadius * 1.2));
+                        f.x -= (dx / dist) * f.attractSpeed * pullStrength;
+                        f.y -= (dy / dist) * f.attractSpeed * pullStrength;
+
+                        // CONSUMO
+                        if (dist < hitDist) {
+                            this.score += f.value; this.eatTimer = 15; f.dead = true;
+                            if (this.isPlayer) {
+                                PLAYER_STATS.totalFood++; 
+                                if (frameCount % 6 === 0) AudioSys.play('eat');
+                                if (this.score % 100 < 5) Haptic.soft();
+                            }
+                        }
                     }
                 }
 
@@ -2328,7 +2367,7 @@
 
             // 2. Grade Hexagonal Otimizada (Pattern Caching)
             const size = mundoConf.tamanhoHexagono;
-            const gridPattern = TextureManager.getGridPattern(size, mundoConf.corGrade);
+            const gridPattern = TextureManager.getGridPattern(size, mundoConf.corGrade, !APP_SETTINGS.highGfx);
             ctx.save();
             ctx.fillStyle = gridPattern;
             ctx.translate(0, 0); // O pattern já alinha com o mundo
@@ -2381,7 +2420,11 @@
 
             // Lógica Core de Atualização (Roda SEMPRE, mesmo no menu, para o Fundo Animado)
             if (gameState === 'playing' && player && player.alive) {
-                player.isBoosting = isMouseDown; if (frameCount % 60 === 0) PLAYER_STATS.totalTime++;
+                // Sincronização Inteligente: Mobile usa variáveis específicas, PC usa o Mouse
+                player.isBoosting = IS_MOBILE_CLIENT ? isMouseDown : isMouseDown;
+                // Nota: isMouseDown já é atualizado pelos botões de touch no mobile.
+                // Mas garantimos que o estado seja limpo se não houver toque.
+                if (frameCount % 60 === 0) PLAYER_STATS.totalTime++;
 
                 // 1. LOOK-AHEAD: câmera antecipa a direção do movimento
                 let lookAheadStrength = player.isBoosting ? 120 : 75;
@@ -2491,13 +2534,8 @@
             if (camera.shake > 0.5) { mainCtx.translate(Math.random() * camera.shake - camera.shake / 2, Math.random() * camera.shake - camera.shake / 2); camera.shake *= 0.85; }
             mainCtx.scale(camera.zoom, camera.zoom); mainCtx.translate(-camera.x, -camera.y);
 
-            if (APP_SETTINGS.highGfx) drawGrid(mainCtx, camera.x, camera.y, camera.zoom);
-            else {
-                const vW = vpWidth / camera.zoom, vH = vpHeight / camera.zoom;
-                mainCtx.fillStyle = CONFIG.mundo.corFundo;
-                mainCtx.fillRect(camera.x - vW / 2, camera.y - vH / 2, vW, vH);
-                drawArenaBoundary(mainCtx, camera.x, camera.y, camera.zoom); // Garantir borda sempre visível
-            }
+            drawGrid(mainCtx, camera.x, camera.y, camera.zoom);
+            if (!APP_SETTINGS.highGfx) drawArenaBoundary(mainCtx, camera.x, camera.y, camera.zoom);
 
             for (let ff of fireflies) { if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
             for (let f of foods) { if (!f.dead && Math.hypot(f.x - camera.x, f.y - camera.y) < cullingDist) f.draw(mainCtx, time); }
