@@ -218,6 +218,24 @@
             font-weight: 800;
         }
 
+        @media (max-width: 1024px) {
+            #leaderboard {
+                top: 10px;
+                right: 10px;
+                width: 130px;
+                padding: 6px 8px;
+                font-size: 8.5px;
+                gap: 1px;
+                background: rgba(0, 0, 0, 0.08);
+                border-color: rgba(255, 255, 255, 0.04);
+                backdrop-filter: blur(3px);
+            }
+
+            #lb-list {
+                gap: 1px;
+            }
+        }
+
         /* SKINS RODAPÉ DIREITO */
         #skins-btn {
             position: absolute;
@@ -434,6 +452,20 @@
             background: rgba(0, 0, 0, 0.5);
         }
 
+        @media (max-width: 1024px) {
+            #minimap-wrapper {
+                top: auto;
+                left: auto;
+                bottom: 120px;
+                right: 20px;
+            }
+
+            #minimap-container {
+                width: 90px;
+                height: 90px;
+            }
+        }
+
         /* CONTROLES MOBILE */
         #mobile-controls {
             position: absolute;
@@ -638,10 +670,38 @@
 
         @media (max-width: 1024px) {
             #missions-panel {
-                top: 15px;
-                left: 15px;
-                transform: scale(0.75);
-                transform-origin: top left;
+                top: 10px;
+                left: 10px;
+                width: auto;
+                max-width: 200px;
+                padding: 8px 10px;
+                gap: 5px;
+                transform: none;
+            }
+
+            #missions-panel>div:first-child {
+                font-size: 9px !important;
+                margin-bottom: 2px !important;
+            }
+
+            .mission-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .m-desc {
+                font-size: 8px;
+                white-space: nowrap;
+                margin-bottom: 0 !important;
+                min-width: 0;
+                flex-shrink: 0;
+            }
+
+            .m-bar {
+                width: 50px;
+                height: 4px;
+                flex-shrink: 0;
             }
         }
 
@@ -795,11 +855,27 @@
             <button id="play-btn" class="btn-aaa anim-slide-up delay-4">INICIAR JORNADA</button>
 
             <div id="skins-btn" class="anim-fade-in delay-4">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                    <path
-                        d="M8 17C5.23858 17 3 14.7614 3 12C3 9.23858 5.23858 7 8 7H13C15.7614 7 18 4.76142 18 2H20C20 5.86599 16.866 9 13 9H8C6.34315 9 5 10.3431 5 12C5 13.6569 6.34315 15 8 15H18C20.7614 15 23 17.2386 23 20V22H21V20C21 18.3431 19.6569 17 18 17H8Z"
-                        fill="#00ff88" />
-                    <circle cx="20" cy="5" r="1.5" fill="#ffdf00" />
+                <svg width="36" height="36" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Corpo da cobra em S -->
+                    <path d="M10 36 C10 28 18 28 18 21 C18 14 10 14 10 7" stroke="#00ff88" stroke-width="6"
+                        stroke-linecap="round" fill="none" />
+                    <path d="M10 36 C10 43 20 43 26 38 C32 33 38 33 38 27" stroke="#00ff88" stroke-width="6"
+                        stroke-linecap="round" fill="none" />
+                    <!-- Escamas (marcas no corpo) -->
+                    <circle cx="14" cy="14" r="2" fill="#00cc66" opacity="0.7" />
+                    <circle cx="14" cy="21" r="2" fill="#00cc66" opacity="0.7" />
+                    <circle cx="14" cy="29" r="2" fill="#00cc66" opacity="0.7" />
+                    <circle cx="20" cy="36" r="2" fill="#00cc66" opacity="0.7" />
+                    <circle cx="28" cy="36" r="2" fill="#00cc66" opacity="0.7" />
+                    <!-- Olho -->
+                    <circle cx="10" cy="6" r="2.5" fill="white" />
+                    <circle cx="10.8" cy="5.5" r="1.2" fill="#111" />
+                    <!-- Língua -->
+                    <path d="M10 3.5 L10 1 M10 1 L8.5 0 M10 1 L11.5 0" stroke="#ff4455" stroke-width="1"
+                        stroke-linecap="round" />
+                    <!-- Joia (coroa de escama) -->
+                    <circle cx="38" cy="27" r="4" fill="#ffdf00" />
+                    <circle cx="38" cy="27" r="2" fill="#cc9900" />
                 </svg>
                 <span>MUDAR ESCAMAS</span>
             </div>
@@ -868,25 +944,28 @@
                 pc: {
                     espessuraInicial: 18,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
                     espessuraMaxima: 30,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
-                    comprimentoInicial: 60,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
-                    comprimentoMaximo: 350,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
-                    velocidadeBase: 3.9,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
-                    velocidadeTurbo: 9.8        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
+                    comprimentoInicial: 55,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
+                    comprimentoMaximo: 450,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
+                    velocidadeBase: 2.4,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
+                    velocidadeTurbo: 4.0        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
                     espessuraInicial: 11,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
-                    espessuraMaxima: 28,        // (Recomendado: 20 a 35) Limite de grossura em Telemóveis.
-                    comprimentoInicial: 60,     // (Recomendado: 10 a 30) Comprimento inicial mais curto no Mobile.
-                    comprimentoMaximo: 350,     // (⚠️ Limite: 500) Máximo no mobile para evitar sobreaquecimento do aparelho.
-                    velocidadeBase: 3.7,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
-                    velocidadeTurbo: 8.5        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
+                    espessuraMaxima: 30,        // (Recomendado: 20 a 35) Limite de grossura em Telemóveis.
+                    comprimentoInicial: 55,     // (Recomendado: 10 a 30) Comprimento inicial mais curto no Mobile.
+                    comprimentoMaximo: 450,     // (⚠️ Limite: 500) Máximo no mobile para evitar sobreaquecimento do aparelho.
+                    velocidadeBase: 2.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeTurbo: 4.0        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
                 distanciaGomos: 0.07,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
-                pontosParaEngrossar: 150,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
-                pontosParaCrescer: 2,          // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
-                custoDoTurbo: 1.5,              // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
-                pontosIniciais: 20               // (Recomendado: 10 a 100) Todos nascem iguais para um crescimento natural e justo.
+                pontosParaEngrossar: 250,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
+                pontosParaCrescer: 1,           // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
+                custoDoTurbo: 1.0,              // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
+                tamanhoOrbeTurbo: 3.5,          // (Recomendado: 2.0 a 10.0) Tamanho das orbes que a cobra deixa ao correr.
+                chanceOrbeTurbo: 0.3,           // (Recomendado: 0.1 a 1.0) Probabilidade por frame de soltar orbes ao correr (1.0 = sempre).
+                quantidadeOrbeTurbo: 1,          // (Recomendado: 1 a 5) Quantidade de orbes que saem de uma vez quando corre.
+                pontosIniciais: 20              // (Recomendado: 10 a 100) Todos nascem iguais para um crescimento natural e justo.
             },
 
             // 🔍 2. CONFIGURAÇÕES DA CÂMARA (Visão do Jogador)
@@ -905,35 +984,44 @@
 
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
-                tamanhoRaio: 7500,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
-                quantidadeBots: 70,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
-                quantidadeComida: 7000,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
-                quantidadeInsetosDourados: 20,  // Cantidade de "Borboletas" exuberantes ativas.
+                tamanhoRaio: 3600,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
+                quantidadeBots: 20,             // (⚠️ Limite: 150) Número de Bots IA. Acima de 150 gera quedas de FPS fortes.
+                quantidadeComida: 15000,         // (⚠️ Limite: 15000) Máximo de orbes no mapa. +15000 causa Lag nos browsers.
+                quantidadeInsetosDourados: 16,  // Cantidade de "Borboletas" exuberantes ativas.
                 distribuicaoBots: {
                     // Probabilidade de cada categoria nascer (Soma deve ser 1.0)
-                    probabilidades: { pequeno: 0.100, medio: 0.00, grande: 0.00, gigante: 0.00 },
+                    probabilidades: { pequeno: 0.90, medio: 0.10, grande: 0.00, gigante: 0.00 },
                     // Intervalo de Pontuação [min, max] para cada categoria
                     pontos: {
                         pequeno: [40, 190],
-                        medio: [200, 1000],
+                        medio: [400, 1000],
                         grande: [1000, 3000],
                         gigante: [3000, 8000]
                     }
                 },
-                tamanhoComidaMin: 5.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
-                tamanhoComidaMax: 8.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
-                forcaAtracao: 50,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
-                corGrade: '#2c529e', // Cor do fundo hexagonal (azul estilo premium)
-                corFundo: '#0a1128', // A cor das bordas e fundo real
-                tamanhoHexagono: 35  // O tamanho da malha desenhada no fundo.
+                tamanhoComidaMin: 3.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
+                tamanhoComidaMax: 4.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
+                tamanhoOrbeMorte: 4.0,          // (Recomendado: 5.0 a 15.0) Tamanho base da comida deixada ao morrer.
+                tamanhoOrbeMorteBonus: 4.0,    // (Recomendado: 5.0 a 20.0) Crescimento máximo extra dependendo da pontuação que a cobra tinha.
+                forcaAtracao: 30,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
+                pc: {
+                    corGrade: '#2c529e', // Cor do fundo hexagonal (azul estilo premium)
+                    corFundo: '#0a1128', // A cor das bordas e fundo real
+                    tamanhoHexagono: 45  // O tamanho da malha desenhada no fundo.
+                },
+                mobile: {
+                    corGrade: '#2c529e', // Cor do fundo no telemóvel
+                    corFundo: '#0a1128', // Fundo real no telemóvel
+                    tamanhoHexagono: 13  // Tamanho da malha no telemóvel
+                }
             },
 
             // ✨ 4. EFEITOS ESPECIAIS E AMBIENTE (Detalhes Gráficos)
             visual: {
-                balancoComida: 4.0,             // (Recomendado: 0 a 10) Efeito que faz a comida "tremer" ou flutuar ligeiramente.
+                balancoComida: 22.0,             // (Recomendado: 0 a 10) Efeito que faz a comida "tremer" ou flutuar ligeiramente.
                 velocidadeAnimacaoComida: 0.003,// (Recomendado: 0.001 a 0.01) A velocidade com que a comida vibra/pulsa.
                 quantidadeVagalumes: 100,       // (⚠️ Limite: 250) Pontos de luz branca de fundo. +250 pode causar lentidão ligeira.
-                distanciaFugaVagalumes: 280,    // (Recomendado: 100 a 500) Distância em que as luzes se assustam com a cobra e fogem.
+                distanciaFugaVagalumes: 180,    // (Recomendado: 100 a 500) Distância em que as luzes se assustam com a cobra e fogem.
                 dRender: 500                    // (Técnico) Otimização. Impede renderizar o que está a mais de 400px fora do ecrã.
             }
         };
@@ -946,9 +1034,14 @@
 
         const SKINS = [
             ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#009c3b', '#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222'],
-            ['#000000', '#ffdf00'], ['#ff8c00', '#000000', '#ffffff'], ['#1a1a2e', '#16213e', '#0f3460', '#e94560'], ['#00ffcc', '#ff00ff', '#111111'], ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'], ['#8a2be2', '#4b0082', '#000000'], ['#00ffff', '#00cccc', '#009999', '#006666'], ['#ff0000', '#8b0000', '#000000'], ['#39ff14', '#000000', '#111111'], ['#ffffff', '#000000']
+            ['#000000', '#ffdf00'], ['#ff8c00', '#000000', '#ffffff'], ['#1a1a2e', '#16213e', '#0f3460', '#e94560'], ['#00ffcc', '#ff00ff', '#111111'], ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'], ['#8a2be2', '#4b0082', '#000000'], ['#00ffff', '#00cccc', '#009999', '#006666'], ['#ff0000', '#8b0000', '#000000'], ['#39ff14', '#000000', '#111111'], ['#ffffff', '#000000'],
+            // Skins Lula
+            ['#CC0000', '#CC0000', '#CC0000', '#CC0000', '#CC0000', '#CC0000'], // Puro PT
+            ['#CC0000', '#CC0000', '#ffffff', '#ffffff', '#CC0000', '#CC0000'], // Lula Bicolor
+            ['#CC0000', '#880000', '#CC0000', '#880000', '#ffdf00', '#ffdf00'], // Lula Estrela
+            ['#CC0000', '#CC0000', '#330000', '#330000', '#ff6666', '#ff6666']  // Lula Sombra
         ];
-        const SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados", "Ouro Negro", "Tigre", "Galáxia", "Ciborgue", "Algodão Doce", "Vazio", "Abissal", "Vampiro", "Matriz", "Zebra"];
+        const SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados", "Ouro Negro", "Tigre", "Galáxia", "Ciborgue", "Algodão Doce", "Vazio", "Abissal", "Vampiro", "Matriz", "Zebra", "PT Vermelho", "Lula Bicolor", "Lula Estrela", "Lula Sombra"];
 
         const PLAYER_STATS = {
             highScore: parseInt(localStorage.getItem('serpente_highScore') || '0'), totalKills: parseInt(localStorage.getItem('serpente_totalKills') || '0'),
@@ -1136,17 +1229,18 @@
             },
             getFood: function (color) {
                 let key = 'food_' + color; if (this.cache[key]) return this.cache[key];
+                let baseColor = color.split('-')[0];
                 const c = document.createElement('canvas'); c.width = 64; c.height = 64;
                 const cx = c.getContext('2d');
                 const cx0 = 32, cy0 = 32, r = 22;
                 // Clip circular — nada sai fora do círculo
                 cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, Math.PI * 2); cx.clip();
                 // Halo
-                cx.globalAlpha = 0.3; cx.fillStyle = color;
+                cx.globalAlpha = 0.3; cx.fillStyle = baseColor;
                 cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, Math.PI * 2); cx.fill(); cx.globalAlpha = 1;
                 // Corpo
                 const body = cx.createRadialGradient(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.05, cx0, cy0, r);
-                body.addColorStop(0, 'rgba(255,255,255,0.95)'); body.addColorStop(0.3, color); body.addColorStop(1, shadeColor(color, -40));
+                body.addColorStop(0, 'rgba(255,255,255,0.95)'); body.addColorStop(0.3, baseColor); body.addColorStop(1, shadeColor(baseColor, -40));
                 cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill();
                 // Brilho
                 cx.beginPath(); cx.arc(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.22, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.9)'; cx.fill();
@@ -1154,17 +1248,18 @@
             },
             getDroppedFood: function (color) {
                 let key = 'drop_' + color; if (this.cache[key]) return this.cache[key];
+                let baseColor = color.split('-')[0];
                 const c = document.createElement('canvas'); c.width = 64; c.height = 64;
                 const cx = c.getContext('2d');
                 const cx0 = 32, cy0 = 32, r = 20;
                 // Clip circular
                 cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, Math.PI * 2); cx.clip();
                 // Halo duplo
-                cx.globalAlpha = 0.45; cx.fillStyle = color; cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, Math.PI * 2); cx.fill();
+                cx.globalAlpha = 0.45; cx.fillStyle = baseColor; cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, Math.PI * 2); cx.fill();
                 cx.globalAlpha = 0.2; cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(cx0, cy0, r * 1.2, 0, Math.PI * 2); cx.fill(); cx.globalAlpha = 1;
                 // Corpo
                 const body = cx.createRadialGradient(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.05, cx0, cy0, r);
-                body.addColorStop(0, 'rgba(255,255,255,1)'); body.addColorStop(0.25, '#fff'); body.addColorStop(0.55, color); body.addColorStop(1, shadeColor(color, -30));
+                body.addColorStop(0, 'rgba(255,255,255,1)'); body.addColorStop(0.25, '#fff'); body.addColorStop(0.55, baseColor); body.addColorStop(1, shadeColor(baseColor, -30));
                 cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill();
                 // Brilho duplo
                 cx.beginPath(); cx.arc(cx0 - r * 0.28, cy0 - r * 0.28, r * 0.25, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.95)'; cx.fill();
@@ -1723,7 +1818,13 @@
                 if (this.isBoosting && this.score > 50) {
                     this.speed = this.conf.velocidadeTurbo;
                     if (frameCount % 2 === 0 && APP_SETTINGS.highGfx) this.trails.push({ x: this.segments[0].x, y: this.segments[0].y, life: 1.0 });
-                    if (Math.random() < 0.3) { this.score -= CONFIG.cobra.custoDoTurbo; let t = this.segments[this.segments.length - 1]; foods.push(new Food(t.x + (Math.random() * 10 - 5), t.y + (Math.random() * 10 - 5), 5.5, this.skin[this.segments.length % this.skin.length], true, CONFIG.cobra.custoDoTurbo)); }
+                    if (Math.random() < CONFIG.cobra.chanceOrbeTurbo) {
+                        this.score -= CONFIG.cobra.custoDoTurbo;
+                        let t = this.segments[this.segments.length - 1];
+                        for (let q = 0; q < CONFIG.cobra.quantidadeOrbeTurbo; q++) {
+                            foods.push(new Food(t.x + (Math.random() * 14 - 7), t.y + (Math.random() * 14 - 7), CONFIG.cobra.tamanhoOrbeTurbo, this.skin[this.segments.length % this.skin.length], true, CONFIG.cobra.custoDoTurbo));
+                        }
+                    }
                 } else { this.speed = this.conf.velocidadeBase; this.isBoosting = false; }
 
                 for (let i = this.trails.length - 1; i >= 0; i--) { this.trails[i].life -= 0.05; if (this.trails[i].life <= 0) this.trails.splice(i, 1); }
@@ -1742,7 +1843,7 @@
                 }
 
                 let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                let tS = Math.max(0.04, 0.08 - (this.radius * 0.0012)); if (this.isBoosting) tS *= 1.35;
+                let tS = Math.max(0.06, 0.07 - (this.radius * 0.0010)); if (this.isBoosting) tS *= 1.35;
                 if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
@@ -1793,7 +1894,11 @@
                 }
                 if (dropFood) {
                     let step = 5, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num;
-                    for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; foods.push(new Food(s.x + (Math.random() * 20 - 10), s.y + (Math.random() * 20 - 10), 9 + Math.min(10, val / 30), this.skin[i % this.skin.length], true, val)); }
+                    for (let i = 0; i < this.segments.length; i += step) {
+                        let s = this.segments[i];
+                        let rSize = CONFIG.mundo.tamanhoOrbeMorte + Math.min(CONFIG.mundo.tamanhoOrbeMorteBonus, val / 30);
+                        foods.push(new Food(s.x + (Math.random() * 20 - 10), s.y + (Math.random() * 20 - 10), rSize, this.skin[i % this.skin.length], true, val));
+                    }
                 }
             }
             draw(ctx) {
@@ -1932,12 +2037,14 @@
             const viewportW = vpWidth / zoom, viewportH = vpHeight / zoom;
             const startX = camX - viewportW / 2, startY = camY - viewportH / 2;
 
+            const mundoConf = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
+
             // 1. Fundo Sólido
-            ctx.fillStyle = CONFIG.mundo.corFundo; ctx.fillRect(startX, startY, viewportW, viewportH);
+            ctx.fillStyle = mundoConf.corFundo; ctx.fillRect(startX, startY, viewportW, viewportH);
 
             // 2. Grade Hexagonal Otimizada (Pattern Caching)
-            const size = CONFIG.mundo.tamanhoHexagono;
-            const gridPattern = TextureManager.getGridPattern(size, CONFIG.mundo.corGrade);
+            const size = mundoConf.tamanhoHexagono;
+            const gridPattern = TextureManager.getGridPattern(size, mundoConf.corGrade);
             ctx.save();
             ctx.fillStyle = gridPattern;
             ctx.translate(0, 0); // O pattern já alinha com o mundo
