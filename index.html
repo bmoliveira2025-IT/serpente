@@ -969,7 +969,7 @@
                     espessuraMaxima: 30,        // (Recomendado: 20 a 35) Limite de grossura em Telemóveis.
                     comprimentoInicial: 55,     // (Recomendado: 10 a 30) Comprimento inicial mais curto no Mobile.
                     comprimentoMaximo: 450,     // (⚠️ Limite: 500) Máximo no mobile para evitar sobreaquecimento do aparelho.
-                    velocidadeBase: 3.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeBase: 2.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 4.0        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
@@ -2223,10 +2223,12 @@
             let segStep = IS_MOBILE_CLIENT ? 6 : 4;
             for (let i = 0; i < snakes.length; i++) {
                 let s1 = snakes[i]; if (!s1.alive) continue;
-                for (let j = 0; j < snakes.length; j++) { let s2 = snakes[j]; if (i === j || !s2.alive) continue; let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8);
+                for (let j = 0; j < snakes.length; j++) {
+                    let s2 = snakes[j]; if (i === j || !s2.alive) continue; let hitDist = (s1.radius * 0.8) + (s2.radius * 0.8);
                     // Pré-filtro: cabeças muito distantes = skip
                     if (Math.abs(s1.x - s2.x) > hitDist + s2.segments.length * 2 && Math.abs(s1.y - s2.y) > hitDist + s2.segments.length * 2) continue;
-                    for (let k = 0; k < s2.segments.length; k += segStep) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } } }
+                    for (let k = 0; k < s2.segments.length; k += segStep) { if (Math.hypot(s1.x - s2.segments[k].x, s1.y - s2.segments[k].y) < hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } }
+                }
             }
 
             snakes = snakes.filter(s => s.alive || s.isPlayer);
