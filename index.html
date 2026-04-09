@@ -1843,7 +1843,7 @@
                 }
 
                 let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                let tS = Math.max(0.06, 0.07 - (this.radius * 0.0010)); if (this.isBoosting) tS *= 1.35;
+                let tS = Math.max(0.06, 0.09 - (this.radius * 0.0010)); if (this.isBoosting) tS *= 1.35;
                 if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
