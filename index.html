@@ -272,6 +272,42 @@
             }
         }
 
+        /* ACESSÓRIOS RODAPÉ DIREITO (AO LADO DAS SKINS) */
+        #acc-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 160px;
+            /* Posicionado à esquerda do botão de skins */
+            cursor: pointer;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            z-index: 50;
+        }
+
+        #acc-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #acc-btn span {
+            font-weight: 800;
+            color: #00ff88;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+        }
+
+        @media (max-width: 1024px) {
+            #acc-btn {
+                bottom: 20px;
+                right: 130px;
+                transform: scale(0.85);
+            }
+        }
+
         /* MODO MENU E MORTE - Fundo semi-transparente para ver a arena */
         #start-menu,
         #death-screen {
@@ -593,8 +629,9 @@
             }
         }
 
-        /* PREVIEW SKIN */
-        #skin-preview-ui {
+        /* PREVIEW MENUS (SKINS & ACESSÓRIOS) */
+        #skin-preview-ui,
+        #acc-preview-ui {
             position: absolute;
             inset: 0;
             display: flex;
@@ -614,11 +651,13 @@
             z-index: 105;
         }
 
-        #left-arrow {
+        #left-arrow,
+        #acc-left-arrow {
             left: 8%;
         }
 
-        #right-arrow {
+        #right-arrow,
+        #acc-right-arrow {
             right: 8%;
         }
 
@@ -950,6 +989,16 @@
                 </svg>
                 <span>MUDAR ESCAMAS</span>
             </div>
+
+            <div id="acc-btn" class="anim-fade-in delay-4">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 17H22" stroke="#00ff88" stroke-width="2" stroke-linecap="round" />
+                    <path d="M4 17C4 17 4 10 12 10C20 10 20 17 20 17" stroke="#00ff88" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M12 10V6C12 6 12 3 10 3" stroke="#00ff88" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span>ADEREÇOS</span>
+            </div>
         </div>
 
         <div id="skin-preview-ui" class="hidden">
@@ -968,6 +1017,20 @@
                 <div style="font-size:12px; color:#aaa; margin-top:3px;" id="skin-req-status">SUA PROGRESSÃO: 0</div>
             </div>
             <button id="skin-ok-btn" class="btn-aaa"
+                style="position:absolute; bottom:10%; left:50%; transform:translateX(-50%); z-index: 110;">OK</button>
+        </div>
+
+        <div id="acc-preview-ui" class="hidden">
+            <div id="acc-name-display"
+                style="position:absolute; top:15%; left:50%; transform:translateX(-50%); color:#00ff88; font-weight:800; font-size:clamp(30px, 6vw, 45px); text-align: center; width: 100%;">
+                NENHUM</div>
+            <div id="acc-left-arrow" class="arrow-btn"><svg width="60" height="60" viewBox="0 0 24 24" fill="#00ff88">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                </svg></div>
+            <div id="acc-right-arrow" class="arrow-btn"><svg width="60" height="60" viewBox="0 0 24 24" fill="#00ff88">
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                </svg></div>
+            <button id="acc-ok-btn" class="btn-aaa"
                 style="position:absolute; bottom:10%; left:50%; transform:translateX(-50%); z-index: 110;">OK</button>
         </div>
 
@@ -1016,15 +1079,15 @@
             cobra: {
                 pc: {
                     espessuraInicial: 18,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
-                    espessuraMaxima: 30,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
+                    espessuraMaxima: 32,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
                     comprimentoInicial: 10,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
-                    comprimentoMaximo: 550,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
+                    comprimentoMaximo: 500,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
                     velocidadeBase: 2.0,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
                     velocidadeTurbo: 3.5        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
                     espessuraInicial: 10,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
-                    espessuraMaxima: 26,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
+                    espessuraMaxima: 27,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 10,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 550,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
                     velocidadeBase: 1.1,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
@@ -1044,7 +1107,7 @@
             // 🔍 2. CONFIGURAÇÕES DA CÂMARA (Visão do Jogador)
             zoom: {
                 pc: {
-                    inicial: 1.60,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
+                    inicial: 1.40,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
                     minimo: 0.100,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
                     fatorAfastamento: 0.010     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
                 },
@@ -1133,6 +1196,19 @@
             ['#CC0000', '#CC0000', '#330000', '#330000', '#ff6666', '#ff6666']  // Lula Sombra
         ];
         const SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados", "Ouro Negro", "Tigre", "Galáxia", "Ciborgue", "Algodão Doce", "Vazio", "Abissal", "Vampiro", "Matriz", "Zebra", "PT Vermelho", "Lula Bicolor", "Lula Estrela", "Lula Sombra"];
+
+        const ACCESSORIES = [
+            { id: 0, name: "Nenhum" },
+            { id: 1, name: "Coroa Real" },
+            { id: 2, name: "Viking Helmet" },
+            { id: 3, name: "Cartola VIP" },
+            { id: 4, name: "Cyborg Vizor" },
+            { id: 5, name: "Óculos Aviador" },
+            { id: 6, name: "Chapéu de Mago" },
+            { id: 7, name: "Máscara Ninja" },
+            { id: 8, name: "Bigode Imperial" }
+        ];
+        let accIndex = parseInt(localStorage.getItem('serpente_accIndex') || '0');
 
         const PLAYER_STATS = {
             highScore: parseInt(localStorage.getItem('serpente_highScore') || '0'), totalKills: parseInt(localStorage.getItem('serpente_totalKills') || '0'),
@@ -1497,6 +1573,143 @@
             ctx.restore();
         }
 
+        function drawAccessory(ctx, x, y, r, angle, accId) {
+            if (!accId || accId === 0) return;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+
+            switch (accId) {
+                case 1: // Coroa Real
+                    const gold = ctx.createLinearGradient(-r, 0, r, 0);
+                    gold.addColorStop(0, '#bf953f'); gold.addColorStop(0.5, '#fcf6ba'); gold.addColorStop(1, '#aa771c');
+                    ctx.fillStyle = gold; ctx.strokeStyle = '#5d4037'; ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(-r * 0.6, -r * 0.2);
+                    ctx.lineTo(-r * 0.6, -r * 1.0); // Ponta esquerda
+                    ctx.lineTo(-r * 0.3, -r * 0.5);
+                    ctx.lineTo(0, -r * 1.2);         // Ponta centro
+                    ctx.lineTo(r * 0.3, -r * 0.5);
+                    ctx.lineTo(r * 0.6, -r * 1.0);  // Ponta direita
+                    ctx.lineTo(r * 0.6, -r * 0.2);
+                    ctx.closePath(); ctx.fill(); ctx.stroke();
+                    // Gemas
+                    ctx.fillStyle = '#ff0000'; ctx.beginPath(); ctx.arc(0, -r * 0.7, r * 0.15, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#0000ff'; ctx.beginPath(); ctx.arc(-r * 0.4, -r * 0.4, r * 0.1, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#0000ff'; ctx.beginPath(); ctx.arc(r * 0.4, -r * 0.4, r * 0.1, 0, Math.PI * 2); ctx.fill();
+                    break;
+
+                case 2: // Viking Helmet
+                    const steel = ctx.createLinearGradient(-r, 0, r, 0);
+                    steel.addColorStop(0, '#757f9a'); steel.addColorStop(0.5, '#d7dde8'); steel.addColorStop(1, '#757f9a');
+                    ctx.fillStyle = steel;
+                    ctx.beginPath(); ctx.arc(0, 0, r * 1.05, Math.PI, 0); ctx.fill();
+                    // Horns
+                    ctx.fillStyle = '#f5f5f5'; ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+                    // Esquerdo
+                    ctx.beginPath(); ctx.moveTo(-r * 0.8, -r * 0.2);
+                    ctx.quadraticCurveTo(-r * 1.5, -r * 1.2, -r * 0.5, -r * 1.5);
+                    ctx.quadraticCurveTo(-r * 1.0, -r * 1.0, -r * 0.4, -r * 0.4);
+                    ctx.fill(); ctx.stroke();
+                    // Direito
+                    ctx.beginPath(); ctx.moveTo(r * 0.8, -r * 0.2);
+                    ctx.quadraticCurveTo(r * 1.5, -r * 1.2, r * 0.5, -r * 1.5);
+                    ctx.quadraticCurveTo(r * 1.0, -r * 1.0, r * 0.4, -r * 0.4);
+                    ctx.fill(); ctx.stroke();
+                    break;
+
+                case 3: // Cartola VIP
+                    ctx.fillStyle = '#0a0a0a';
+                    ctx.beginPath(); ctx.ellipse(0, 0, r * 0.4, r * 1.3, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillRect(-r * 1.1, -r * 0.8, r * 1.1, r * 1.6);
+                    ctx.fillStyle = '#d4af37'; // Gold band
+                    ctx.fillRect(-r * 0.3, -r * 0.8, r * 0.2, r * 1.6);
+                    break;
+
+                case 4: // Cyborg Vizor
+                    ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+                    ctx.fillStyle = 'rgba(20, 20, 20, 0.9)';
+                    ctx.beginPath(); ctx.roundRect(r * 0.4, -r * 0.8, r * 0.6, r * 1.6, 5); ctx.fill(); ctx.stroke();
+                    // Scanline vermelha
+                    const scan = ctx.createLinearGradient(r * 0.4, 0, r * 1.0, 0);
+                    scan.addColorStop(0, 'rgba(255,0,0,0)'); scan.addColorStop(0.5, 'rgba(255,0,0,0.8)'); scan.addColorStop(1, 'rgba(255,0,0,0)');
+                    ctx.fillStyle = scan;
+                    let pulse = (performance.now() * 0.01) % (r * 1.6);
+                    ctx.fillRect(r * 0.5, -r * 0.8 + pulse, r * 0.4, 2);
+                    // Brilho lateral
+                    ctx.shadowBlur = 10; ctx.shadowColor = '#ff0000';
+                    ctx.fillStyle = '#ff0000'; ctx.beginPath(); ctx.arc(r * 0.8, -r * 0.6, r * 0.1, 0, Math.PI * 2); ctx.fill();
+                    ctx.shadowBlur = 0;
+                    break;
+
+                case 5: // Aviador
+                    ctx.strokeStyle = '#cc9900'; ctx.lineWidth = 2;
+                    const lens = ctx.createRadialGradient(r * 0.7, 0, 0, r * 0.7, 0, r);
+                    lens.addColorStop(0, '#333'); lens.addColorStop(1, '#000');
+                    ctx.fillStyle = lens;
+                    // Lente Esq
+                    ctx.beginPath(); ctx.arc(r * 0.7, -r * 0.45, r * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    // Lente Dir
+                    ctx.beginPath(); ctx.arc(r * 0.7, r * 0.45, r * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    // Ponte
+                    ctx.beginPath(); ctx.moveTo(r * 0.7, -r * 0.1); ctx.lineTo(r * 0.7, r * 0.1); ctx.stroke();
+                    // Reflexo
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.beginPath(); ctx.ellipse(r * 0.8, -r * 0.5, r * 0.2, r * 0.1, 0.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.8, r * 0.4, r * 0.2, r * 0.1, 0.5, 0, Math.PI * 2); ctx.fill();
+                    break;
+
+                case 6: // Chapéu Mago (Ajustado para Frente)
+                    ctx.fillStyle = '#1a237e';
+                    ctx.beginPath(); ctx.arc(0, 0, r * 1.1, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(r * 0.5, -r * 0.5);
+                    ctx.lineTo(r * 2.2, 0); // Ponta agora para Frente
+                    ctx.lineTo(r * 0.5, r * 0.5);
+                    ctx.fill();
+                    // Estrelas
+                    ctx.fillStyle = '#ffdf00';
+                    const drawStar = (sx, sy, sr) => {
+                        ctx.beginPath(); for (let i = 0; i < 5; i++) {
+                            ctx.lineTo(sx + Math.cos(i * 4 * Math.PI / 5) * sr, sy + Math.sin(i * 4 * Math.PI / 5) * sr);
+                        } ctx.closePath(); ctx.fill();
+                    };
+                    drawStar(r * 1.2, -r * 0.1, r * 0.15);
+                    drawStar(r * 0.6, r * 0.4, r * 0.12);
+                    drawStar(r * 0.7, -r * 0.4, r * 0.1);
+                    break;
+
+                case 7: // Máscara Ninja
+                    ctx.fillStyle = '#111';
+                    ctx.beginPath();
+                    ctx.arc(r * 0.3, 0, r * 1.1, -Math.PI * 0.3, Math.PI * 0.3, true);
+                    ctx.fill();
+                    // Costura
+                    ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(r * 0.8, -r * 0.4); ctx.lineTo(r * 0.8, r * 0.4); ctx.stroke();
+                    break;
+
+                case 8: // Bigode Imperial
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.shadowBlur = 4; ctx.shadowColor = 'black';
+                    // Metade Esquerda
+                    ctx.beginPath();
+                    ctx.moveTo(r * 0.6, -r * 0.1);
+                    ctx.bezierCurveTo(r * 1.2, -r * 0.8, r * 1.8, -r * 0.2, r * 1.6, 0);
+                    ctx.quadraticCurveTo(r * 1.2, -r * 0.3, r * 0.6, -r * 0.1);
+                    ctx.fill();
+                    // Metade Direita
+                    ctx.beginPath();
+                    ctx.moveTo(r * 0.6, r * 0.1);
+                    ctx.bezierCurveTo(r * 1.2, r * 0.8, r * 1.8, r * 0.2, r * 1.6, 0);
+                    ctx.quadraticCurveTo(r * 1.2, r * 0.3, r * 0.6, r * 0.1);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    break;
+            }
+            ctx.restore();
+        }
+
         class Particle {
             constructor(x, y, color, s) { this.init(x, y, color, s); }
             init(x, y, color, s) {
@@ -1774,8 +1987,8 @@
         }
 
         class Snake {
-            constructor(x, y, n, sI, isP = false, startScore = CONFIG.cobra.pontosIniciais) {
-                this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
+            constructor(x, y, n, sI, isP = false, startScore = CONFIG.cobra.pontosIniciais, aI = 0) {
+                this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.accId = aI; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
                 this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle;
                 this.conf = IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc;
                 this.speed = this.conf.velocidadeBase; this.isBoosting = false; this.score = startScore;
@@ -2265,6 +2478,7 @@
                     look = (joystickActive) ? joystickAngle : this.targetAngle;
                 }
                 drawPremiumEyes(ctx, this.x, this.y, headR, this.angle, look, this.skinId, this.isBoosting, this.eatTimer > 0);
+                drawAccessory(ctx, this.x, this.y, headR, this.angle, this.accId);
 
                 ctx.save(); ctx.fillStyle = this.isPlayer ? '#ffdf00' : 'rgba(255, 255, 255, 0.5)'; ctx.font = '800 12px Poppins'; ctx.textAlign = 'center'; ctx.fillText(this.name, this.x, this.y - headR - 20);
                 if (this.isKing) {
@@ -2449,7 +2663,11 @@
                 camera.zoom = 0.55;
             }
 
-            if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], Math.floor(Math.random() * SKINS.length), false, CONFIG.cobra.pontosIniciais));
+            if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) {
+                let sI = Math.floor(Math.random() * SKINS.length);
+                let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0; // Bots têm 20% de chance de ter acessório
+                snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], sI, false, CONFIG.cobra.pontosIniciais, aI));
+            }
 
             // Cálculo Dinâmico do Raio (Expansão do Mapa)
             const totalScoreOnMap = snakes.reduce((sum, s) => sum + (s.alive ? s.score : 0), 0);
@@ -2568,6 +2786,16 @@
                 drawPremiumEyes(mainCtx, segs[0].x, segs[0].y, rad, 0, Math.sin(time * 0.001) * 0.5, skinIndex, false, false);
                 mainCtx.filter = 'none';
             }
+            else if (gameState === 'acc-menu') {
+                mainCtx.fillStyle = 'rgba(5,5,5,0.95)'; mainCtx.fillRect(0, 0, vpWidth, vpHeight);
+                let act = SKINS[skinIndex], rad = IS_MOBILE_CLIENT ? 26 : 38, len = 32, spc = rad * 0.45;
+                let headX = (vpWidth / 2) + ((len * spc) / 2), centerY = vpHeight / 2 - 20, segs = [];
+                for (let i = 0; i < len; i++) segs.push({ x: headX - (i * spc), y: centerY + Math.sin(time * 0.005 - i * 0.18) * (rad * 1.5) });
+                for (let i = segs.length - 1; i >= 0; i--) mainCtx.drawImage(TextureManager.getSegment(act[i % act.length]), segs[i].x - rad, segs[i].y - rad, rad * 2, rad * 2);
+                mainCtx.drawImage(TextureManager.getSegment(act[0]), segs[0].x - rad, segs[0].y - rad, rad * 2, rad * 2);
+                drawPremiumEyes(mainCtx, segs[0].x, segs[0].y, rad, 0, Math.sin(time * 0.001) * 0.5, skinIndex, false, false);
+                drawAccessory(mainCtx, segs[0].x, segs[0].y, rad, 0, accIndex);
+            }
             else if (gameState === 'playing' || gameState === 'dead') {
                 let hudThrottle = IS_MOBILE_CLIENT ? 30 : 10;
                 if (frameCount % hudThrottle === 0) updateHUD();
@@ -2595,7 +2823,7 @@
             if (player) { let idx = snakes.indexOf(player); if (idx > -1) snakes.splice(idx, 1); } // Limpa jogador antigo se houver
             playerKills = 0; currentEvo = -1;
             const spawn = getSafeSpawnPos(1200);
-            player = new Snake(spawn.x, spawn.y, UI.nick.value.trim() || "LENDA", skinIndex, true);
+            player = new Snake(spawn.x, spawn.y, UI.nick.value.trim() || "LENDA", skinIndex, true, CONFIG.cobra.pontosIniciais, accIndex);
             // Sincronização Instantânea da Câmera (Evita "surto" de zoom ou pulo no início)
             let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc'];
             camera.zoom = zV.inicial;
@@ -2612,6 +2840,25 @@
         UI.ok.addEventListener('click', () => { UI.preview.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
         UI.left.addEventListener('click', () => { skinIndex = (skinIndex - 1 + SKINS.length) % SKINS.length; updateSkinUI(); });
         UI.right.addEventListener('click', () => { skinIndex = (skinIndex + 1) % SKINS.length; updateSkinUI(); });
+
+        // Eventos de Acessórios
+        const accUI = {
+            btn: document.getElementById('acc-btn'),
+            preview: document.getElementById('acc-preview-ui'),
+            ok: document.getElementById('acc-ok-btn'),
+            left: document.getElementById('acc-left-arrow'),
+            right: document.getElementById('acc-right-arrow'),
+            name: document.getElementById('acc-name-display')
+        };
+        accUI.btn.addEventListener('click', () => { gameState = 'acc-menu'; UI.start.style.display = 'none'; accUI.preview.classList.remove('hidden'); updateAccUI(); });
+        accUI.ok.addEventListener('click', () => { accUI.preview.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; localStorage.setItem('serpente_accIndex', accIndex); });
+        accUI.left.addEventListener('click', () => { accIndex = (accIndex - 1 + ACCESSORIES.length) % ACCESSORIES.length; updateAccUI(); });
+        accUI.right.addEventListener('click', () => { accIndex = (accIndex + 1) % ACCESSORIES.length; updateAccUI(); });
+
+        function updateAccUI() {
+            accUI.name.innerText = ACCESSORIES[accIndex].name.toUpperCase();
+        }
+
         UI.again.addEventListener('click', () => { UI.death.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
 
         const JOYSTICK_DEADZONE = 5, JOYSTICK_MAX_RADIUS = 50; let joystickTouchId = null;
@@ -2726,7 +2973,11 @@
         // Restaurar nick guardado
         UI.nick.value = localStorage.getItem('serpente_nick') || '';
         UI.nick.addEventListener('input', () => localStorage.setItem('serpente_nick', UI.nick.value.trim()));
-        for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) snakes.push(new Snake(...Object.values(getSafeSpawnPos(800)), BOT_NAMES[i % BOT_NAMES.length], Math.floor(Math.random() * SKINS.length), false, CONFIG.cobra.pontosIniciais));
+        for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) {
+            let sI = Math.floor(Math.random() * SKINS.length);
+            let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0;
+            snakes.push(new Snake(...Object.values(getSafeSpawnPos(800)), BOT_NAMES[i % BOT_NAMES.length], sI, false, CONFIG.cobra.pontosIniciais, aI));
+        }
         spawnFood(CONFIG.mundo.quantidadeComida);
         for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
         requestAnimationFrame(gameLoop);
