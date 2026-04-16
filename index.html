@@ -1078,52 +1078,53 @@
             // 🐍 1. CONFIGURAÇÕES DA SERPENTE (Física, Velocidade e Crescimento)
             cobra: {
                 pc: {
-                    espessuraInicial: 18,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
+                    espessuraInicial: 20,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
                     espessuraMaxima: 32,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
-                    comprimentoInicial: 10,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
+                    comprimentoInicial: 19,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
                     comprimentoMaximo: 500,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
-                    velocidadeBase: 2.0,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
-                    velocidadeTurbo: 3.5        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
+                    velocidadeBase: 3.0,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
+                    velocidadeTurbo: 5.0        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
                     espessuraInicial: 10,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
                     espessuraMaxima: 27,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
-                    comprimentoInicial: 10,     // [REDUZIDO] Início mais ágil para mobile.
+                    comprimentoInicial: 11,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 550,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 1.1,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
-                    velocidadeTurbo: 3.5        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
+                    velocidadeBase: 1.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeTurbo: 5.0        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
-                distanciaGomos: 0.22,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
+                distanciaGomos: 0.36,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
                 pontosParaEngrossar: 250,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
-                pontosParaCrescer: 1,           // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
+                pontosParaCrescer: 4,           // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
                 custoDoTurbo: 1.0,              // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
                 tamanhoOrbeTurbo: 3.5,          // (Recomendado: 2.0 a 10.0) Tamanho das orbes que a cobra deixa ao correr.
-                chanceOrbeTurbo: 0.3,           // (Recomendado: 0.1 a 1.0) Probabilidade por frame de soltar orbes ao correr (1.0 = sempre).
+                chanceOrbeTurbo: 0.2,           // (Recomendado: 0.1 a 1.0) Probabilidade por frame de soltar orbes ao correr (1.0 = sempre).
                 quantidadeOrbeTurbo: 1,          // (Recomendado: 1 a 5) Quantidade de orbes que saem de uma vez quando corre.
-                pontosIniciais: 20              // (Recomendado: 10 a 100) Todos nascem iguais para um crescimento natural e justo.
+                pontosIniciais: 20,             // (Recomendado: 10 a 100) Todos nascem iguais para um crescimento natural e justo.
+                multiplicadorCabeca: 1.08       // (Recomendado: 1.0 a 1.5) Ajuste o comprimento da cabeça da cobra. 1.0 é um círculo perfeito, superior a 1.0 alonga a cabeça.
             },
 
             // 🔍 2. CONFIGURAÇÕES DA CÂMARA (Visão do Jogador)
             zoom: {
                 pc: {
-                    inicial: 1.40,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
-                    minimo: 0.100,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
+                    inicial: 1.25,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
+                    minimo: 0.510,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
                     fatorAfastamento: 0.010     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
                 },
                 mobile: {
-                    inicial: 0.95,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
-                    minimo: 0.40,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
+                    inicial: 0.100,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
+                    minimo: 0.60,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
                     fatorAfastamento: 0.012     // Suavidade do afastamento no telemóvel.
                 }
             },
 
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
-                tamanhoRaio: 3800,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
-                quantidadeBots: IS_MOBILE_CLIENT ? 39 : 60,             // Mobile: 12, PC: 20
-                quantidadeComida: IS_MOBILE_CLIENT ? 6300 : 12000,      // Mobile: 4k orbes, PC: 11k orbes
-                quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 6 : 16,   // Menos borboletas no mobile
+                tamanhoRaio: 7000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
+                quantidadeBots: IS_MOBILE_CLIENT ? 49 : 79,             // Mobile: 12, PC: 20
+                quantidadeComida: IS_MOBILE_CLIENT ? 6000 : 11000,      // Mobile: 4k orbes, PC: 11k orbes
+                quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 3 : 6,   // Menos borboletas no mobile
                 distribuicaoBots: {
                     // Probabilidade de cada categoria nascer (Soma deve ser 1.0)
                     probabilidades: { pequeno: 0.40, medio: 0.30, grande: 0.20, gigante: 0.10 },
@@ -1131,19 +1132,19 @@
                     pontos: {
                         pequeno: [40, 190],
                         medio: [400, 1000],
-                        grande: [1000, 3000],
-                        gigante: [3000, 8000]
+                        grande: [4000, 5000],
+                        gigante: [6000, 8000]
                     }
                 },
-                tamanhoComidaMin: 3.4,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
-                tamanhoComidaMax: 10.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
+                tamanhoComidaMin: 5.5,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
+                tamanhoComidaMax: 9.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
                 tamanhoOrbeMorte: 5.0,          // (Recomendado: 5.0 a 15.0) Tamanho base da comida deixada ao morrer.
                 tamanhoOrbeMorteBonus: 3.4,    // (Recomendado: 5.0 a 20.0) Crescimento máximo extra dependendo da pontuação que a cobra tinha.
                 forcaAtracao: 30,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
                 pc: {
                     corGrade: '#2c529e', // Cor do fundo hexagonal (azul estilo premium)
                     corFundo: '#0a1128', // A cor das bordas e fundo real
-                    tamanhoHexagono: 45  // O tamanho da malha desenhada no fundo.
+                    tamanhoHexagono: 43  // O tamanho da malha desenhada no fundo.
                 },
                 mobile: {
                     corGrade: '#2c529e', // Cor do fundo no telemóvel
@@ -1414,8 +1415,9 @@
 
         const TextureManager = {
             cache: {},
-            getSegment: function (color) {
-                if (this.cache[color]) return this.cache[color];
+            getSegment: function (color, isHead = false) {
+                const key = color + (isHead ? "_head" : "");
+                if (this.cache[key]) return this.cache[key];
                 const c = document.createElement('canvas'); c.width = 128; c.height = 128; const cx = c.getContext('2d'); const r = 62;
 
                 let baseColor = color;
@@ -1447,22 +1449,28 @@
                     }
                 }
 
-                // Volume 3D da Tubagem (Escurece Topo e Fundo)
+                // Volume 3D Cilíndrico (Réplica fiel do Slither.io original)
+                // O segredo é: brilho branco largo e suave no topo + sombra escura forte na base
                 let sideGrad = cx.createLinearGradient(0, 64 - r, 0, 64 + r);
-                sideGrad.addColorStop(0, 'rgba(0,0,0,0.10)');      // Muito sutil no topo
-                sideGrad.addColorStop(0.15, 'rgba(255,255,255,0.08)'); // Brilho quase imperceptível para não ofuscar
-                sideGrad.addColorStop(0.5, 'rgba(0,0,0,0.0)');     // Meio com a cor real chapada
-                sideGrad.addColorStop(0.85, 'rgba(0,0,0,0.15)');   // Pesa levemente pra base
-                sideGrad.addColorStop(1, 'rgba(0,0,0,0.30)');      // Borda inferior suavizada
+                sideGrad.addColorStop(0.00, 'rgba(255,255,255,0.45)'); // Topo: branco brilhante (reflexo de luz)
+                sideGrad.addColorStop(0.18, 'rgba(255,255,255,0.35)'); // Brilho largo e suave
+                sideGrad.addColorStop(0.35, 'rgba(255,255,255,0.08)'); // Transição gradual
+                sideGrad.addColorStop(0.50, 'rgba(0,0,0,0.0)');        // Meio: cor pura da skin
+                sideGrad.addColorStop(0.65, 'rgba(0,0,0,0.08)');       // Início sombra inferior
+                sideGrad.addColorStop(0.80, 'rgba(0,0,0,0.25)');       // Sombra forte
+                sideGrad.addColorStop(0.92, 'rgba(0,0,0,0.50)');       // Borda escura profunda
+                sideGrad.addColorStop(1.00, 'rgba(0,0,0,0.65)');       // Base: sombra máxima (chão do tubo)
                 cx.fillStyle = sideGrad; cx.fill();
 
-                // Sombra de Emenda na Parte Traseira (Left side crescent)
-                let backGrad = cx.createLinearGradient(64 - r, 0, 64 - r + r * 0.35, 0);
-                backGrad.addColorStop(0, 'rgba(0,0,0,0.20)'); // Degrau discreto entre gomos
-                backGrad.addColorStop(1, 'rgba(0,0,0,0)');
-                cx.fillStyle = backGrad; cx.fill();
+                if (!isHead) {
+                    // Anel de separação entre gomos (sombra fina na traseira de cada segmento)
+                    let backGrad = cx.createLinearGradient(64 - r, 0, 64 - r + r * 0.30, 0);
+                    backGrad.addColorStop(0, 'rgba(0,0,0,0.18)');
+                    backGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    cx.fillStyle = backGrad; cx.fill();
+                }
 
-                this.cache[color] = c; return c;
+                this.cache[key] = c; return c;
             },
             getGridPattern: function (size, color, isLite = false) {
                 const key = 'grid_' + size + '_' + color + (isLite ? '_lite' : '');
@@ -1547,24 +1555,23 @@
         function drawPremiumEyes(ctx, x, y, radius, angle, lookAngle, skinId, isBoosting = false, isEating = false) {
             ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
 
-            // Olhos alinhados na borda (Slither authentic)
-            let eyX = radius * 0.68;
-            let eyY = radius * 0.44;
-            let eyR = radius * 0.38;
-            let pupR = eyR * 0.60;
+            // Olhos idênticos aos do Print (Grandes, Pretos com Ponto Branco)
+            let eyX = radius * 0.65;
+            let eyY = radius * 0.45;
+            let eyR = radius * 0.35;
+            let pupR = eyR * 0.35;
 
             const drawEye = (ex, ey) => {
-                // Globo Ocular
-                ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.3;
-                ctx.beginPath(); ctx.arc(ex, ey, eyR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                // Globo Ocular Escuro Fixo
+                ctx.fillStyle = '#000000';
+                ctx.beginPath(); ctx.arc(ex, ey, eyR, 0, Math.PI * 2); ctx.fill();
 
-                // Pupila Sólida (Interativa - Segue o Cursor/Joystick)
+                // Pupila Branca (Ponto expressivo na borda)
                 ctx.save();
-                let lx = Math.cos(lookAngle - angle) * (eyR * 0.45); // Aumentado para um olhar mais expressivo
-                let ly = Math.sin(lookAngle - angle) * (eyR * 0.45);
-                ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(ex + lx, ey + ly, pupR, 0, Math.PI * 2); ctx.fill();
-                // Pequeno brilho discreto que simula profundidade
-                ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.arc(ex + lx - pupR * 0.3, ey + ly - pupR * 0.3, pupR * 0.25, 0, Math.PI * 2); ctx.fill();
+                let lx = Math.cos(lookAngle - angle) * (eyR * 0.30);
+                let ly = Math.sin(lookAngle - angle) * (eyR * 0.30);
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.arc(ex + lx, ey + ly, pupR, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
             };
 
@@ -1580,130 +1587,109 @@
             ctx.rotate(angle);
 
             switch (accId) {
-                case 1: // Coroa Real
-                    const gold = ctx.createLinearGradient(-r, 0, r, 0);
-                    gold.addColorStop(0, '#bf953f'); gold.addColorStop(0.5, '#fcf6ba'); gold.addColorStop(1, '#aa771c');
-                    ctx.fillStyle = gold; ctx.strokeStyle = '#5d4037'; ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(-r * 0.6, -r * 0.2);
-                    ctx.lineTo(-r * 0.6, -r * 1.0); // Ponta esquerda
-                    ctx.lineTo(-r * 0.3, -r * 0.5);
-                    ctx.lineTo(0, -r * 1.2);         // Ponta centro
-                    ctx.lineTo(r * 0.3, -r * 0.5);
-                    ctx.lineTo(r * 0.6, -r * 1.0);  // Ponta direita
-                    ctx.lineTo(r * 0.6, -r * 0.2);
-                    ctx.closePath(); ctx.fill(); ctx.stroke();
-                    // Gemas
-                    ctx.fillStyle = '#ff0000'; ctx.beginPath(); ctx.arc(0, -r * 0.7, r * 0.15, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#0000ff'; ctx.beginPath(); ctx.arc(-r * 0.4, -r * 0.4, r * 0.1, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#0000ff'; ctx.beginPath(); ctx.arc(r * 0.4, -r * 0.4, r * 0.1, 0, Math.PI * 2); ctx.fill();
+                case 1: // Coroa Real (Top Down Ring)
+                    ctx.lineWidth = r * 0.25;
+                    ctx.strokeStyle = '#e6c200';
+                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.45, 0, Math.PI * 2); ctx.stroke();
+                    ctx.lineWidth = r * 0.08;
+                    ctx.strokeStyle = '#fff59d';
+                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.45, 0, Math.PI * 2); ctx.stroke();
+                    let gemColors = ['#ff0000', '#00ff00', '#0000ff', '#ff00ff'];
+                    for (let i = 0; i < 4; i++) {
+                        let gx = -r * 0.1 + Math.cos(i * Math.PI / 2 + Math.PI / 4) * r * 0.45;
+                        let gy = Math.sin(i * Math.PI / 2 + Math.PI / 4) * r * 0.45;
+                        ctx.fillStyle = gemColors[i];
+                        ctx.beginPath(); ctx.arc(gx, gy, r * 0.12, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(gx - r * 0.03, gy - r * 0.03, r * 0.04, 0, Math.PI * 2); ctx.fill();
+                    }
                     break;
 
-                case 2: // Viking Helmet
-                    const steel = ctx.createLinearGradient(-r, 0, r, 0);
-                    steel.addColorStop(0, '#757f9a'); steel.addColorStop(0.5, '#d7dde8'); steel.addColorStop(1, '#757f9a');
+                case 2: // Viking Helmet (Top Down)
+                    let steel = ctx.createRadialGradient(-r * 0.1, 0, 0, -r * 0.1, 0, r * 0.55);
+                    steel.addColorStop(0, '#ffffff'); steel.addColorStop(0.4, '#a0a0a0'); steel.addColorStop(1, '#555555');
                     ctx.fillStyle = steel;
-                    ctx.beginPath(); ctx.arc(0, 0, r * 1.05, Math.PI, 0); ctx.fill();
-                    // Horns
-                    ctx.fillStyle = '#f5f5f5'; ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
-                    // Esquerdo
-                    ctx.beginPath(); ctx.moveTo(-r * 0.8, -r * 0.2);
-                    ctx.quadraticCurveTo(-r * 1.5, -r * 1.2, -r * 0.5, -r * 1.5);
-                    ctx.quadraticCurveTo(-r * 1.0, -r * 1.0, -r * 0.4, -r * 0.4);
-                    ctx.fill(); ctx.stroke();
-                    // Direito
-                    ctx.beginPath(); ctx.moveTo(r * 0.8, -r * 0.2);
-                    ctx.quadraticCurveTo(r * 1.5, -r * 1.2, r * 0.5, -r * 1.5);
-                    ctx.quadraticCurveTo(r * 1.0, -r * 1.0, r * 0.4, -r * 0.4);
-                    ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.55, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#333'; ctx.lineWidth = r * 0.08;
+                    ctx.beginPath(); ctx.moveTo(-r * 0.65, 0); ctx.lineTo(r * 0.45, 0); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-r * 0.1, -r * 0.55); ctx.lineTo(-r * 0.1, r * 0.55); ctx.stroke();
+                    ctx.fillStyle = '#ffeedd';
+                    ctx.beginPath(); ctx.moveTo(-r * 0.1, -r * 0.4); ctx.quadraticCurveTo(-r * 0.4, -r * 0.9, -r * 0.5, -r * 1.1); ctx.quadraticCurveTo(0, -r * 0.8, -r * 0.05, -r * 0.4); ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-r * 0.1, r * 0.4); ctx.quadraticCurveTo(-r * 0.4, r * 0.9, -r * 0.5, r * 1.1); ctx.quadraticCurveTo(0, r * 0.8, -r * 0.05, r * 0.4); ctx.fill(); ctx.stroke();
                     break;
 
-                case 3: // Cartola VIP
-                    ctx.fillStyle = '#0a0a0a';
-                    ctx.beginPath(); ctx.ellipse(0, 0, r * 0.4, r * 1.3, 0, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillRect(-r * 1.1, -r * 0.8, r * 1.1, r * 1.6);
-                    ctx.fillStyle = '#d4af37'; // Gold band
-                    ctx.fillRect(-r * 0.3, -r * 0.8, r * 0.2, r * 1.6);
+                case 3: // Cartola VIP (Top Down)
+                    ctx.fillStyle = '#111';
+                    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.65, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#333'; ctx.lineWidth = r * 0.05; ctx.stroke();
+                    ctx.fillStyle = '#d4af37';
+                    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.42, 0, Math.PI * 2); ctx.fill();
+                    let hatTop = ctx.createRadialGradient(-r * 0.15, -r * 0.05, 0, -r * 0.2, 0, r * 0.38);
+                    hatTop.addColorStop(0, '#444'); hatTop.addColorStop(1, '#050505');
+                    ctx.fillStyle = hatTop;
+                    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.38, 0, Math.PI * 2); ctx.fill();
                     break;
 
                 case 4: // Cyborg Vizor
-                    ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
-                    ctx.fillStyle = 'rgba(20, 20, 20, 0.9)';
-                    ctx.beginPath(); ctx.roundRect(r * 0.4, -r * 0.8, r * 0.6, r * 1.6, 5); ctx.fill(); ctx.stroke();
-                    // Scanline vermelha
-                    const scan = ctx.createLinearGradient(r * 0.4, 0, r * 1.0, 0);
-                    scan.addColorStop(0, 'rgba(255,0,0,0)'); scan.addColorStop(0.5, 'rgba(255,0,0,0.8)'); scan.addColorStop(1, 'rgba(255,0,0,0)');
-                    ctx.fillStyle = scan;
-                    let pulse = (performance.now() * 0.01) % (r * 1.6);
-                    ctx.fillRect(r * 0.5, -r * 0.8 + pulse, r * 0.4, 2);
-                    // Brilho lateral
-                    ctx.shadowBlur = 10; ctx.shadowColor = '#ff0000';
-                    ctx.fillStyle = '#ff0000'; ctx.beginPath(); ctx.arc(r * 0.8, -r * 0.6, r * 0.1, 0, Math.PI * 2); ctx.fill();
-                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = '#111'; ctx.lineWidth = r * 0.4;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.65); ctx.quadraticCurveTo(r * 0.9, 0, r * 0.65, r * 0.65); ctx.stroke();
+                    ctx.strokeStyle = '#00ffff'; ctx.lineWidth = r * 0.12;
+                    ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.6); ctx.quadraticCurveTo(r * 0.88, 0, r * 0.65, r * 0.6); ctx.stroke();
+                    ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff'; ctx.stroke(); ctx.shadowBlur = 0;
                     break;
 
-                case 5: // Aviador
-                    ctx.strokeStyle = '#cc9900'; ctx.lineWidth = 2;
-                    const lens = ctx.createRadialGradient(r * 0.7, 0, 0, r * 0.7, 0, r);
-                    lens.addColorStop(0, '#333'); lens.addColorStop(1, '#000');
-                    ctx.fillStyle = lens;
-                    // Lente Esq
-                    ctx.beginPath(); ctx.arc(r * 0.7, -r * 0.45, r * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                    // Lente Dir
-                    ctx.beginPath(); ctx.arc(r * 0.7, r * 0.45, r * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                    // Ponte
-                    ctx.beginPath(); ctx.moveTo(r * 0.7, -r * 0.1); ctx.lineTo(r * 0.7, r * 0.1); ctx.stroke();
-                    // Reflexo
-                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
-                    ctx.beginPath(); ctx.ellipse(r * 0.8, -r * 0.5, r * 0.2, r * 0.1, 0.5, 0, Math.PI * 2); ctx.fill();
-                    ctx.beginPath(); ctx.ellipse(r * 0.8, r * 0.4, r * 0.2, r * 0.1, 0.5, 0, Math.PI * 2); ctx.fill();
-                    break;
-
-                case 6: // Chapéu Mago (Ajustado para Frente)
-                    ctx.fillStyle = '#1a237e';
-                    ctx.beginPath(); ctx.arc(0, 0, r * 1.1, 0, Math.PI * 2); ctx.fill();
-                    ctx.beginPath();
-                    ctx.moveTo(r * 0.5, -r * 0.5);
-                    ctx.lineTo(r * 2.2, 0); // Ponta agora para Frente
-                    ctx.lineTo(r * 0.5, r * 0.5);
-                    ctx.fill();
-                    // Estrelas
-                    ctx.fillStyle = '#ffdf00';
-                    const drawStar = (sx, sy, sr) => {
-                        ctx.beginPath(); for (let i = 0; i < 5; i++) {
-                            ctx.lineTo(sx + Math.cos(i * 4 * Math.PI / 5) * sr, sy + Math.sin(i * 4 * Math.PI / 5) * sr);
-                        } ctx.closePath(); ctx.fill();
+                case 5: // Óculos Aviador
+                    const lensB = ctx.createLinearGradient(r * 0.4, -r * 0.5, r * 0.8, r * 0.5);
+                    lensB.addColorStop(0, '#111'); lensB.addColorStop(0.5, '#444'); lensB.addColorStop(1, '#000');
+                    ctx.fillStyle = lensB;
+                    ctx.strokeStyle = '#d4af37'; ctx.lineWidth = r * 0.06;
+                    const dl = (lx, ly) => {
+                        ctx.beginPath(); ctx.ellipse(lx, ly, r * 0.35, r * 0.45, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx.beginPath(); ctx.ellipse(lx + r * 0.1, ly - r * 0.1, r * 0.15, r * 0.08, Math.PI / 4, 0, Math.PI * 2); ctx.fill();
                     };
-                    drawStar(r * 1.2, -r * 0.1, r * 0.15);
-                    drawStar(r * 0.6, r * 0.4, r * 0.12);
-                    drawStar(r * 0.7, -r * 0.4, r * 0.1);
+                    dl(r * 0.65, -r * 0.45); dl(r * 0.65, r * 0.45);
+                    ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.2); ctx.quadraticCurveTo(r * 0.75, 0, r * 0.65, r * 0.2); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.85); ctx.lineTo(-r * 0.2, -r * 0.8); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r * 0.65, r * 0.85); ctx.lineTo(-r * 0.2, r * 0.8); ctx.stroke();
+                    break;
+
+                case 6: // Chapéu de Mago
+                    ctx.fillStyle = '#1a237e';
+                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.75, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#3949ab'; ctx.lineWidth = r * 0.08; ctx.stroke();
+                    ctx.fillStyle = '#283593';
+                    ctx.beginPath(); ctx.moveTo(r * 0.2, -r * 0.4); ctx.lineTo(r * 0.2, r * 0.4); ctx.lineTo(-r * 1.6, 0); ctx.fill();
+                    ctx.fillStyle = '#ffdf00';
+                    ctx.beginPath(); ctx.arc(-r * 0.1, -r * 0.2, r * 0.15, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#283593';
+                    ctx.beginPath(); ctx.arc(-r * 0.05, -r * 0.2, r * 0.12, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#ffdf00';
+                    ctx.beginPath(); ctx.arc(-r * 0.5, 0, r * 0.05, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.8, r * 0.1, r * 0.04, 0, Math.PI * 2); ctx.fill();
                     break;
 
                 case 7: // Máscara Ninja
-                    ctx.fillStyle = '#111';
+                    ctx.fillStyle = '#111111';
                     ctx.beginPath();
-                    ctx.arc(r * 0.3, 0, r * 1.1, -Math.PI * 0.3, Math.PI * 0.3, true);
+                    ctx.arc(0, 0, r * 1.03, Math.PI * 0.35, -Math.PI * 0.35);
+                    ctx.lineTo(r * 0.45, -r * 0.8);
+                    ctx.quadraticCurveTo(r * 0.35, 0, r * 0.45, r * 0.8);
                     ctx.fill();
-                    // Costura
-                    ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.moveTo(r * 0.8, -r * 0.4); ctx.lineTo(r * 0.8, r * 0.4); ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(0, 0, r * 1.03, -Math.PI * 0.2, Math.PI * 0.2);
+                    ctx.lineTo(r * 0.85, r * 0.5);
+                    ctx.quadraticCurveTo(r * 0.95, 0, r * 0.85, -r * 0.5);
+                    ctx.fill();
+                    ctx.strokeStyle = '#333'; ctx.lineWidth = r * 0.05;
+                    ctx.beginPath(); ctx.moveTo(-r * 0.8, 0); ctx.lineTo(-r * 0.2, 0); ctx.stroke();
                     break;
 
                 case 8: // Bigode Imperial
                     ctx.fillStyle = '#1a1a1a';
-                    ctx.shadowBlur = 4; ctx.shadowColor = 'black';
-                    // Metade Esquerda
-                    ctx.beginPath();
-                    ctx.moveTo(r * 0.6, -r * 0.1);
-                    ctx.bezierCurveTo(r * 1.2, -r * 0.8, r * 1.8, -r * 0.2, r * 1.6, 0);
-                    ctx.quadraticCurveTo(r * 1.2, -r * 0.3, r * 0.6, -r * 0.1);
-                    ctx.fill();
-                    // Metade Direita
-                    ctx.beginPath();
-                    ctx.moveTo(r * 0.6, r * 0.1);
-                    ctx.bezierCurveTo(r * 1.2, r * 0.8, r * 1.8, r * 0.2, r * 1.6, 0);
-                    ctx.quadraticCurveTo(r * 1.2, r * 0.3, r * 0.6, r * 0.1);
-                    ctx.fill();
+                    ctx.shadowBlur = 5; ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                    ctx.beginPath(); ctx.moveTo(r * 0.9, 0); ctx.quadraticCurveTo(r * 0.9, -r * 0.2, r * 0.7, -r * 0.8); ctx.quadraticCurveTo(r * 1.1, -r * 0.6, r * 0.9, 0); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(r * 0.9, 0); ctx.quadraticCurveTo(r * 0.9, r * 0.2, r * 0.7, r * 0.8); ctx.quadraticCurveTo(r * 1.1, r * 0.6, r * 0.9, 0); ctx.fill();
                     ctx.shadowBlur = 0;
                     break;
             }
@@ -2007,76 +1993,82 @@
                 }
             }
             updateAI() {
-                // ── INICIALIZAÇÃO DA PERSONALIDADE ──────────────────────────────────────
+                // ── INICIALIZAÇÃO ──────────────────────────────────────────────────────
                 if (this.aiPersonality === undefined) {
-                    const aggressive = ["Rei", "Titã", "Guardião", "Mago"];
+                    const aggressive = ["Rei", "Titã", "Guardião", "Mago", "Tempestade", "Veneno"];
                     const coward = ["Vila", "Milagre", "Helena"];
                     if (this.isKing) this.aiPersonality = 2;
                     else if (aggressive.includes(this.name)) this.aiPersonality = 0;
                     else if (coward.includes(this.name)) this.aiPersonality = 1;
                     else this.aiPersonality = Math.floor(Math.random() * 4);
 
-                    // Atributos humanos: reação, agressividade, erro micro
-                    this.aiReactionDelay = 3 + Math.floor(Math.random() * 8);   // frames de atraso de reação (3-10)
-                    this.aiAggression = 0.3 + Math.random() * 0.7;            // 0=passivo, 1=hiper-agressivo
-                    this.aiRiskTolerance = 0.2 + Math.random() * 0.6;            // quanto risco aceita ao cercar
-                    this.aiMicroError = 0.04 + Math.random() * 0.08;          // imprecisão natural de movimento
-                    this.aiGreed = 0.4 + Math.random() * 0.6;            // quanto persegue comida vs segurança
+                    this.aiReactionDelay = 1 + Math.floor(Math.random() * 4);
+                    this.aiAggression = 0.4 + Math.random() * 0.6;
+                    this.aiRiskTolerance = 0.3 + Math.random() * 0.5;
+                    this.aiMicroError = 0.02 + Math.random() * 0.04;
+                    this.aiGreed = 0.5 + Math.random() * 0.5;
                     this.aiDecisionTimer = 0;
-                    this.aiPendingAngle = null;   // ângulo decidido mas ainda não aplicado (delay)
-                    this.aiPendingIn = 0;
-                    this.aiEncirclePhase = 0;      // fase do cerco (0=off, 1=flanquear, 2=fechar)
+                    this.aiEncirclePhase = 0;
                     this.aiEncircleTarget = null;
                     this.aiLastDodgeFrame = -999;
                     this.aiWanderAngle = Math.random() * Math.PI * 2;
-                    this.aiBoostCooldown = 0;      // evita boost frenético
-                    this.aiMemFood = null;    // memória de comida alta em valor
+                    this.aiBoostCooldown = 0;
+                    this.aiTrauma = 0;
+                    this.aiConfidence = 0;
                 }
                 if (this.isKing) this.aiPersonality = 2;
-
-                // Decrementar cooldowns
                 if (this.aiBoostCooldown > 0) this.aiBoostCooldown--;
 
-                // ── 1. VARREDURA DE PERIGO (ray-cast rápido na direção do movimento) ────
-                let danger = false, evadeAngle = 0, dangerUrgency = 0;
-                let lookAhead = this.radius * 9;
+                // Adaptar com experiência (cobras maiores ficam mais letais)
+                if (frameCount % 30 === 0) {
+                    this.aiConfidence = Math.min(1.0, this.score / 2000);
+                    if (this.aiTrauma > 0) this.aiTrauma = Math.max(0, this.aiTrauma - 0.05);
+                    // Pros reagem mais rápido e erram menos
+                    this.aiReactionDelay = Math.max(0, Math.floor(3 - this.aiConfidence * 3));
+                    this.aiMicroError = Math.max(0.005, 0.03 - this.aiConfidence * 0.025);
+                }
+
+                // ── 1. VARREDURA DE PERIGO ─────────────────────────────────────────────
+                let danger = false, evadeAngle = 0, dangerUrgency = 0, dangerSnake = null;
+                let scanRadius = this.radius * (10 + this.aiConfidence * 6);
 
                 for (let other of snakes) {
                     if (other === this || !other.alive) continue;
                     let dHead = Math.hypot(other.x - this.x, other.y - this.y);
-                    let personalSpace = this.radius * (this.aiPersonality === 1 ? 20 : 14);
-                    if (dHead > personalSpace + other.segments.length * 0.5) continue;
+                    if (dHead > scanRadius + other.segments.length * 0.3) continue;
 
-                    // Verifica segmentos com passo adaptativo
-                    let step = dHead < personalSpace * 0.5 ? 3 : 6;
+                    let step = dHead < this.radius * 8 ? 2 : 5;
                     for (let k = 0; k < other.segments.length; k += step) {
                         let seg = other.segments[k];
                         let ds = Math.hypot(seg.x - this.x, seg.y - this.y);
-                        let hitZone = this.radius * 5.5;
+                        let hitZone = this.radius * 4.5 + this.aiConfidence * this.radius * 2;
                         if (ds < hitZone) {
-                            // Verifica se está na trajetória atual (ângulo relativo)
                             let angleToSeg = Math.atan2(seg.y - this.y, seg.x - this.x);
-                            let angleDiff = Math.abs(angleToSeg - this.angle);
+                            let angleDiff = angleToSeg - this.angle;
                             while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                            angleDiff = Math.abs(angleDiff);
-                            if (angleDiff < 1.4) { // só conta se estiver na frente (~80°)
+                            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                            if (Math.abs(angleDiff) < 1.6) {
                                 danger = true;
-                                dangerUrgency = 1 - (ds / hitZone); // 0=longe, 1=iminente
+                                dangerSnake = other;
+                                dangerUrgency = Math.max(dangerUrgency, 1 - (ds / hitZone));
                                 evadeAngle = Math.atan2(this.y - seg.y, this.x - seg.x);
-                                // Desvia para o lado menos bloqueado
+                                // Analisa saídas
                                 let left = evadeAngle + Math.PI * 0.5;
                                 let right = evadeAngle - Math.PI * 0.5;
                                 let clearL = true, clearR = true;
+                                let probeLen = this.radius * 8;
                                 for (let os of snakes) {
                                     if (os === this || !os.alive) continue;
-                                    for (let ks = 0; ks < os.segments.length; ks += 10) {
-                                        let tx = this.x + Math.cos(left) * lookAhead, ty = this.y + Math.sin(left) * lookAhead;
-                                        let tx2 = this.x + Math.cos(right) * lookAhead, ty2 = this.y + Math.sin(right) * lookAhead;
-                                        if (Math.hypot(os.segments[ks].x - tx, os.segments[ks].y - ty) < this.radius * 3) clearL = false;
-                                        if (Math.hypot(os.segments[ks].x - tx2, os.segments[ks].y - ty2) < this.radius * 3) clearR = false;
+                                    let stp = Math.max(5, Math.floor(os.segments.length / 20));
+                                    for (let ks = 0; ks < os.segments.length; ks += stp) {
+                                        let sx = os.segments[ks].x, sy = os.segments[ks].y;
+                                        if (Math.hypot(sx - (this.x + Math.cos(left) * probeLen), sy - (this.y + Math.sin(left) * probeLen)) < this.radius * 3) clearL = false;
+                                        if (Math.hypot(sx - (this.x + Math.cos(right) * probeLen), sy - (this.y + Math.sin(right) * probeLen)) < this.radius * 3) clearR = false;
                                     }
                                 }
-                                evadeAngle = (clearL && !clearR) ? left : (clearR && !clearL) ? right : evadeAngle + Math.PI;
+                                if (clearL && !clearR) evadeAngle = left;
+                                else if (clearR && !clearL) evadeAngle = right;
+                                else evadeAngle += Math.PI;
                                 break;
                             }
                         }
@@ -2084,74 +2076,90 @@
                     if (danger) break;
                 }
 
-                // ── 2. RESPOSTA AO PERIGO (com delay de reação humano) ────────────────
+                // ── 2. REAÇÃO AO PERIGO ────────────────────────────────────────────────
                 if (danger) {
-                    let applyNow = (frameCount - this.aiLastDodgeFrame) > this.aiReactionDelay;
-                    if (applyNow) {
-                        this.aiLastDodgeFrame = frameCount;
-                        // Adicionar micro-erro humano no ângulo de esquiva
-                        let err = (Math.random() - 0.5) * this.aiMicroError * (1 - dangerUrgency);
-                        let resolvedAngle = evadeAngle + err;
-
-                        if (this.aiPersonality === 2) {
-                            // Rei agressivo: esquiva curta e contra-ataca
-                            resolvedAngle = evadeAngle + Math.PI * (0.5 + Math.random() * 0.3);
-                            this.isBoosting = this.score > 200 && this.aiBoostCooldown === 0;
-                        } else if (this.aiPersonality === 0) {
-                            // Caçador: só foge se for muito menor
-                            let near = snakes.find(s => s !== this && s.alive && Math.hypot(s.x - this.x, s.y - this.y) < this.radius * 14);
-                            if (near && near.score > this.score * 1.4) {
-                                this.isBoosting = this.aiBoostCooldown === 0;
-                            } else {
-                                resolvedAngle = evadeAngle + Math.PI * (0.4 + Math.random() * 0.4);
-                                this.isBoosting = this.score > 150 && this.aiBoostCooldown === 0;
-                            }
-                        } else {
-                            this.isBoosting = dangerUrgency > 0.55 && this.aiBoostCooldown === 0;
-                        }
-                        if (this.isBoosting) this.aiBoostCooldown = 40 + Math.floor(Math.random() * 30);
-                        this.targetAngle = resolvedAngle;
-                        this.aiEncirclePhase = 0; // cancela cerco ao entrar em perigo
+                    if (dangerUrgency > 0.7) {
+                        this.aiTrauma = Math.min(1.0, this.aiTrauma + 0.3);
                     }
-                    return; // não processa mais lógica enquanto há perigo imediato
-                }
+                    let canReact = (frameCount - this.aiLastDodgeFrame) > this.aiReactionDelay;
+                    if (canReact) {
+                        this.aiLastDodgeFrame = frameCount;
+                        let err = (Math.random() - 0.5) * this.aiMicroError * (1 - dangerUrgency);
+                        let finalAngle = evadeAngle + err;
 
-                // ── 3. COMPORTAMENTO ESTRATÉGICO (não perigo) ─────────────────────────
-                this.isBoosting = false;
-                this.aiDecisionTimer--;
-                if (this.aiDecisionTimer > 0) return; // aguarda próxima "decisão humana"
-
-                // Intervalo de decisão humanizado (30-80 frames conforme personalidade)
-                let baseInterval = this.aiPersonality === 3 ? 55 : this.aiPersonality === 0 ? 28 : 40;
-                this.aiDecisionTimer = baseInterval + Math.floor(Math.random() * 25);
-
-                // ── 3a. BORDAS DA ARENA ───────────────────────────────────────────────
-                let distToCenter = Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER);
-                if (distToCenter > currentArenaRadius - 700) {
-                    this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x) + (Math.random() - 0.5) * 0.3;
+                        // Contra-ataque: se sou maior posso tentar cortar a frente do agressor
+                        if (dangerSnake && this.score > dangerSnake.score * 1.8 && this.aiConfidence > 0.4 && Math.random() < 0.4) {
+                            let cutAngle = Math.atan2(dangerSnake.y - this.y, dangerSnake.x - this.x);
+                            let perpAngle = dangerSnake.angle + Math.PI * 0.5 * (Math.random() > 0.5 ? 1 : -1);
+                            finalAngle = cutAngle + (perpAngle - cutAngle) * 0.3;
+                            this.isBoosting = this.aiBoostCooldown === 0;
+                            if (this.isBoosting) this.aiBoostCooldown = 15;
+                        } else {
+                            // Esquiva normal com boost se urgente
+                            this.isBoosting = dangerUrgency > 0.4 && this.aiBoostCooldown === 0 && this.score > 100;
+                            if (this.isBoosting) this.aiBoostCooldown = 20 + Math.floor(Math.random() * 20);
+                        }
+                        this.targetAngle = finalAngle;
+                        this.aiEncirclePhase = 0;
+                    }
                     return;
                 }
 
-                // ── 3b. OPORTUNIDADE DE CERCO (humanos tentam cercar presas fracas) ──
+                // ── 3. COMPORTAMENTO ESTRATÉGICO ───────────────────────────────────────
+                this.aiDecisionTimer--;
+                if (this.aiDecisionTimer > 0) return;
+                this.isBoosting = false;
+
+                // Decisões mais rápidas = reações mais humanas (10-35 frames)
+                let baseInterval = this.aiPersonality === 0 ? 10 : this.aiPersonality === 2 ? 12 : 18;
+                this.aiDecisionTimer = baseInterval + Math.floor(Math.random() * 18);
+
+                // Bordas da arena
+                let distToCenter = Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER);
+                if (distToCenter > currentArenaRadius - 600) {
+                    this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x) + (Math.random() - 0.5) * 0.3;
+                    this.isBoosting = distToCenter > currentArenaRadius - 300 && this.aiBoostCooldown === 0;
+                    if (this.isBoosting) this.aiBoostCooldown = 10;
+                    return;
+                }
+
+                // Continuar cerco ativo
                 if (this.aiEncirclePhase > 0 && this.aiEncircleTarget) {
                     let t = this.aiEncircleTarget;
-                    if (!t.alive || Math.hypot(t.x - this.x, t.y - this.y) > 1200) {
+                    if (!t.alive || Math.hypot(t.x - this.x, t.y - this.y) > 1500) {
                         this.aiEncirclePhase = 0; this.aiEncircleTarget = null;
                     } else {
-                        // Calcula ponto à frente do alvo para interceptar
-                        let interceptX = t.x + Math.cos(t.angle) * t.radius * 12;
-                        let interceptY = t.y + Math.sin(t.angle) * t.radius * 12;
-                        this.targetAngle = Math.atan2(interceptY - this.y, interceptX - this.x) + (Math.random() - 0.5) * this.aiMicroError;
-                        let dToIntercept = Math.hypot(interceptX - this.x, interceptY - this.y);
-                        this.isBoosting = dToIntercept > 300 && this.score > 200 && this.aiBoostCooldown === 0;
-                        if (this.isBoosting) this.aiBoostCooldown = 25;
+                        let dToTarget = Math.hypot(t.x - this.x, t.y - this.y);
+                        // Fase 1: Posicionar à frente do alvo (intercept)
+                        if (this.aiEncirclePhase < 30) {
+                            let aheadDist = t.radius * (12 + this.aiConfidence * 8);
+                            let ix = t.x + Math.cos(t.angle) * aheadDist;
+                            let iy = t.y + Math.sin(t.angle) * aheadDist;
+                            this.targetAngle = Math.atan2(iy - this.y, ix - this.x);
+                            this.isBoosting = dToTarget > 200 && this.aiBoostCooldown === 0;
+                            if (this.isBoosting) this.aiBoostCooldown = 8;
+                        }
+                        // Fase 2: Cruzar na frente (o corte mortal)
+                        else if (this.aiEncirclePhase < 80) {
+                            let crossAngle = t.angle + Math.PI * 0.5;
+                            this.targetAngle = crossAngle;
+                            this.isBoosting = this.aiBoostCooldown === 0 && this.score > 150;
+                            if (this.isBoosting) this.aiBoostCooldown = 5;
+                        }
+                        // Fase 3: Orbitar (loop de morte)
+                        else if (this.score > t.score * 1.5) {
+                            let angToTarget = Math.atan2(t.y - this.y, t.x - this.x);
+                            this.targetAngle = angToTarget + Math.PI * 0.42;
+                            this.isBoosting = dToTarget > 150 && this.aiBoostCooldown === 0;
+                            if (this.isBoosting) this.aiBoostCooldown = 8;
+                        }
                         this.aiEncirclePhase++;
-                        if (this.aiEncirclePhase > 180) { this.aiEncirclePhase = 0; this.aiEncircleTarget = null; } // desiste após ~3s
+                        if (this.aiEncirclePhase > 200) { this.aiEncirclePhase = 0; this.aiEncircleTarget = null; }
                         return;
                     }
                 }
 
-                // ── 3c. AVALIAÇÃO DE SITUAÇÃO (scan de ameaças + oportunidades) ───────
+                // ── SCAN DE OPORTUNIDADES ──────────────────────────────────────────────
                 let prey = null, preyDist = 9999;
                 let threat = null, threatDist = 9999;
                 let nearestFood = null, bestFoodScore = -1;
@@ -2160,18 +2168,22 @@
                 for (let s of snakes) {
                     if (s === this || !s.alive) continue;
                     let d = Math.hypot(s.x - this.x, s.y - this.y);
-                    if (d < 1400) {
-                        if (s.score < this.score * 0.75 && d < preyDist) { prey = s; preyDist = d; }
-                        if (s.score > this.score * 1.3 && d < threatDist) { threat = s; threatDist = d; }
+                    if (d < 1800) {
+                        // Qualquer cobra menor é presa potencial (threshold mais agressivo)
+                        if (s.score < this.score * 0.85 && d < preyDist) { prey = s; preyDist = d; }
+                        if (s.score > this.score * 1.2 && d < threatDist) { threat = s; threatDist = d; }
                     }
                 }
-                // Busca de comida otimizada com Spatial Hash (apenas células próximas)
-                let nearbyIndices = getNearbyFoodIndices(this.x, this.y, 600);
+
+                // Busca comida com raio maior
+                let nearbyIndices = getNearbyFoodIndices(this.x, this.y, 900);
                 for (let idx of nearbyIndices) {
                     let f = foods[idx];
                     if (!f || f.dead) continue;
                     let d = Math.hypot(f.x - this.x, f.y - this.y);
-                    let scoreVal = (f.value * (f.isDropped ? 3 : 1)) / Math.max(1, d);
+                    // Comida dropped vale MUITO mais (os pros correm para ela)
+                    let valMult = f.isDropped ? (4 + this.aiConfidence * 3) : 1;
+                    let scoreVal = (f.value * valMult) / Math.max(1, d);
                     if (scoreVal > bestFoodScore) { bestFoodScore = scoreVal; nearestFood = f; }
                 }
                 for (let b of butterflies) {
@@ -2179,110 +2191,92 @@
                     if (d < bDist) { bDist = d; nearestButterfly = b; }
                 }
 
-                // ── 3d. DECISÃO BASEADA EM PERSONALIDADE + SITUAÇÃO ──────────────────
-                let decidedAngle = this.targetAngle; // mantém direção por padrão
+                let decidedAngle = this.targetAngle;
 
-                if (this.aiPersonality === 2 && player && player.alive) {
-                    // REI: persegue jogador, tenta cercar, usa boost estratégico
+                // ── DECISÃO PRINCIPAL ──────────────────────────────────────────────────
+
+                // ATAQUE: Cortar na frente da presa (o movimento mais letal)
+                let wantAttack = prey && preyDist < 800 && (
+                    (this.aiPersonality === 0 && Math.random() < this.aiAggression + 0.2) ||
+                    (this.aiPersonality === 2 && Math.random() < this.aiAggression) ||
+                    (this.aiConfidence > 0.5 && Math.random() < this.aiAggression * 0.7) ||
+                    (Math.random() < this.aiAggression * 0.3)
+                );
+
+                if (wantAttack) {
+                    // Calcular ponto de intercepção à frente da presa
+                    let aheadFactor = 8 + this.aiConfidence * 10;
+                    let ix = prey.x + Math.cos(prey.angle) * prey.radius * aheadFactor;
+                    let iy = prey.y + Math.sin(prey.angle) * prey.radius * aheadFactor;
+                    let dToIntercept = Math.hypot(ix - this.x, iy - this.y);
+
+                    if (preyDist < 400 && this.score > prey.score * 1.3) {
+                        // Perto e maior: iniciar cerco
+                        this.aiEncircleTarget = prey;
+                        this.aiEncirclePhase = 1;
+                        decidedAngle = Math.atan2(iy - this.y, ix - this.x);
+                    } else {
+                        // Cortar caminho: ir para frente da presa
+                        decidedAngle = Math.atan2(iy - this.y, ix - this.x);
+                    }
+                    this.isBoosting = dToIntercept < 700 && dToIntercept > 100 && this.score > 150 && this.aiBoostCooldown === 0;
+                    if (this.isBoosting) this.aiBoostCooldown = 12;
+                }
+                // REI: perseguir jogador ativamente
+                else if (this.aiPersonality === 2 && player && player.alive) {
                     let dP = Math.hypot(player.x - this.x, player.y - this.y);
-                    if (dP < 2000) {
-                        if (dP < 600 && this.score > player.score * 0.6 && Math.random() < this.aiAggression) {
-                            // Tentar cercar o jogador
-                            this.aiEncircleTarget = player; this.aiEncirclePhase = 1;
-                            decidedAngle = Math.atan2(player.y - this.y, player.x - this.x);
-                        } else {
-                            decidedAngle = Math.atan2(player.y - this.y, player.x - this.x);
-                            this.isBoosting = dP < 900 && this.score > player.score * 0.7 && this.aiBoostCooldown === 0;
-                            if (this.isBoosting) this.aiBoostCooldown = 35;
+                    if (dP < 2500) {
+                        if (dP < 500 && this.score > player.score * 0.5) {
+                            this.aiEncircleTarget = player;
+                            this.aiEncirclePhase = 1;
                         }
+                        let ix = player.x + Math.cos(player.angle) * player.radius * 10;
+                        let iy = player.y + Math.sin(player.angle) * player.radius * 10;
+                        decidedAngle = Math.atan2(iy - this.y, ix - this.x);
+                        this.isBoosting = dP < 800 && dP > 150 && this.score > player.score * 0.5 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 15;
                     } else if (nearestFood) {
                         decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                    }
-
-                } else if (this.aiPersonality === 0) {
-                    // CAÇADOR: prioriza presa, depois comida dropped, depois comida comum
-                    if (prey && preyDist < 900 && Math.random() < this.aiAggression) {
-                        // Tenta cercar a presa
-                        if (preyDist < 500 && Math.random() < this.aiRiskTolerance) {
-                            this.aiEncircleTarget = prey; this.aiEncirclePhase = 1;
-                        }
-                        decidedAngle = Math.atan2(prey.y - this.y, prey.x - this.x);
-                        this.isBoosting = preyDist < 600 && this.score > 200 && this.aiBoostCooldown === 0;
-                        if (this.isBoosting) this.aiBoostCooldown = 30;
-                    } else if (nearestButterfly && bDist < 800) {
-                        decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x);
-                        this.isBoosting = bDist < 400 && this.aiBoostCooldown === 0;
-                        if (this.isBoosting) this.aiBoostCooldown = 20;
-                    } else if (nearestFood) {
-                        decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                    } else {
-                        this.aiWanderAngle += (Math.random() - 0.5) * 0.8;
-                        decidedAngle = this.aiWanderAngle;
-                    }
-
-                } else if (this.aiPersonality === 1) {
-                    // COVARDE: evita ameaças, prioriza segurança, só come quando está seguro
-                    if (threat && threatDist < 1100) {
-                        // Foge do ameaça mas tenta ir em direção à comida ao mesmo tempo
-                        let fleeAngle = Math.atan2(this.y - threat.y, this.x - threat.x);
-                        if (nearestFood) {
-                            let foodAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                            // Blenda fuga + comida (60% fuga, 40% comida se longe; 90% fuga se perto)
-                            let blendFlee = threatDist < 600 ? 0.9 : 0.6;
-                            decidedAngle = fleeAngle * blendFlee + foodAngle * (1 - blendFlee);
-                        } else {
-                            decidedAngle = fleeAngle;
-                        }
-                        this.isBoosting = threatDist < 700 && this.aiBoostCooldown === 0;
-                        if (this.isBoosting) this.aiBoostCooldown = 50;
-                    } else if (nearestButterfly && bDist < 600) {
-                        decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x);
-                    } else if (nearestFood) {
-                        decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                    } else {
-                        this.aiWanderAngle += (Math.random() - 0.5) * 0.6;
-                        decidedAngle = this.aiWanderAngle;
-                    }
-
-                } else if (this.aiPersonality === 3) {
-                    // EXPLORADOR: serpenteia em padrão amplo, aproveita comida dropped
-                    let droppedFood = foods.filter(f => f.isDropped);
-                    let bestDrop = null, bestDropScore = -1;
-                    for (let f of droppedFood) {
-                        let d = Math.hypot(f.x - this.x, f.y - this.y);
-                        let s = f.value / Math.max(1, d);
-                        if (s > bestDropScore) { bestDropScore = s; bestDrop = f; }
-                    }
-                    if (bestDrop && bestDropScore > 0.3) {
-                        decidedAngle = Math.atan2(bestDrop.y - this.y, bestDrop.x - this.x);
-                        this.isBoosting = Math.hypot(bestDrop.x - this.x, bestDrop.y - this.y) > 400 && this.aiBoostCooldown === 0;
-                        if (this.isBoosting) this.aiBoostCooldown = 20;
-                    } else if (nearestFood) {
-                        // Serpenteia levemente (movimento ondulado humano)
-                        let baseAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                        decidedAngle = baseAngle + Math.sin(frameCount * 0.025) * 0.35;
-                    } else {
-                        this.aiWanderAngle += Math.sin(frameCount * 0.02) * 0.07 + (Math.random() - 0.5) * 0.1;
-                        decidedAngle = this.aiWanderAngle;
-                    }
-
-                } else {
-                    // PADRÃO: balanceia comida + segurança, com greedy variável
-                    if (threat && threatDist < 900 && Math.random() > this.aiGreed) {
-                        decidedAngle = Math.atan2(this.y - threat.y, this.x - threat.x);
-                    } else if (nearestButterfly && bDist < 700 && Math.random() < this.aiGreed) {
-                        decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x);
-                        this.isBoosting = bDist < 350 && this.aiBoostCooldown === 0;
-                        if (this.isBoosting) this.aiBoostCooldown = 18;
-                    } else if (nearestFood) {
-                        decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                    } else {
-                        this.aiWanderAngle += (Math.random() - 0.5) * 1.0;
-                        decidedAngle = this.aiWanderAngle;
                     }
                 }
+                // FUGA de ameaças
+                else if (threat && threatDist < 900 && Math.random() > this.aiRiskTolerance) {
+                    let fleeAngle = Math.atan2(this.y - threat.y, this.x - threat.x);
+                    // Foge mas tenta pegar comida no caminho
+                    if (nearestFood && threatDist > 500) {
+                        let foodAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
+                        decidedAngle = fleeAngle * 0.65 + foodAngle * 0.35;
+                    } else {
+                        decidedAngle = fleeAngle;
+                    }
+                    this.isBoosting = threatDist < 600 && this.aiBoostCooldown === 0;
+                    if (this.isBoosting) this.aiBoostCooldown = 25;
+                }
+                // ALIMENTAÇÃO
+                else if (nearestFood) {
+                    let foodD = Math.hypot(nearestFood.x - this.x, nearestFood.y - this.y);
+                    decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
+                    // Serpenteia levemente enquanto vai para comida (movimento humano)
+                    if (this.aiConfidence > 0.3) decidedAngle += Math.sin(frameCount * 0.04) * 0.15;
+                    // Boost para comida dropped (morte recente = muito valor!)
+                    if (nearestFood.isDropped && foodD > 150 && foodD < 800 && this.aiBoostCooldown === 0) {
+                        this.isBoosting = true;
+                        this.aiBoostCooldown = 10;
+                    }
+                }
+                // BORBOLETAS
+                else if (nearestButterfly && bDist < 800) {
+                    decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x);
+                    this.isBoosting = bDist < 400 && bDist > 100 && this.aiBoostCooldown === 0;
+                    if (this.isBoosting) this.aiBoostCooldown = 15;
+                }
+                // EXPLORAR: movimento serpentino de zona control
+                else {
+                    this.aiWanderAngle += Math.sin(frameCount * 0.015 + this.score) * 0.25 + (Math.random() - 0.5) * 0.4;
+                    decidedAngle = this.aiWanderAngle;
+                }
 
-                // ── 4. APLICAR COM MICRO-ERRO HUMANO + DELAY ─────────────────────────
+                // Aplicar com micro-erro humano
                 decidedAngle += (Math.random() - 0.5) * this.aiMicroError;
                 this.targetAngle = decidedAngle;
             }
@@ -2389,11 +2383,11 @@
                     }, 1500);
                 }
                 if (dropFood) {
-                    let step = 5, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num;
+                    let step = 3, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num;
                     for (let i = 0; i < this.segments.length; i += step) {
                         let s = this.segments[i];
                         let rSize = CONFIG.mundo.tamanhoOrbeMorte + Math.min(CONFIG.mundo.tamanhoOrbeMorteBonus, val / 30);
-                        foods.push(new Food(s.x + (Math.random() * 20 - 10), s.y + (Math.random() * 20 - 10), rSize, this.skin[i % this.skin.length], true, val));
+                        foods.push(new Food(s.x + (Math.random() * 6 - 3), s.y + (Math.random() * 6 - 3), rSize, this.skin[i % this.skin.length], true, val));
                     }
                 }
             }
@@ -2421,26 +2415,36 @@
                 const totalSegs = this.segments.length;
                 let headR = this.radius;
 
-                // Pass 1: Sombra Projetada (Drop Shadow Global da cobra) — APENAS PC
-                if (!IS_MOBILE_CLIENT && (this.isPlayer || this.isKing)) {
-                    ctx.globalAlpha = 0.35;
-                    let shadowBase = TextureManager.getSegment('#000000');
-                    let offY = this.radius * 0.25;
-                    for (let i = totalSegs - 1; i >= 0; i -= 2) {
-                        let seg = this.segments[i];
-                        let r = Math.max(1.5, this.radius);
-                        ctx.drawImage(shadowBase, seg.x - r, seg.y - r + offY, r * 2, r * 2);
-                    }
-                    ctx.drawImage(shadowBase, this.x - headR, this.y - headR + offY, headR * 2, headR * 2);
-                    ctx.globalAlpha = 1.0;
+                // Pass 1: Outline contour (Borda preta sólida ao redor de toda a cobra para destacar no mapa idêntico ao Print)
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                for (let i = totalSegs - 1; i >= 0; i -= 2) {
+                    let seg = this.segments[i];
+                    let r = Math.max(1.5, this.radius);
+                    ctx.moveTo(seg.x + r + 2.0, seg.y);
+                    ctx.arc(seg.x, seg.y, r + 2.0, 0, Math.PI * 2);
                 }
+                ctx.fill();
 
-                // Pass 2: Renderização: corpo modelo cone (estilo slither original)
+                // Pass 1.1: Contorno da Cabeça suportando alongamento
+                let cabecaMult = CONFIG.cobra.multiplicadorCabeca || 1.15;
+                ctx.beginPath();
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.moveTo(headR * cabecaMult + 2.0, 0);
+                if (ctx.ellipse) ctx.ellipse(0, 0, headR * cabecaMult + 2.0, headR + 2.0, 0, 0, Math.PI * 2);
+                else ctx.arc(0, 0, headR + 2.0, 0, Math.PI * 2);
+                ctx.fillStyle = '#000000';
+                ctx.fill();
+                ctx.restore();
+
+                // Pass 2: Renderização corpor com Skin AAA
                 for (let i = totalSegs - 1; i >= 0; i--) {
                     let seg = this.segments[i];
                     let r = Math.max(1.5, this.radius);
 
-                    // Alinha a textura acompanhando a curva do corpo!
+                    // Alinha textura com a curva natural
                     let nextSeg = (i === 0) ? { x: this.x, y: this.y } : this.segments[i - 1];
                     let ang = Math.atan2(nextSeg.y - seg.y, nextSeg.x - seg.x);
 
@@ -2450,26 +2454,25 @@
                     ctx.drawImage(TextureManager.getSegment(this.skin[(i + 1) % this.skin.length]), -r, -r, r * 2, r * 2);
                     ctx.restore();
                 }
-                // Renderização da Cabeça — Idêntica ao corpo, sem aumentar
+
+                // Renderização da Cabeça (Circular e natural como no print, SEM distorção scale)
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
 
-                // Língua (sai da frente da cabeça)
+                let headTex = TextureManager.getSegment(this.skin[0], true);
+                let headW = headR * (CONFIG.cobra.multiplicadorCabeca || 1.15);
+                ctx.drawImage(headTex, -headW, -headR, headW * 2, headR * 2);
+
+                // Língua
                 if (this.eatTimer > 0 || Math.sin(frameCount * 0.1 + this.score) > 0.94) {
                     ctx.strokeStyle = '#ff4444'; ctx.lineWidth = headR * 0.13; ctx.lineCap = 'round';
-                    let tBase = headR * 0.85;
+                    let tBase = headR * 0.95;
                     let tLen = headR * 0.7 + Math.sin(frameCount * 0.5) * (headR * 0.35);
                     ctx.beginPath(); ctx.moveTo(tBase, 0); ctx.lineTo(tBase + tLen * 0.55, 0); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(tBase + tLen * 0.55, 0); ctx.lineTo(tBase + tLen, -headR * 0.22); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(tBase + tLen * 0.55, 0); ctx.lineTo(tBase + tLen, headR * 0.22); ctx.stroke();
                 }
-
-                // Sem sombra na cabeça para manter a fluidez contínua do corpo
-
-                // O Gomo da Cabeça (Mesma Textura do Corpo para cor idêntica)
-                let headTex = TextureManager.getSegment(this.skin[0]);
-                ctx.drawImage(headTex, -headR, -headR, headR * 2, headR * 2);
 
                 ctx.restore();
 
@@ -2526,13 +2529,32 @@
             }
             UI.lbList.innerHTML = html;
             mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
+            mCtxElement.strokeStyle = 'rgba(255,255,255,0.15)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
             let sc = 70 / currentArenaRadius;
+            // Desenha bots primeiro
             for (let s of act) {
-                mCtxElement.beginPath();
+                if (s === player) continue;
                 let mX = 70 + (s.x - WORLD_CENTER) * sc;
                 let mY = 70 + (s.y - WORLD_CENTER) * sc;
-                mCtxElement.arc(mX, mY, s === player ? 4 : 1.5, 0, Math.PI * 2);
-                mCtxElement.fillStyle = s === player ? '#fff' : 'rgba(255,255,255,0.3)';
+                mCtxElement.beginPath();
+                mCtxElement.arc(mX, mY, 1.5, 0, Math.PI * 2);
+                mCtxElement.fillStyle = 'rgba(255,255,255,0.35)';
+                mCtxElement.fill();
+            }
+            // Desenha jogador POR CIMA com brilho pulsante
+            if (player && player.alive) {
+                let pX = 70 + (player.x - WORLD_CENTER) * sc;
+                let pY = 70 + (player.y - WORLD_CENTER) * sc;
+                let pulse = 0.6 + Math.sin(performance.now() * 0.005) * 0.4;
+                // Glow exterior
+                mCtxElement.beginPath();
+                mCtxElement.arc(pX, pY, 7, 0, Math.PI * 2);
+                mCtxElement.fillStyle = `rgba(255,255,255,${0.15 * pulse})`;
+                mCtxElement.fill();
+                // Ponto central branco
+                mCtxElement.beginPath();
+                mCtxElement.arc(pX, pY, 3.5, 0, Math.PI * 2);
+                mCtxElement.fillStyle = '#ffffff';
                 mCtxElement.fill();
             }
         }
