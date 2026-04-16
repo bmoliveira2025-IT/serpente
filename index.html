@@ -2528,32 +2528,38 @@
                 let s = sorted[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`;
             }
             UI.lbList.innerHTML = html;
-            mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
+            mCtxElement.save();
+            mCtxElement.setTransform(1, 0, 0, 1, 0, 0);
+            mCtxElement.clearRect(0, 0, minimapCanvasElement.width, minimapCanvasElement.height);
+            mCtxElement.restore();
+            mCtxElement.beginPath(); mCtxElement.arc(70, 70, 69, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
             mCtxElement.strokeStyle = 'rgba(255,255,255,0.15)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
-            let sc = 70 / currentArenaRadius;
-            // Desenha bots primeiro
+            let sc = 69 / currentArenaRadius;
+            // Desenha bots
             for (let s of act) {
                 if (s === player) continue;
                 let mX = 70 + (s.x - WORLD_CENTER) * sc;
                 let mY = 70 + (s.y - WORLD_CENTER) * sc;
                 mCtxElement.beginPath();
-                mCtxElement.arc(mX, mY, 1.5, 0, Math.PI * 2);
+                mCtxElement.arc(mX, mY, IS_MOBILE_CLIENT ? 2 : 1.5, 0, Math.PI * 2);
                 mCtxElement.fillStyle = 'rgba(255,255,255,0.35)';
                 mCtxElement.fill();
             }
-            // Desenha jogador POR CIMA com brilho pulsante
+            // Desenha jogador POR CIMA com brilho pulsante (bem visível)
             if (player && player.alive) {
                 let pX = 70 + (player.x - WORLD_CENTER) * sc;
                 let pY = 70 + (player.y - WORLD_CENTER) * sc;
                 let pulse = 0.6 + Math.sin(performance.now() * 0.005) * 0.4;
+                let dotSize = IS_MOBILE_CLIENT ? 5 : 3.5;
+                let glowSize = IS_MOBILE_CLIENT ? 10 : 7;
                 // Glow exterior
                 mCtxElement.beginPath();
-                mCtxElement.arc(pX, pY, 7, 0, Math.PI * 2);
-                mCtxElement.fillStyle = `rgba(255,255,255,${0.15 * pulse})`;
+                mCtxElement.arc(pX, pY, glowSize, 0, Math.PI * 2);
+                mCtxElement.fillStyle = `rgba(255,255,255,${0.2 * pulse})`;
                 mCtxElement.fill();
-                // Ponto central branco
+                // Ponto central branco sólido
                 mCtxElement.beginPath();
-                mCtxElement.arc(pX, pY, 3.5, 0, Math.PI * 2);
+                mCtxElement.arc(pX, pY, dotSize, 0, Math.PI * 2);
                 mCtxElement.fillStyle = '#ffffff';
                 mCtxElement.fill();
             }
