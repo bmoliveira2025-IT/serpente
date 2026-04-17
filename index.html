@@ -1148,19 +1148,19 @@
             // 🐍 1. CONFIGURAÇÕES DA SERPENTE (Física, Velocidade e Crescimento)
             cobra: {
                 pc: {
-                    espessuraInicial: 10,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
+                    espessuraInicial: 6,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
                     espessuraMaxima: 32,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
-                    comprimentoInicial: 4,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
+                    comprimentoInicial: 5,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
                     comprimentoMaximo: 500,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
-                    velocidadeBase: 1.5,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
+                    velocidadeBase: 1.0,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
                     velocidadeTurbo: 4.0        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
-                    espessuraInicial: 5,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
+                    espessuraInicial: 3,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
                     espessuraMaxima: 27,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 9,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 550,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 1.2,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeBase: 1.0,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 4.0        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
@@ -1178,7 +1178,7 @@
             // 🔍 2. CONFIGURAÇÕES DA CÂMARA (Visão do Jogador)
             zoom: {
                 pc: {
-                    inicial: 3.00,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
+                    inicial: 4.00,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
                     minimo: 0.810,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
                     fatorAfastamento: 19.15     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
                 },
@@ -1214,7 +1214,7 @@
                 pc: {
                     corGrade: '#4b62c9', // Cor do fundo hexagonal (azul estilo premium)
                     corFundo: '#1a1019', // A cor das bordas e fundo real
-                    tamanhoHexagono: 20  // O tamanho da malha desenhada no fundo.
+                    tamanhoHexagono: 15  // O tamanho da malha desenhada no fundo.
                 },
                 mobile: {
                     corGrade: '#4b62c9', // Cor do fundo no telemóvel
