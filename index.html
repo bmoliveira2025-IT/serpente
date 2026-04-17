@@ -1148,52 +1148,52 @@
             // 🐍 1. CONFIGURAÇÕES DA SERPENTE (Física, Velocidade e Crescimento)
             cobra: {
                 pc: {
-                    espessuraInicial: 20,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
+                    espessuraInicial: 10,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
                     espessuraMaxima: 32,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
-                    comprimentoInicial: 19,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
+                    comprimentoInicial: 4,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
                     comprimentoMaximo: 500,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
-                    velocidadeBase: 3.2,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
-                    velocidadeTurbo: 5.5        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
+                    velocidadeBase: 1.5,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
+                    velocidadeTurbo: 4.0        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
                     espessuraInicial: 10,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
                     espessuraMaxima: 27,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 11,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 550,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 1.3,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
-                    velocidadeTurbo: 5.5        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
+                    velocidadeBase: 1.0,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeTurbo: 4.0        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
-                distanciaGomos: 0.35,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
-                pontosParaEngrossar: 250,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
-                pontosParaCrescer: 4,           // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
-                custoDoTurbo: 1.0,              // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
+                distanciaGomos: 0.15,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
+                pontosParaEngrossar: 220,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
+                pontosParaCrescer: 1,           // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
+                custoDoTurbo: 1.1,              // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
                 tamanhoOrbeTurbo: 3.5,          // (Recomendado: 2.0 a 10.0) Tamanho das orbes que a cobra deixa ao correr.
                 chanceOrbeTurbo: 0.2,           // (Recomendado: 0.1 a 1.0) Probabilidade por frame de soltar orbes ao correr (1.0 = sempre).
                 quantidadeOrbeTurbo: 1,          // (Recomendado: 1 a 5) Quantidade de orbes que saem de uma vez quando corre.
                 pontosIniciais: 20,             // (Recomendado: 10 a 100) Todos nascem iguais para um crescimento natural e justo.
-                multiplicadorCabeca: 1.08       // (Recomendado: 1.0 a 1.5) Ajuste o comprimento da cabeça da cobra. 1.0 é um círculo perfeito, superior a 1.0 alonga a cabeça.
+                multiplicadorCabeca: 1.06       // (Recomendado: 1.0 a 1.5) Ajuste o comprimento da cabeça da cobra. 1.0 é um círculo perfeito, superior a 1.0 alonga a cabeça.
             },
 
             // 🔍 2. CONFIGURAÇÕES DA CÂMARA (Visão do Jogador)
             zoom: {
                 pc: {
-                    inicial: 1.20,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
-                    minimo: 0.510,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
-                    fatorAfastamento: 0.012     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
+                    inicial: 3.00,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
+                    minimo: 0.810,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
+                    fatorAfastamento: 19.15     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
                 },
                 mobile: {
-                    inicial: 1.20,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
+                    inicial: 1.90,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
                     minimo: 0.510,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
-                    fatorAfastamento: 0.012     // Suavidade do afastamento no telemóvel.
+                    fatorAfastamento: 1.15    // Suavidade do afastamento no telemóvel.
                 }
             },
 
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
-                tamanhoRaio: 10000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
-                quantidadeBots: IS_MOBILE_CLIENT ? 89 : 89,             // Mobile: 12, PC: 20
-                quantidadeComida: IS_MOBILE_CLIENT ? 9000 : 13000,      // Mobile: 4k orbes, PC: 11k orbes
+                tamanhoRaio: 9000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
+                quantidadeBots: IS_MOBILE_CLIENT ? 99 : 299,             // Mobile: 12, PC: 20
+                quantidadeComida: IS_MOBILE_CLIENT ? 10000 : 29000,      // Mobile: 4k orbes, PC: 11k orbes
                 quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 3 : 6,   // Menos borboletas no mobile
                 distribuicaoBots: {
                     // Probabilidade de cada categoria nascer (Soma deve ser 1.0)
@@ -1206,20 +1206,20 @@
                         gigante: [8000, 10000]
                     }
                 },
-                tamanhoComidaMin: 4.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
-                tamanhoComidaMax: 9.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
-                tamanhoOrbeMorte: 5.0,          // (Recomendado: 5.0 a 15.0) Tamanho base da comida deixada ao morrer.
+                tamanhoComidaMin: 2.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
+                tamanhoComidaMax: 4.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
+                tamanhoOrbeMorte: 4.0,          // (Recomendado: 5.0 a 15.0) Tamanho base da comida deixada ao morrer.
                 tamanhoOrbeMorteBonus: 3.4,    // (Recomendado: 5.0 a 20.0) Crescimento máximo extra dependendo da pontuação que a cobra tinha.
                 forcaAtracao: 30,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
                 pc: {
-                    corGrade: '#6f4882', // Cor do fundo hexagonal (azul estilo premium)
+                    corGrade: '#4b62c9', // Cor do fundo hexagonal (azul estilo premium)
                     corFundo: '#1a1019', // A cor das bordas e fundo real
-                    tamanhoHexagono: 40  // O tamanho da malha desenhada no fundo.
+                    tamanhoHexagono: 20  // O tamanho da malha desenhada no fundo.
                 },
                 mobile: {
-                    corGrade: '#6f4882', // Cor do fundo no telemóvel
+                    corGrade: '#4b62c9', // Cor do fundo no telemóvel
                     corFundo: '#1a1019', // Fundo real no telemóvel
-                    tamanhoHexagono: 25  // [OTIMIZADO] Tamanho equilibrado para performance visual no mobile
+                    tamanhoHexagono: 20  // [OTIMIZADO] Tamanho equilibrado para performance visual no mobile
                 }
             },
 
@@ -2386,7 +2386,7 @@
                 }
 
                 let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                let tS = Math.max(0.04, 0.06 - (this.radius * 0.0005)); if (this.isBoosting) tS *= 1.35;
+                let tS = Math.max(0.04, 0.04 - (this.radius * 0.00012)); if (this.isBoosting) tS *= 1.35;
                 if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
