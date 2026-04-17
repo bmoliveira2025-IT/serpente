@@ -1148,11 +1148,11 @@
             // 🐍 1. CONFIGURAÇÕES DA SERPENTE (Física, Velocidade e Crescimento)
             cobra: {
                 pc: {
-                    espessuraInicial: 6,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
+                    espessuraInicial: 8,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
                     espessuraMaxima: 32,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
                     comprimentoInicial: 5,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
                     comprimentoMaximo: 500,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
-                    velocidadeBase: 1.0,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
+                    velocidadeBase: 1.2,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
                     velocidadeTurbo: 4.0        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
@@ -1165,7 +1165,7 @@
                 },
                 // Variáveis Comuns a todas as plataformas:
                 distanciaGomos: 0.15,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
-                pontosParaEngrossar: 220,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
+                pontosParaEngrossar: 350,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
                 pontosParaCrescer: 1,           // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
                 custoDoTurbo: 1.1,              // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
                 tamanhoOrbeTurbo: 3.5,          // (Recomendado: 2.0 a 10.0) Tamanho das orbes que a cobra deixa ao correr.
@@ -1180,18 +1180,18 @@
                 pc: {
                     inicial: 4.00,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
                     minimo: 0.810,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
-                    fatorAfastamento: 19.15     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
+                    fatorAfastamento: 0.005     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
                 },
                 mobile: {
                     inicial: 3.00,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
                     minimo: 0.810,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
-                    fatorAfastamento: 19.15    // Suavidade do afastamento no telemóvel.
+                    fatorAfastamento: 0.005    // Suavidade do afastamento no telemóvel.
                 }
             },
 
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
-                tamanhoRaio: 9000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
+                tamanhoRaio: 8000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
                 quantidadeBots: IS_MOBILE_CLIENT ? 99 : 299,             // Mobile: 12, PC: 20
                 quantidadeComida: IS_MOBILE_CLIENT ? 28000 : 29000,      // Mobile: 4k orbes, PC: 11k orbes
                 quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 3 : 6,   // Menos borboletas no mobile
@@ -1207,9 +1207,9 @@
                     }
                 },
                 tamanhoComidaMin: 2.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
-                tamanhoComidaMax: 4.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
-                tamanhoOrbeMorte: 4.0,          // (Recomendado: 5.0 a 15.0) Tamanho base da comida deixada ao morrer.
-                tamanhoOrbeMorteBonus: 3.4,    // (Recomendado: 5.0 a 20.0) Crescimento máximo extra dependendo da pontuação que a cobra tinha.
+                tamanhoComidaMax: 3.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
+                tamanhoOrbeMorte: 3.0,          // (Recomendado: 5.0 a 15.0) Tamanho base da comida deixada ao morrer.
+                tamanhoOrbeMorteBonus: 3.0,    // (Recomendado: 5.0 a 20.0) Crescimento máximo extra dependendo da pontuação que a cobra tinha.
                 forcaAtracao: 30,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
                 pc: {
                     corGrade: '#4b62c9', // Cor do fundo hexagonal (azul estilo premium)
