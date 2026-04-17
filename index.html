@@ -1082,16 +1082,16 @@
                     espessuraMaxima: 32,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
                     comprimentoInicial: 19,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
                     comprimentoMaximo: 500,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
-                    velocidadeBase: 3.0,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
-                    velocidadeTurbo: 5.0        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
+                    velocidadeBase: 3.3,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
+                    velocidadeTurbo: 5.5        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
                     espessuraInicial: 10,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
                     espessuraMaxima: 27,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 11,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 550,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 1.4,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
-                    velocidadeTurbo: 5.0        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
+                    velocidadeBase: 1.3,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeTurbo: 5.5        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
                 distanciaGomos: 0.36,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
@@ -1121,9 +1121,9 @@
 
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
-                tamanhoRaio: 7000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
-                quantidadeBots: IS_MOBILE_CLIENT ? 49 : 79,             // Mobile: 12, PC: 20
-                quantidadeComida: IS_MOBILE_CLIENT ? 6000 : 11000,      // Mobile: 4k orbes, PC: 11k orbes
+                tamanhoRaio: 9000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
+                quantidadeBots: IS_MOBILE_CLIENT ? 69 : 89,             // Mobile: 12, PC: 20
+                quantidadeComida: IS_MOBILE_CLIENT ? 8000 : 11000,      // Mobile: 4k orbes, PC: 11k orbes
                 quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 3 : 6,   // Menos borboletas no mobile
                 distribuicaoBots: {
                     // Probabilidade de cada categoria nascer (Soma deve ser 1.0)
@@ -1132,32 +1132,32 @@
                     pontos: {
                         pequeno: [40, 190],
                         medio: [400, 1000],
-                        grande: [4000, 5000],
-                        gigante: [6000, 8000]
+                        grande: [4000, 7000],
+                        gigante: [8000, 10000]
                     }
                 },
-                tamanhoComidaMin: 5.5,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
+                tamanhoComidaMin: 4.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
                 tamanhoComidaMax: 9.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
                 tamanhoOrbeMorte: 5.0,          // (Recomendado: 5.0 a 15.0) Tamanho base da comida deixada ao morrer.
                 tamanhoOrbeMorteBonus: 3.4,    // (Recomendado: 5.0 a 20.0) Crescimento máximo extra dependendo da pontuação que a cobra tinha.
                 forcaAtracao: 30,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
                 pc: {
-                    corGrade: '#2c529e', // Cor do fundo hexagonal (azul estilo premium)
-                    corFundo: '#0a1128', // A cor das bordas e fundo real
+                    corGrade: '#46284d', // Cor do fundo hexagonal (azul estilo premium)
+                    corFundo: '#402a45', // A cor das bordas e fundo real
                     tamanhoHexagono: 43  // O tamanho da malha desenhada no fundo.
                 },
                 mobile: {
-                    corGrade: '#2c529e', // Cor do fundo no telemóvel
-                    corFundo: '#0a1128', // Fundo real no telemóvel
+                    corGrade: '#46284d', // Cor do fundo no telemóvel
+                    corFundo: '#402a45', // Fundo real no telemóvel
                     tamanhoHexagono: 25  // [OTIMIZADO] Tamanho equilibrado para performance visual no mobile
                 }
             },
 
             // ✨ 4. EFEITOS ESPECIAIS E AMBIENTE (Detalhes Gráficos)
             visual: {
-                balancoComida: 22.0,             // (Recomendado: 0 a 10) Efeito que faz a comida "tremer" ou flutuar ligeiramente.
-                velocidadeAnimacaoComida: 0.003,// (Recomendado: 0.001 a 0.01) A velocidade com que a comida vibra/pulsa.
-                quantidadeVagalumes: IS_MOBILE_CLIENT ? 20 : 100,       // Mobile: 20, PC: 100
+                balancoComida: 60.0,             // (Recomendado: 0 a 10) Efeito que faz a comida "tremer" ou flutuar ligeiramente.
+                velocidadeAnimacaoComida: 0.006,// (Recomendado: 0.001 a 0.01) A velocidade com que a comida vibra/pulsa.
+                quantidadeVagalumes: IS_MOBILE_CLIENT ? 10 : 100,       // Mobile: 20, PC: 100
                 distanciaFugaVagalumes: 80,    // (Recomendado: 100 a 500) Distância em que as luzes se assustam com a cobra e fogem.
                 dRender: 500                    // (Técnico) Otimização. Impede renderizar o que está a mais de 400px fora do ecrã.
             }
@@ -2314,7 +2314,7 @@
                 }
 
                 let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                let tS = Math.max(0.04, 0.05 - (this.radius * 0.0010)); if (this.isBoosting) tS *= 1.35;
+                let tS = Math.max(0.04, 0.08 - (this.radius * 0.0010)); if (this.isBoosting) tS *= 1.35;
                 if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
@@ -2528,38 +2528,32 @@
                 let s = sorted[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`;
             }
             UI.lbList.innerHTML = html;
-            mCtxElement.save();
-            mCtxElement.setTransform(1, 0, 0, 1, 0, 0);
-            mCtxElement.clearRect(0, 0, minimapCanvasElement.width, minimapCanvasElement.height);
-            mCtxElement.restore();
-            mCtxElement.beginPath(); mCtxElement.arc(70, 70, 69, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
+            mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
             mCtxElement.strokeStyle = 'rgba(255,255,255,0.15)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
-            let sc = 69 / currentArenaRadius;
-            // Desenha bots
+            let sc = 70 / currentArenaRadius;
+            // Desenha bots primeiro
             for (let s of act) {
                 if (s === player) continue;
                 let mX = 70 + (s.x - WORLD_CENTER) * sc;
                 let mY = 70 + (s.y - WORLD_CENTER) * sc;
                 mCtxElement.beginPath();
-                mCtxElement.arc(mX, mY, IS_MOBILE_CLIENT ? 2 : 1.5, 0, Math.PI * 2);
+                mCtxElement.arc(mX, mY, 1.5, 0, Math.PI * 2);
                 mCtxElement.fillStyle = 'rgba(255,255,255,0.35)';
                 mCtxElement.fill();
             }
-            // Desenha jogador POR CIMA com brilho pulsante (bem visível)
+            // Desenha jogador POR CIMA com brilho pulsante
             if (player && player.alive) {
                 let pX = 70 + (player.x - WORLD_CENTER) * sc;
                 let pY = 70 + (player.y - WORLD_CENTER) * sc;
                 let pulse = 0.6 + Math.sin(performance.now() * 0.005) * 0.4;
-                let dotSize = IS_MOBILE_CLIENT ? 5 : 3.5;
-                let glowSize = IS_MOBILE_CLIENT ? 10 : 7;
                 // Glow exterior
                 mCtxElement.beginPath();
-                mCtxElement.arc(pX, pY, glowSize, 0, Math.PI * 2);
-                mCtxElement.fillStyle = `rgba(255,255,255,${0.2 * pulse})`;
+                mCtxElement.arc(pX, pY, 7, 0, Math.PI * 2);
+                mCtxElement.fillStyle = `rgba(255,255,255,${0.15 * pulse})`;
                 mCtxElement.fill();
-                // Ponto central branco sólido
+                // Ponto central branco
                 mCtxElement.beginPath();
-                mCtxElement.arc(pX, pY, dotSize, 0, Math.PI * 2);
+                mCtxElement.arc(pX, pY, 3.5, 0, Math.PI * 2);
                 mCtxElement.fillStyle = '#ffffff';
                 mCtxElement.fill();
             }
