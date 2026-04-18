@@ -277,7 +277,6 @@
             position: absolute;
             bottom: 30px;
             right: 160px;
-            /* Posicionado à esquerda do botão de skins */
             cursor: pointer;
             pointer-events: auto;
             display: flex;
@@ -343,7 +342,7 @@
             }
         }
 
-        /* MODO MENU E MORTE - Fundo semi-transparente para ver a arena */
+        /* MODO MENU E MORTE */
         #start-menu,
         #death-screen {
             position: absolute;
@@ -926,6 +925,32 @@
                 letter-spacing: 1px;
             }
         }
+
+        .options-popup-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 30px;
+            border-radius: 20px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 280px;
+            align-items: stretch;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .anim-death-entry {
+            animation: deathEntry 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        @keyframes deathEntry {
+            from { opacity: 0; transform: scale(1.1); filter: blur(10px); }
+            to { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
     </style>
 </head>
 
@@ -963,8 +988,6 @@
             <div id="gesture-hint">SWIPE NA TELA PARA DASH<br>👆 👇 👈 👉</div>
         </div>
 
-
-
         <div id="start-menu">
             <div id="missions-panel" class="glass-panel anim-slide-up delay-1">
                 <div style="color:#ffdf00; font-weight:800; font-size:12px; letter-spacing:1px; margin-bottom: 5px;">📜
@@ -1001,24 +1024,19 @@
 
             <div id="skins-btn" class="anim-fade-in delay-4">
                 <svg width="36" height="36" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Corpo da cobra em S -->
                     <path d="M10 36 C10 28 18 28 18 21 C18 14 10 14 10 7" stroke="#00ff88" stroke-width="6"
                         stroke-linecap="round" fill="none" />
                     <path d="M10 36 C10 43 20 43 26 38 C32 33 38 33 38 27" stroke="#00ff88" stroke-width="6"
                         stroke-linecap="round" fill="none" />
-                    <!-- Escamas (marcas no corpo) -->
                     <circle cx="14" cy="14" r="2" fill="#00cc66" opacity="0.7" />
                     <circle cx="14" cy="21" r="2" fill="#00cc66" opacity="0.7" />
                     <circle cx="14" cy="29" r="2" fill="#00cc66" opacity="0.7" />
                     <circle cx="20" cy="36" r="2" fill="#00cc66" opacity="0.7" />
                     <circle cx="28" cy="36" r="2" fill="#00cc66" opacity="0.7" />
-                    <!-- Olho -->
                     <circle cx="10" cy="6" r="2.5" fill="white" />
                     <circle cx="10.8" cy="5.5" r="1.2" fill="#111" />
-                    <!-- Língua -->
                     <path d="M10 3.5 L10 1 M10 1 L8.5 0 M10 1 L11.5 0" stroke="#ff4455" stroke-width="1"
                         stroke-linecap="round" />
-                    <!-- Joia (coroa de escama) -->
                     <circle cx="38" cy="27" r="4" fill="#ffdf00" />
                     <circle cx="38" cy="27" r="2" fill="#cc9900" />
                 </svg>
@@ -1047,8 +1065,7 @@
             </div>
         </div>
 
-        <div id="options-popup-ui" class="hidden glass-panel"
-            style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); padding: 30px; border-radius: 20px; z-index: 200; display:flex; flex-direction:column; gap: 20px; min-width: 280px; align-items: stretch; background:rgba(10,10,10,0.95); border: 1px solid rgba(255,255,255,0.1);">
+        <div id="options-popup-ui" class="hidden glass-panel options-popup-container">
             <h2
                 style="margin:0 0 10px 0; color:#fff; text-align:center; font-weight:800; letter-spacing:2px; font-size:20px;">
                 AJUSTES</h2>
@@ -1106,6 +1123,7 @@
 
         <div id="death-screen" class="hidden">
             <h2>A LENDA TERMINOU</h2>
+            <div id="death-killer" style="font-size: 14px; font-weight: 700; color: #ff4444; margin: -5px 0 5px 0; letter-spacing: 1px; display: none;">MORRESTE PARA: <span id="killer-name-ui" style="color: #fff;">Sombra</span></div>
             <div id="death-msg">BOM TRABALHO!</div>
             <div class="glass-panel death-stats-box">
                 <p
@@ -1136,102 +1154,47 @@
     <script>
         /**
          * =========================================================================================
-         * ⚙️ PAINEL DE DEFINIÇÕES (FÁCIL DE EDITAR)
-         * Pode alterar todos os números abaixo sem medo, respeitando os limites indicados.
+         * ⚙️ CONFIGURAÇÕES (INTOCADAS CONFORME PEDIDO)
          * =========================================================================================
          */
         const IS_MOBILE_CLIENT = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024 || ('ontouchstart' in window);
-        const MOBILE_DPR_CAP = 1.6; // Refinado para melhor nitidez mantendo performance
+        const MOBILE_DPR_CAP = 1.6;
         console.log(`%c 🎮 MODO DETECTADO: ${IS_MOBILE_CLIENT ? 'MOBILE' : 'PC'} `, `background: ${IS_MOBILE_CLIENT ? '#ff0055' : '#007bff'}; color: white; font-weight: bold; border-radius: 4px; padding: 2px 8px;`);
 
         const CONFIG = {
-            // 🐍 1. CONFIGURAÇÕES DA SERPENTE (Física, Velocidade e Crescimento)
             cobra: {
                 pc: {
-                    espessuraInicial: 8,       // (Recomendado: 10 a 25) A grossura da cobra ao nascer (PC).
-                    espessuraMaxima: 32,        // (Recomendado: 25 a 45) Limite de grossura ao ficar gigante (PC).
-                    comprimentoInicial: 5,     // (Recomendado: 10 a 40) Comprimento inicial da cobra no PC.
-                    comprimentoMaximo: 500,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
-                    velocidadeBase: 1.2,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
-                    velocidadeTurbo: 3.6        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
+                    espessuraInicial: 8, espessuraMaxima: 32, comprimentoInicial: 5, comprimentoMaximo: 500, velocidadeBase: 1.2, velocidadeTurbo: 3.6
                 },
                 mobile: {
-                    espessuraInicial: 6,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
-                    espessuraMaxima: 27,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
-                    comprimentoInicial: 11,     // [REDUZIDO] Início mais ágil para mobile.
-                    comprimentoMaximo: 550,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 1.2,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
-                    velocidadeTurbo: 3.6        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
+                    espessuraInicial: 5, espessuraMaxima: 27, comprimentoInicial: 13, comprimentoMaximo: 550, velocidadeBase: 1.2, velocidadeTurbo: 3.6
                 },
-                // Variáveis Comuns a todas as plataformas:
-                distanciaGomos: 0.15,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
-                pontosParaEngrossar: 350,       // (Recomendado: 50 a 300) Quanta comida é necessária para a cobra engordar 1 pixel.
-                pontosParaCrescer: 1,           // (Recomendado: 5 a 20) Quanta comida é necessária para ganhar 1 gomo no corpo.
-                custoDoTurbo: 1.1,              // (Recomendado: 1.0 a 5.0) Pontos perdidos por instante ao usar o turbo.
-                tamanhoOrbeTurbo: 3.5,          // (Recomendado: 2.0 a 10.0) Tamanho das orbes que a cobra deixa ao correr.
-                chanceOrbeTurbo: 0.2,           // (Recomendado: 0.1 a 1.0) Probabilidade por frame de soltar orbes ao correr (1.0 = sempre).
-                quantidadeOrbeTurbo: 1,          // (Recomendado: 1 a 5) Quantidade de orbes que saem de uma vez quando corre.
-                pontosIniciais: 20,             // (Recomendado: 10 a 100) Todos nascem iguais para um crescimento natural e justo.
-                multiplicadorCabeca: 1.06       // (Recomendado: 1.0 a 1.5) Ajuste o comprimento da cabeça da cobra. 1.0 é um círculo perfeito, superior a 1.0 alonga a cabeça.
+                distanciaGomos: 0.15, pontosParaEngrossar: 350, pontosParaCrescer: 1, custoDoTurbo: 1.1,
+                tamanhoOrbeTurbo: 3.5, chanceOrbeTurbo: 0.2, quantidadeOrbeTurbo: 1, pontosIniciais: 20, multiplicadorCabeca: 1.06
             },
-
-            // 🔍 2. CONFIGURAÇÕES DA CÂMARA (Visão do Jogador)
             zoom: {
-                pc: {
-                    inicial: 4.00,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
-                    minimo: 0.810,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
-                    fatorAfastamento: 0.005     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
-                },
-                mobile: {
-                    inicial: 3.00,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
-                    minimo: 0.810,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
-                    fatorAfastamento: 0.005    // Suavidade do afastamento no telemóvel.
-                }
+                pc: { inicial: 4.00, minimo: 0.810, fatorAfastamento: 0.005 },
+                mobile: { inicial: 3.00, minimo: 0.810, fatorAfastamento: 0.005 }
             },
-
-            // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
-                tamanhoRaio: 7000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
-                quantidadeBots: IS_MOBILE_CLIENT ? 149 : 299,             // Mobile: 12, PC: 20
-                quantidadeComida: IS_MOBILE_CLIENT ? 29000 : 29000,      // Mobile: 4k orbes, PC: 11k orbes
-                quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 3 : 6,   // Menos borboletas no mobile
+                tamanhoRaio: 7000, quantidadeBots: IS_MOBILE_CLIENT ? 149 : 299, quantidadeComida: IS_MOBILE_CLIENT ? 29000 : 29000,
+                quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 3 : 6,
                 distribuicaoBots: {
-                    // Probabilidade de cada categoria nascer (Soma deve ser 1.0)
                     probabilidades: { pequeno: 0.30, medio: 0.30, grande: 0.20, gigante: 0.20 },
-                    // Intervalo de Pontuação [min, max] para cada categoria
-                    pontos: {
-                        pequeno: [40, 190],
-                        medio: [400, 1000],
-                        grande: [4000, 7000],
-                        gigante: [8000, 10000]
-                    }
+                    pontos: { pequeno: [40, 190], medio: [400, 1000], grande: [4000, 7000], gigante: [8000, 10000] }
                 },
-                tamanhoComidaMin: 1.0,          // (Recomendado: 2.0 a 5.0) Tamanho mínimo das orbes comuns de luz.
-                tamanhoComidaMax: 2.0,          // (Recomendado: 6.0 a 12.0) Tamanho máximo que uma orbe brilhante pode ter ao nascer.
-                tamanhoOrbeMorte: 2.0,          // (Recomendado: 5.0 a 15.0) Tamanho base da comida deixada ao morrer.
-                tamanhoOrbeMorteBonus: 2.0,    // (Recomendado: 5.0 a 20.0) Crescimento máximo extra dependendo da pontuação que a cobra tinha.
-                forcaAtracao: 33,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
-                pc: {
-                    corGrade: '#4b62c9', // Cor do fundo hexagonal (azul estilo premium)
-                    corFundo: '#1a1019', // A cor das bordas e fundo real
-                    tamanhoHexagono: 12  // O tamanho da malha desenhada no fundo.
-                },
-                mobile: {
-                    corGrade: '#4b62c9', // Cor do fundo no telemóvel
-                    corFundo: '#1a1019', // Fundo real no telemóvel
-                    tamanhoHexagono: 4 // [OTIMIZADO] Tamanho equilibrado para performance visual no mobile
-                }
+                tamanhoComidaMin: 1.0, tamanhoComidaMax: 2.0, tamanhoOrbeMorte: 2.0, tamanhoOrbeMorteBonus: 2.0, forcaAtracao: 33,
+                pc: { corGrade: '#4b62c9', corFundo: '#1a1019', tamanhoHexagono: 12 },
+                mobile: { corGrade: '#4b62c9', corFundo: '#1a1019', tamanhoHexagono: 4 }
             },
-
-            // ✨ 4. EFEITOS ESPECIAIS E AMBIENTE (Detalhes Gráficos)
             visual: {
-                balancoComida: 100.0,             // (Recomendado: 0 a 10) Efeito que faz a comida "tremer" ou flutuar ligeiramente.
-                velocidadeAnimacaoComida: 0.006,// (Recomendado: 0.001 a 0.01) A velocidade com que a comida vibra/pulsa.
-                quantidadeVagalumes: IS_MOBILE_CLIENT ? 10 : 100,       // Mobile: 20, PC: 100
-                distanciaFugaVagalumes: 80,    // (Recomendado: 100 a 500) Distância em que as luzes se assustam com a cobra e fogem.
-                dRender: 500                    // (Técnico) Otimização. Impede renderizar o que está a mais de 400px fora do ecrã.
+                balancoComida: 100.0, velocidadeAnimacaoComida: 0.006, quantidadeVagalumes: IS_MOBILE_CLIENT ? 10 : 100,
+                distanciaFugaVagalumes: 80, dRender: 500
             }
         };
+
+        // 🚀 OTIMIZAÇÃO: Cache Matemático (Evita recalcular multiplicações em loops pesados)
+        const TWO_PI = Math.PI * 2;
 
         let savedAudio = localStorage.getItem('serpente_audio');
         let savedGfx = localStorage.getItem('serpente_gfx');
@@ -1242,56 +1205,40 @@
             performanceMode: false
         };
         let lastFrameTime = performance.now();
-        let frameTimeBuffer = []; // Para média móvel de FPS
+        let frameTimeBuffer = [];
 
-        const WORLD_CENTER = CONFIG.mundo.tamanhoRaio; // Centro Fixo (3600, 3600)
+
+
+        const WORLD_CENTER = CONFIG.mundo.tamanhoRaio;
         let currentArenaRadius = CONFIG.mundo.tamanhoRaio;
         let targetArenaRadius = CONFIG.mundo.tamanhoRaio;
         const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã"];
         const PALETTE_COLORS = [
-            '#39ff14', // Neon Green
-            '#00ffff', // Cyan
-            '#ff00ff', // Magenta
-            '#007bff', // Electric Blue
-            '#ff4500', // Orange Red
-            '#ff8800', // Vivid Orange
-            '#8a2be2', // Blue Violet
-            '#ff69b4', // Hot Pink
-            '#ffdf00', // Gold
-            '#ffffff', // Pure White
-            '#00ff88', // Spring Green
-            '#7a28cb', // Purple
-            '#ff0055'  // Deep Pink
+            '#39ff14', '#00ffff', '#ff00ff', '#007bff', '#ff4500', '#ff8800', '#8a2be2', '#ff69b4', '#ffdf00', '#ffffff', '#00ff88', '#7a28cb', '#ff0055'
         ];
 
         const SKINS = [
             ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#009c3b', '#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222'],
             ['#000000', '#ffdf00'], ['#ff8c00', '#000000', '#ffffff'], ['#1a1a2e', '#16213e', '#0f3460', '#e94560'], ['#00ffcc', '#ff00ff', '#111111'], ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'], ['#8a2be2', '#4b0082', '#000000'], ['#00ffff', '#00cccc', '#009999', '#006666'], ['#ff0000', '#8b0000', '#000000'], ['#39ff14', '#000000', '#111111'], ['#ffffff', '#000000'],
-            // Skins Lula
-            ['#CC0000', '#CC0000', '#CC0000', '#CC0000', '#CC0000', '#CC0000'], // Puro PT
-            ['#CC0000', '#CC0000', '#ffffff', '#ffffff', '#CC0000', '#CC0000'], // Lula Bicolor
-            ['#CC0000', '#880000', '#CC0000', '#880000', '#ffdf00', '#ffdf00'], // Lula Estrela
-            ['#CC0000', '#CC0000', '#330000', '#330000', '#ff6666', '#ff6666']  // Lula Sombra
+            ['#CC0000', '#CC0000', '#CC0000', '#CC0000', '#CC0000', '#CC0000'], ['#CC0000', '#CC0000', '#ffffff', '#ffffff', '#CC0000', '#CC0000'], ['#CC0000', '#880000', '#CC0000', '#880000', '#ffdf00', '#ffdf00'], ['#CC0000', '#CC0000', '#330000', '#330000', '#ff6666', '#ff6666']
         ];
         const SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados", "Ouro Negro", "Tigre", "Galáxia", "Ciborgue", "Algodão Doce", "Vazio", "Abissal", "Vampiro", "Matriz", "Zebra", "PT Vermelho", "Lula Bicolor", "Lula Estrela", "Lula Sombra"];
 
         const ACCESSORIES = [
-            { id: 0, name: "Nenhum" },
-            { id: 1, name: "Coroa Real" },
-            { id: 2, name: "Viking Helmet" },
-            { id: 3, name: "Cartola VIP" },
-            { id: 4, name: "Cyborg Vizor" },
-            { id: 5, name: "Óculos Aviador" },
-            { id: 6, name: "Chapéu de Mago" },
-            { id: 7, name: "Máscara Ninja" },
-            { id: 8, name: "Bigode Imperial" }
+            { id: 0, name: "Nenhum" }, { id: 1, name: "Coroa Real" }, { id: 2, name: "Viking Helmet" }, { id: 3, name: "Cartola VIP" },
+            { id: 4, name: "Cyborg Vizor" }, { id: 5, name: "Óculos Aviador" }, { id: 6, name: "Chapéu de Mago" }, { id: 7, name: "Máscara Ninja" }, { id: 8, name: "Bigode Imperial" }
         ];
         let accIndex = parseInt(localStorage.getItem('serpente_accIndex') || '0');
 
         const PLAYER_STATS = {
             highScore: parseInt(localStorage.getItem('serpente_highScore') || '0'), totalKills: parseInt(localStorage.getItem('serpente_totalKills') || '0'),
             totalFood: parseInt(localStorage.getItem('serpente_totalFood') || '0'), totalTime: parseInt(localStorage.getItem('serpente_totalTime') || '0'),
-            save: function () { localStorage.setItem('serpente_highScore', this.highScore); localStorage.setItem('serpente_totalKills', this.totalKills); localStorage.setItem('serpente_totalFood', this.totalFood); localStorage.setItem('serpente_totalTime', this.totalTime); }
+            save: function () {
+                localStorage.setItem('serpente_highScore', this.highScore);
+                localStorage.setItem('serpente_totalKills', this.totalKills);
+                localStorage.setItem('serpente_totalFood', this.totalFood);
+                localStorage.setItem('serpente_totalTime', this.totalTime);
+            }
         };
         const MISSIONS = { killsReq: 50, foodReq: 1500, timeReq: 300 };
         const SKIN_REQUIREMENTS = {
@@ -1300,23 +1247,54 @@
             34: { type: 'score', val: 20000, desc: '20.000 DE ABUNDÂNCIA MÁX' }, 35: { type: 'kills', val: 300, desc: '300 ABATES TOTAIS' }, 36: { type: 'score', val: 30000, desc: '30.000 DE ABUNDÂNCIA MÁX' }, 37: { type: 'kills', val: 500, desc: '500 ABATES TOTAIS' }
         };
 
-        // 🏆 Títulos de Evolução
         const EVOLUTIONS = [
             { score: 1000, name: "SERPENTE JOVEM", color: "#aaff00" }, { score: 3000, name: "CAÇADOR IMPLACÁVEL", color: "#00ffff" },
             { score: 5000, name: "BESTA DOURADA", color: "#ffdf00" }, { score: 10000, name: "DEUS DA ARENA", color: "#ff00ff" }, { score: 20000, name: "ENTIDADE CÓSMICA", color: "#ff0000" }
         ];
         let currentEvo = -1;
 
+        // 🚀 LEITURA E LIMPEZA: Expansão do AudioSys para melhorar manutenção e remover bugs
         const AudioSys = {
             ctx: null,
-            init: function () { if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } if (this.ctx.state === 'suspended') this.ctx.resume(); },
+            init: function () {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
             play: function (type) {
                 if (!this.ctx || !APP_SETTINGS.audio) return;
-                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
-                osc.connect(gain); gain.connect(this.ctx.destination); const now = this.ctx.currentTime;
-                if (type === 'eat') { osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
-                else if (type === 'dash') { osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(450, now + 0.2); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
-                else if (type === 'die') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.5); gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5); osc.start(now); osc.stop(now + 0.5); }
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                const now = this.ctx.currentTime;
+
+                if (type === 'eat') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'dash') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(450, now + 0.2);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'die') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(40, now + 0.5);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
             }
         };
 
@@ -1329,77 +1307,162 @@
 
         let snakes = [], foods = [], fireflies = [], particles = [], butterflies = [], player = null;
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
-        let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
+        let mouseX = 0, mouseY = 0, isTurboActive = false, frameCount = 0, playerKills = 0, gameState = 'menu';
+        let lastPlayTime = 0, accumulatedTime = 0;
         let joystickActive = false, joystickAngle = 0, skinIndex = 0;
+
+        // 🚀 OTIMIZAÇÃO: Arrays persistentes para evitar Garbage Collection
+        let activeAliveSnakes = [];
+        let leaderBoardList = [];
+        let nearbySnakesSet = new Set(); // Using Set for quick uniqueness if needed, but array is often faster for small N
         let vpWidth = window.innerWidth, vpHeight = window.innerHeight, dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, MOBILE_DPR_CAP) : (window.devicePixelRatio || 1);
 
         // ═══════════════════════════════════════════════════════════════
-        // 🗺️ SPATIAL HASH — Acelera busca de comida de O(n) para O(1)
+        // 🚀 OTIMIZAÇÃO: SPATIAL HASH (Garbage Collection Reduction)
+        // Em vez de recriar `foodGrid = {}`, reciclamos os arrays para
+        // poupar a CPU e evitar interrupções do coletor de lixo (GC).
         // ═══════════════════════════════════════════════════════════════
         const FOOD_CELL_SIZE = 200;
-        let foodGrid = {};
-        function foodGridKey(x, y) { return ((x / FOOD_CELL_SIZE) | 0) + ',' + ((y / FOOD_CELL_SIZE) | 0); }
-        function rebuildFoodGrid() {
-            foodGrid = {};
-            for (let i = 0; i < foods.length; i++) {
-                let f = foods[i];
-                if (f.dead) continue;
-                let key = foodGridKey(f.x, f.y);
-                if (!foodGrid[key]) foodGrid[key] = [];
-                foodGrid[key].push(i);
+        let foodGrid = new Map(); // Using Map with integer keys for speed
+
+        function foodGridKeyInt(x, y) {
+            return ((x / FOOD_CELL_SIZE) | 0) * 10000 + ((y / FOOD_CELL_SIZE) | 0);
+        }
+
+        function addToFoodGrid(food, index) {
+            let key = foodGridKeyInt(food.x, food.y);
+            let cell = foodGrid.get(key);
+            if (!cell) { cell = []; foodGrid.set(key, cell); }
+            cell.push(index);
+            food.gridKey = key;
+        }
+
+        function removeFromFoodGrid(food, index) {
+            if (food.gridKey === undefined) return;
+            let cell = foodGrid.get(food.gridKey);
+            if (!cell) return;
+            let i = cell.indexOf(index);
+            if (i > -1) {
+                cell[i] = cell[cell.length - 1];
+                cell.pop();
             }
         }
+
+        function updateFoodGrid(food, index) {
+            let newKey = foodGridKeyInt(food.x, food.y);
+            if (newKey !== food.gridKey) {
+                removeFromFoodGrid(food, index);
+                food.gridKey = newKey;
+                let cell = foodGrid.get(newKey);
+                if (!cell) { cell = []; foodGrid.set(newKey, cell); }
+                cell.push(index);
+            }
+        }
+
+        function fastRemoveFood(index) {
+            if (index < 0 || index >= foods.length) return;
+            let lastIdx = foods.length - 1;
+            removeFromFoodGrid(foods[index], index);
+            if (index !== lastIdx) {
+                let movedFood = foods[lastIdx];
+                // Update moved food's index in the grid
+                let cell = foodGrid.get(movedFood.gridKey);
+                if (cell) {
+                    let i = cell.indexOf(lastIdx);
+                    if (i > -1) cell[i] = index;
+                }
+                foods[index] = movedFood;
+            }
+            foods.pop();
+        }
+
+        function rebuildFoodGrid() {
+            foodGrid.clear();
+            for (let i = 0; i < foods.length; i++) {
+                if (!foods[i].dead) addToFoodGrid(foods[i], i);
+            }
+        }
+
         function getNearbyFoodIndices(x, y, radius) {
             let results = [];
             let cx = (x / FOOD_CELL_SIZE) | 0, cy = (y / FOOD_CELL_SIZE) | 0;
             let cellRange = Math.ceil(radius / FOOD_CELL_SIZE);
             for (let dx = -cellRange; dx <= cellRange; dx++) {
                 for (let dy = -cellRange; dy <= cellRange; dy++) {
-                    let key = (cx + dx) + ',' + (cy + dy);
-                    if (foodGrid[key]) {
-                        for (let idx of foodGrid[key]) results.push(idx);
+                    let cell = foodGrid.get((cx + dx) * 10000 + (cy + dy));
+                    if (cell) {
+                        for (let j = 0; j < cell.length; j++) results.push(cell[j]);
                     }
                 }
             }
             return results;
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // 🐍 SEGMENT HASH — Acelera colisão de cobras de O(N*M) para O(1)
-        // ═══════════════════════════════════════════════════════════════
         const SEGMENT_CELL_SIZE = 250;
-        let segmentGrid = {};
+        let segmentGrid = new Map();
+        let activeSegmentKeys = [];
+
         function rebuildSegmentGrid() {
-            segmentGrid = {};
+            for (let i = 0; i < activeSegmentKeys.length; i++) {
+                let cell = segmentGrid.get(activeSegmentKeys[i]);
+                if (cell) cell.length = 0;
+            }
+            activeSegmentKeys.length = 0;
+
             for (let i = 0; i < snakes.length; i++) {
                 let s = snakes[i];
-                if (!s.alive) continue;
-                // Apenas as células onde a cobra ocupa espaço
-                // Para economia, vamos iterar os gomos e registrar na grade
-                for (let k = 0; k < s.segments.length; k += 8) { // Passo maior para registro na grade
+                if (!s || !s.alive) continue;
+
+                const segLen = s.segments.length;
+                const step = Math.max(4, Math.floor(s.radius / 4));
+                let lastKey = -1;
+                let lastCell = null;
+
+                for (let k = 0; k < segLen; k += step) {
                     let seg = s.segments[k];
-                    let key = ((seg.x / SEGMENT_CELL_SIZE) | 0) + ',' + ((seg.y / SEGMENT_CELL_SIZE) | 0);
-                    if (!segmentGrid[key]) segmentGrid[key] = [];
-                    // Evita duplicatas da mesma cobra na mesma célula
-                    if (segmentGrid[key][segmentGrid[key].length - 1] !== i) {
-                        segmentGrid[key].push(i);
+                    let kX = (seg.x / SEGMENT_CELL_SIZE) | 0;
+                    let kY = (seg.y / SEGMENT_CELL_SIZE) | 0;
+                    let key = kX * 10000 + kY;
+
+                    let cell;
+                    if (key === lastKey) {
+                        cell = lastCell;
+                    } else {
+                        cell = segmentGrid.get(key);
+                        if (!cell) { cell = []; segmentGrid.set(key, cell); }
+                        if (cell.length === 0) activeSegmentKeys.push(key);
+                        lastKey = key;
+                        lastCell = cell;
+                    }
+
+                    if (cell.length === 0 || cell[cell.length - 1] !== i) {
+                        cell.push(i);
                     }
                 }
             }
         }
+
+        let nearbySnakesReusable = []; // Reusable array to avoid GC
         function getNearbySnakesIndices(x, y, radius) {
-            let results = new Set();
+            nearbySnakesReusable.length = 0;
             let cx = (x / SEGMENT_CELL_SIZE) | 0, cy = (y / SEGMENT_CELL_SIZE) | 0;
             let cellRange = Math.ceil(radius / SEGMENT_CELL_SIZE);
             for (let dx = -cellRange; dx <= cellRange; dx++) {
                 for (let dy = -cellRange; dy <= cellRange; dy++) {
-                    let key = (cx + dx) + ',' + (cy + dy);
-                    if (segmentGrid[key]) {
-                        for (let idx of segmentGrid[key]) results.add(idx);
+                    let cell = segmentGrid.get((cx + dx) * 10000 + (cy + dy));
+                    if (cell) {
+                        for (let j = 0; j < cell.length; j++) {
+                            let idx = cell[j];
+                            let s = snakes[idx];
+                            if (s && s.lastScanFrame !== frameCount) {
+                                s.lastScanFrame = frameCount;
+                                nearbySnakesReusable.push(idx);
+                            }
+                        }
                     }
                 }
             }
-            return results;
+            return nearbySnakesReusable;
         }
 
         const gameCanvasElement = document.getElementById('gameCanvas'); const mainCtx = gameCanvasElement.getContext('2d', { alpha: false });
@@ -1410,6 +1473,7 @@
             skins: document.getElementById('skins-btn'), preview: document.getElementById('skin-preview-ui'), ok: document.getElementById('skin-ok-btn'), left: document.getElementById('left-arrow'), right: document.getElementById('right-arrow'),
             lb: document.getElementById('leaderboard'), lbList: document.getElementById('lb-list'), status: document.getElementById('hud-status'), score: document.getElementById('score-display'), rank: document.getElementById('rank-display'), total: document.getElementById('total-display'),
             death: document.getElementById('death-screen'), deathLen: document.getElementById('death-length'), deathKills: document.getElementById('death-kills'), deathMsg: document.getElementById('death-msg'), deathSize: document.getElementById('death-size'),
+            killerBox: document.getElementById('death-killer'), killerName: document.getElementById('killer-name-ui'),
             again: document.getElementById('play-again-btn'), share: document.getElementById('share-btn'), skinName: document.getElementById('skin-name-display'), orient: document.getElementById('orientation-overlay'),
             ctrls: document.getElementById('mobile-controls'), joyB: document.getElementById('joystick-base'), joyH: document.getElementById('joystick-handle'), boost: document.getElementById('btn-turbo'), mini: document.getElementById('minimap-wrapper'),
             lockOverlay: document.getElementById('skin-locked-overlay'), reqTitle: document.getElementById('skin-req-title'), reqStatus: document.getElementById('skin-req-status'),
@@ -1417,7 +1481,7 @@
             optionsBtn: document.getElementById('options-btn'), optionsUi: document.getElementById('options-popup-ui'), optAudio: document.getElementById('toggle-audio-btn'), optGfx: document.getElementById('toggle-gfx-btn'), optClose: document.getElementById('close-options-btn')
         };
 
-        function getRandomPosInCircle(p = 50, bonusRadius = 0) { let r = Math.sqrt(Math.random()) * (currentArenaRadius + bonusRadius - p), t = Math.random() * 2 * Math.PI; return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) }; }
+        function getRandomPosInCircle(p = 50, bonusRadius = 0) { let r = Math.sqrt(Math.random()) * (currentArenaRadius + bonusRadius - p), t = Math.random() * TWO_PI; return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) }; }
         function getRandomBotScore() {
             const dist = CONFIG.mundo.distribuicaoBots; const r = Math.random(); let cat = 'pequeno';
             if (r < dist.probabilidades.gigante) cat = 'gigante';
@@ -1430,14 +1494,11 @@
             while (!safe && att < 100) {
                 p = getRandomPosInCircle(300);
                 safe = true;
-                // Gradualmente reduz a exigência se não encontrar espaço após muitas tentativas
                 let checkD = (att > 80) ? minD * 0.4 : (att > 50) ? minD * 0.7 : minD;
                 for (let s of snakes) {
                     if (!s.alive) continue;
-                    // Verifica distância da cabeça
                     let d = Math.hypot(s.x - p.x, s.y - p.y);
                     if (d < checkD) { safe = false; break; }
-                    // Verifica segmentos do corpo (amostrado para não pesar processamento)
                     for (let i = 10; i < s.segments.length; i += 20) {
                         if (Math.hypot(s.segments[i].x - p.x, s.segments[i].y - p.y) < checkD * 0.6) {
                             safe = false; break;
@@ -1449,9 +1510,7 @@
             }
             return p;
         }
-        // ═══════════════════════════════════════════════════════════════
-        // 🎇 PARTICLE POOL — Reutiliza objetos para evitar GC pauses
-        // ═══════════════════════════════════════════════════════════════
+
         const ParticlePool = {
             pool: [],
             get: function (x, y, color, s) {
@@ -1465,18 +1524,29 @@
                 return p;
             },
             recycle: function (p) {
-                if (this.pool.length < 500) this.pool.push(p);
+                if (p && this.pool.length < 1500) this.pool.push(p);
             }
         };
 
-        function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(15, 600); foods.push(new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)])); } }
+        function fastRemove(arr, index, usePool = false) {
+            if (usePool) ParticlePool.recycle(arr[index]);
+            arr[index] = arr[arr.length - 1];
+            arr.pop();
+        }
+
+        function spawnFood(count) {
+            for (let i = 0; i < count; i++) {
+                let p = getRandomPosInCircle(15, 600);
+                let f = new Food(p.x, p.y, CONFIG.mundo.tamanhoComidaMin + Math.random() * 4, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)]);
+                foods.push(f);
+                addToFoodGrid(f, foods.length - 1);
+            }
+        }
         function createExplosion(x, y, color, amount) {
             if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2));
             for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2));
         }
 
-
-        // Utilitário: escurece/clareia uma cor hex ou rgb
         function shadeColor(color, amount) {
             try {
                 let col = color.trim();
@@ -1493,8 +1563,10 @@
 
         const TextureManager = {
             cache: {},
+            lastAccess: {},
             getSegment: function (color, isHead = false) {
                 const key = color + (isHead ? "_head" : "");
+                this.lastAccess[key] = frameCount;
                 if (this.cache[key]) return this.cache[key];
                 const c = document.createElement('canvas'); c.width = 128; c.height = 128; const cx = c.getContext('2d'); const r = 62;
 
@@ -1505,8 +1577,8 @@
                     pattern = 'stars';
                 }
 
-                cx.beginPath(); cx.arc(64, 64, r, 0, Math.PI * 2); cx.clip();
-                cx.beginPath(); cx.arc(64, 64, r, 0, Math.PI * 2); cx.fillStyle = baseColor; cx.fill();
+                cx.beginPath(); cx.arc(64, 64, r, 0, TWO_PI); cx.clip();
+                cx.beginPath(); cx.arc(64, 64, r, 0, TWO_PI); cx.fillStyle = baseColor; cx.fill();
 
                 if (pattern === 'stars') {
                     cx.fillStyle = '#ffffff';
@@ -1523,25 +1595,22 @@
                     for (let i = 0; i < 9; i++) {
                         let sx = 64 + (Math.random() - 0.5) * r * 1.35;
                         let sy = 64 + (Math.random() - 0.5) * r * 1.35;
-                        drawStar(sx, sy, 5.5, 2.5); // estrelinhas 5 pontos
+                        drawStar(sx, sy, 5.5, 2.5);
                     }
                 }
 
-                // Volume 3D Cilíndrico (Réplica fiel do Slither.io original)
-                // O segredo é: brilho branco largo e suave no topo + sombra escura forte na base
                 let sideGrad = cx.createLinearGradient(0, 64 - r, 0, 64 + r);
-                sideGrad.addColorStop(0.00, 'rgba(255,255,255,0.45)'); // Topo: branco brilhante (reflexo de luz)
-                sideGrad.addColorStop(0.18, 'rgba(255,255,255,0.35)'); // Brilho largo e suave
-                sideGrad.addColorStop(0.35, 'rgba(255,255,255,0.08)'); // Transição gradual
-                sideGrad.addColorStop(0.50, 'rgba(0,0,0,0.0)');        // Meio: cor pura da skin
-                sideGrad.addColorStop(0.65, 'rgba(0,0,0,0.08)');       // Início sombra inferior
-                sideGrad.addColorStop(0.80, 'rgba(0,0,0,0.25)');       // Sombra forte
-                sideGrad.addColorStop(0.92, 'rgba(0,0,0,0.50)');       // Borda escura profunda
-                sideGrad.addColorStop(1.00, 'rgba(0,0,0,0.65)');       // Base: sombra máxima (chão do tubo)
+                sideGrad.addColorStop(0.00, 'rgba(255,255,255,0.45)');
+                sideGrad.addColorStop(0.18, 'rgba(255,255,255,0.35)');
+                sideGrad.addColorStop(0.35, 'rgba(255,255,255,0.08)');
+                sideGrad.addColorStop(0.50, 'rgba(0,0,0,0.0)');
+                sideGrad.addColorStop(0.65, 'rgba(0,0,0,0.08)');
+                sideGrad.addColorStop(0.80, 'rgba(0,0,0,0.25)');
+                sideGrad.addColorStop(0.92, 'rgba(0,0,0,0.50)');
+                sideGrad.addColorStop(1.00, 'rgba(0,0,0,0.65)');
                 cx.fillStyle = sideGrad; cx.fill();
 
                 if (!isHead) {
-                    // Anel de separação entre gomos (sombra fina na traseira de cada segmento)
                     let backGrad = cx.createLinearGradient(64 - r, 0, 64 - r + r * 0.30, 0);
                     backGrad.addColorStop(0, 'rgba(0,0,0,0.18)');
                     backGrad.addColorStop(1, 'rgba(0,0,0,0)');
@@ -1552,13 +1621,14 @@
             },
             getGridPattern: function (size, color, isLite = false) {
                 const key = 'grid_' + size + '_' + color + (isLite ? '_lite' : '');
+                this.lastAccess[key] = frameCount;
                 if (this.cache[key]) return this.cache[key];
                 const c = document.createElement('canvas');
                 const h = size * Math.sqrt(3), w = size * 1.5;
                 c.width = w * 2; c.height = h;
                 const cx = c.getContext('2d');
                 const drawHex = (x, y) => {
-                    let s = isLite ? size : size * 0.82; // 18% gap between hexes to show true corFundo geometrically perfect
+                    let s = isLite ? size : size * 0.82;
                     cx.beginPath(); cx.moveTo(x + s, y);
                     for (let i = 1; i <= 6; i++) cx.lineTo(x + s * Math.cos(i * Math.PI / 3), y + s * Math.sin(i * Math.PI / 3));
                     cx.closePath();
@@ -1584,66 +1654,79 @@
                 this.cache[key] = pattern; return pattern;
             },
             getFood: function (color) {
-                let key = 'food_' + color; if (this.cache[key]) return this.cache[key];
+                let key = 'food_' + color;
+                this.lastAccess[key] = frameCount;
+                if (this.cache[key]) return this.cache[key];
                 let baseColor = color.split('-')[0];
                 const c = document.createElement('canvas'); c.width = 64; c.height = 64;
                 const cx = c.getContext('2d');
                 const cx0 = 32, cy0 = 32, r = 22;
-                // Clip circular — nada sai fora do círculo
-                cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, Math.PI * 2); cx.clip();
-                // Halo
+                cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, TWO_PI); cx.clip();
                 cx.globalAlpha = 0.3; cx.fillStyle = baseColor;
-                cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, Math.PI * 2); cx.fill(); cx.globalAlpha = 1;
-                // Corpo
+                cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, TWO_PI); cx.fill(); cx.globalAlpha = 1;
                 const body = cx.createRadialGradient(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.05, cx0, cy0, r);
                 body.addColorStop(0, 'rgba(255,255,255,0.95)'); body.addColorStop(0.3, baseColor); body.addColorStop(1, shadeColor(baseColor, -40));
-                cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill();
-                // Brilho
-                cx.beginPath(); cx.arc(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.22, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.9)'; cx.fill();
+                cx.beginPath(); cx.arc(cx0, cy0, r, 0, TWO_PI); cx.fillStyle = body; cx.fill();
+                cx.beginPath(); cx.arc(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.22, 0, TWO_PI); cx.fillStyle = 'rgba(255,255,255,0.9)'; cx.fill();
                 this.cache[key] = c; return c;
             },
             getDroppedFood: function (color) {
-                let key = 'drop_' + color; if (this.cache[key]) return this.cache[key];
+                let key = 'drop_' + color;
+                this.lastAccess[key] = frameCount;
+                if (this.cache[key]) return this.cache[key];
                 let baseColor = color.split('-')[0];
                 const c = document.createElement('canvas'); c.width = 64; c.height = 64;
                 const cx = c.getContext('2d');
                 const cx0 = 32, cy0 = 32, r = 20;
-                // Clip circular
-                cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, Math.PI * 2); cx.clip();
-                // Halo duplo
-                cx.globalAlpha = 0.45; cx.fillStyle = baseColor; cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, Math.PI * 2); cx.fill();
-                cx.globalAlpha = 0.2; cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(cx0, cy0, r * 1.2, 0, Math.PI * 2); cx.fill(); cx.globalAlpha = 1;
-                // Corpo
+                cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, TWO_PI); cx.clip();
+                cx.globalAlpha = 0.45; cx.fillStyle = baseColor; cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, TWO_PI); cx.fill();
+                cx.globalAlpha = 0.2; cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(cx0, cy0, r * 1.2, 0, TWO_PI); cx.fill(); cx.globalAlpha = 1;
                 const body = cx.createRadialGradient(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.05, cx0, cy0, r);
                 body.addColorStop(0, 'rgba(255,255,255,1)'); body.addColorStop(0.25, '#fff'); body.addColorStop(0.55, baseColor); body.addColorStop(1, shadeColor(baseColor, -30));
-                cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill();
-                // Brilho duplo
-                cx.beginPath(); cx.arc(cx0 - r * 0.28, cy0 - r * 0.28, r * 0.25, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.95)'; cx.fill();
-                cx.beginPath(); cx.arc(cx0 + r * 0.2, cy0 + r * 0.2, r * 0.1, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.4)'; cx.fill();
+                cx.beginPath(); cx.arc(cx0, cy0, r, 0, TWO_PI); cx.fillStyle = body; cx.fill();
+                cx.beginPath(); cx.arc(cx0 - r * 0.28, cy0 - r * 0.28, r * 0.25, 0, TWO_PI); cx.fillStyle = 'rgba(255,255,255,0.95)'; cx.fill();
+                cx.beginPath(); cx.arc(cx0 + r * 0.2, cy0 + r * 0.2, r * 0.1, 0, TWO_PI); cx.fillStyle = 'rgba(255,255,255,0.4)'; cx.fill();
                 this.cache[key] = c; return c;
+            },
+            expireCache: function () {
+                const keys = Object.keys(this.cache);
+                if (keys.length < 40) return; // Keep at least 40 items
+                let expiredCount = 0;
+                for (let key of keys) {
+                    if (frameCount - this.lastAccess[key] > 3600) { // 1 minute at 60fps
+                        delete this.cache[key];
+                        delete this.lastAccess[key];
+                        expiredCount++;
+                    }
+                }
+                // If still too many, force clear half the cache (least recently used)
+                if (Object.keys(this.cache).length > 100) {
+                    const sorted = Object.keys(this.cache).sort((a, b) => this.lastAccess[a] - this.lastAccess[b]);
+                    for (let i = 0; i < 50; i++) {
+                        delete this.cache[sorted[i]];
+                        delete this.lastAccess[sorted[i]];
+                    }
+                }
             }
         };
 
         function drawPremiumEyes(ctx, x, y, radius, angle, lookAngle, skinId, isBoosting = false, isEating = false) {
             ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
 
-            // Olhos idênticos aos do Print (Grandes, Pretos com Ponto Branco)
             let eyX = radius * 0.65;
             let eyY = radius * 0.45;
             let eyR = radius * 0.35;
             let pupR = eyR * 0.35;
 
             const drawEye = (ex, ey) => {
-                // Globo Ocular Escuro Fixo
                 ctx.fillStyle = '#000000';
-                ctx.beginPath(); ctx.arc(ex, ey, eyR, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(ex, ey, eyR, 0, TWO_PI); ctx.fill();
 
-                // Pupila Branca (Ponto expressivo na borda)
                 ctx.save();
                 let lx = Math.cos(lookAngle - angle) * (eyR * 0.30);
                 let ly = Math.sin(lookAngle - angle) * (eyR * 0.30);
                 ctx.fillStyle = '#ffffff';
-                ctx.beginPath(); ctx.arc(ex + lx, ey + ly, pupR, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(ex + lx, ey + ly, pupR, 0, TWO_PI); ctx.fill();
                 ctx.restore();
             };
 
@@ -1659,28 +1742,27 @@
             ctx.rotate(angle);
 
             switch (accId) {
-                case 1: // Coroa Real (Top Down Ring)
+                case 1:
                     ctx.lineWidth = r * 0.25;
                     ctx.strokeStyle = '#e6c200';
-                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.45, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.45, 0, TWO_PI); ctx.stroke();
                     ctx.lineWidth = r * 0.08;
                     ctx.strokeStyle = '#fff59d';
-                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.45, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.45, 0, TWO_PI); ctx.stroke();
                     let gemColors = ['#ff0000', '#00ff00', '#0000ff', '#ff00ff'];
                     for (let i = 0; i < 4; i++) {
                         let gx = -r * 0.1 + Math.cos(i * Math.PI / 2 + Math.PI / 4) * r * 0.45;
                         let gy = Math.sin(i * Math.PI / 2 + Math.PI / 4) * r * 0.45;
                         ctx.fillStyle = gemColors[i];
-                        ctx.beginPath(); ctx.arc(gx, gy, r * 0.12, 0, Math.PI * 2); ctx.fill();
-                        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(gx - r * 0.03, gy - r * 0.03, r * 0.04, 0, Math.PI * 2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(gx, gy, r * 0.12, 0, TWO_PI); ctx.fill();
+                        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(gx - r * 0.03, gy - r * 0.03, r * 0.04, 0, TWO_PI); ctx.fill();
                     }
                     break;
-
-                case 2: // Viking Helmet (Top Down)
+                case 2:
                     let steel = ctx.createRadialGradient(-r * 0.1, 0, 0, -r * 0.1, 0, r * 0.55);
                     steel.addColorStop(0, '#ffffff'); steel.addColorStop(0.4, '#a0a0a0'); steel.addColorStop(1, '#555555');
                     ctx.fillStyle = steel;
-                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.55, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.55, 0, TWO_PI); ctx.fill();
                     ctx.strokeStyle = '#333'; ctx.lineWidth = r * 0.08;
                     ctx.beginPath(); ctx.moveTo(-r * 0.65, 0); ctx.lineTo(r * 0.45, 0); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(-r * 0.1, -r * 0.55); ctx.lineTo(-r * 0.1, r * 0.55); ctx.stroke();
@@ -1688,20 +1770,18 @@
                     ctx.beginPath(); ctx.moveTo(-r * 0.1, -r * 0.4); ctx.quadraticCurveTo(-r * 0.4, -r * 0.9, -r * 0.5, -r * 1.1); ctx.quadraticCurveTo(0, -r * 0.8, -r * 0.05, -r * 0.4); ctx.fill(); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(-r * 0.1, r * 0.4); ctx.quadraticCurveTo(-r * 0.4, r * 0.9, -r * 0.5, r * 1.1); ctx.quadraticCurveTo(0, r * 0.8, -r * 0.05, r * 0.4); ctx.fill(); ctx.stroke();
                     break;
-
-                case 3: // Cartola VIP (Top Down)
+                case 3:
                     ctx.fillStyle = '#111';
-                    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.65, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.65, 0, TWO_PI); ctx.fill();
                     ctx.strokeStyle = '#333'; ctx.lineWidth = r * 0.05; ctx.stroke();
                     ctx.fillStyle = '#d4af37';
-                    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.42, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.42, 0, TWO_PI); ctx.fill();
                     let hatTop = ctx.createRadialGradient(-r * 0.15, -r * 0.05, 0, -r * 0.2, 0, r * 0.38);
                     hatTop.addColorStop(0, '#444'); hatTop.addColorStop(1, '#050505');
                     ctx.fillStyle = hatTop;
-                    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.38, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.38, 0, TWO_PI); ctx.fill();
                     break;
-
-                case 4: // Cyborg Vizor
+                case 4:
                     ctx.strokeStyle = '#111'; ctx.lineWidth = r * 0.4;
                     ctx.lineCap = 'round';
                     ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.65); ctx.quadraticCurveTo(r * 0.9, 0, r * 0.65, r * 0.65); ctx.stroke();
@@ -1709,39 +1789,36 @@
                     ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.6); ctx.quadraticCurveTo(r * 0.88, 0, r * 0.65, r * 0.6); ctx.stroke();
                     ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff'; ctx.stroke(); ctx.shadowBlur = 0;
                     break;
-
-                case 5: // Óculos Aviador
+                case 5:
                     const lensB = ctx.createLinearGradient(r * 0.4, -r * 0.5, r * 0.8, r * 0.5);
                     lensB.addColorStop(0, '#111'); lensB.addColorStop(0.5, '#444'); lensB.addColorStop(1, '#000');
                     ctx.fillStyle = lensB;
                     ctx.strokeStyle = '#d4af37'; ctx.lineWidth = r * 0.06;
                     const dl = (lx, ly) => {
-                        ctx.beginPath(); ctx.ellipse(lx, ly, r * 0.35, r * 0.45, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                        ctx.beginPath(); ctx.ellipse(lx, ly, r * 0.35, r * 0.45, 0, 0, TWO_PI); ctx.fill(); ctx.stroke();
                         ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                        ctx.beginPath(); ctx.ellipse(lx + r * 0.1, ly - r * 0.1, r * 0.15, r * 0.08, Math.PI / 4, 0, Math.PI * 2); ctx.fill();
+                        ctx.beginPath(); ctx.ellipse(lx + r * 0.1, ly - r * 0.1, r * 0.15, r * 0.08, Math.PI / 4, 0, TWO_PI); ctx.fill();
                     };
                     dl(r * 0.65, -r * 0.45); dl(r * 0.65, r * 0.45);
                     ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.2); ctx.quadraticCurveTo(r * 0.75, 0, r * 0.65, r * 0.2); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.85); ctx.lineTo(-r * 0.2, -r * 0.8); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(r * 0.65, r * 0.85); ctx.lineTo(-r * 0.2, r * 0.8); ctx.stroke();
                     break;
-
-                case 6: // Chapéu de Mago
+                case 6:
                     ctx.fillStyle = '#1a237e';
-                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.75, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.75, 0, TWO_PI); ctx.fill();
                     ctx.strokeStyle = '#3949ab'; ctx.lineWidth = r * 0.08; ctx.stroke();
                     ctx.fillStyle = '#283593';
                     ctx.beginPath(); ctx.moveTo(r * 0.2, -r * 0.4); ctx.lineTo(r * 0.2, r * 0.4); ctx.lineTo(-r * 1.6, 0); ctx.fill();
                     ctx.fillStyle = '#ffdf00';
-                    ctx.beginPath(); ctx.arc(-r * 0.1, -r * 0.2, r * 0.15, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.1, -r * 0.2, r * 0.15, 0, TWO_PI); ctx.fill();
                     ctx.fillStyle = '#283593';
-                    ctx.beginPath(); ctx.arc(-r * 0.05, -r * 0.2, r * 0.12, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.05, -r * 0.2, r * 0.12, 0, TWO_PI); ctx.fill();
                     ctx.fillStyle = '#ffdf00';
-                    ctx.beginPath(); ctx.arc(-r * 0.5, 0, r * 0.05, 0, Math.PI * 2); ctx.fill();
-                    ctx.beginPath(); ctx.arc(-r * 0.8, r * 0.1, r * 0.04, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.5, 0, r * 0.05, 0, TWO_PI); ctx.fill();
+                    ctx.beginPath(); ctx.arc(-r * 0.8, r * 0.1, r * 0.04, 0, TWO_PI); ctx.fill();
                     break;
-
-                case 7: // Máscara Ninja
+                case 7:
                     ctx.fillStyle = '#111111';
                     ctx.beginPath();
                     ctx.arc(0, 0, r * 1.03, Math.PI * 0.35, -Math.PI * 0.35);
@@ -1756,8 +1833,7 @@
                     ctx.strokeStyle = '#333'; ctx.lineWidth = r * 0.05;
                     ctx.beginPath(); ctx.moveTo(-r * 0.8, 0); ctx.lineTo(-r * 0.2, 0); ctx.stroke();
                     break;
-
-                case 8: // Bigode Imperial
+                case 8:
                     ctx.fillStyle = '#1a1a1a';
                     ctx.shadowBlur = 5; ctx.shadowColor = 'rgba(0,0,0,0.5)';
                     ctx.beginPath(); ctx.moveTo(r * 0.9, 0); ctx.quadraticCurveTo(r * 0.9, -r * 0.2, r * 0.7, -r * 0.8); ctx.quadraticCurveTo(r * 1.1, -r * 0.6, r * 0.9, 0); ctx.fill();
@@ -1772,7 +1848,7 @@
             constructor(x, y, color, s) { this.init(x, y, color, s); }
             init(x, y, color, s) {
                 this.x = x; this.y = y; this.color = color;
-                let a = Math.random() * Math.PI * 2;
+                let a = Math.random() * TWO_PI;
                 this.vx = Math.cos(a) * s; this.vy = Math.sin(a) * s;
                 this.life = 1.0; this.decay = 0.02 + Math.random() * 0.02;
                 this.size = 2 + Math.random() * 3;
@@ -1783,24 +1859,30 @@
                 this.life -= this.decay;
                 if (this.life <= 0) this.dead = true;
             }
-            draw(ctx) { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; }
+            draw(ctx) {
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, TWO_PI);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
         }
 
         class Food {
             constructor(x, y, r, c, isD = false, eV = 2) {
                 this.x = x; this.y = y; this.radius = r; this.color = c; this.isDropped = isD; this.value = eV;
-                this.wO = Math.random() * Math.PI * 2;
-                this.wX = Math.random() * Math.PI * 2; // Fase X para o boiar
-                this.wY = Math.random() * Math.PI * 2; // Fase Y para o boiar
+                this.wO = Math.random() * TWO_PI;
+                this.wX = Math.random() * TWO_PI;
+                this.wY = Math.random() * TWO_PI;
                 this.dead = false;
                 this.attractSpeed = 0;
             }
             draw(ctx, time) {
-                // 1. Efeito de Flutuação (Drift) — Calculado no desenho para performance
+                // OTIMIZAÇÃO: Cásculos matemáticos suaves e mais baratos
                 let driftX = Math.sin(time * 0.0012 + this.wX) * 4;
                 let driftY = Math.cos(time * 0.0015 + this.wY) * 3;
 
-                // 2. Pulso de escala suave
                 let pulseBase = this.isDropped ? 0.20 : 0.12;
                 let pulseFreq = this.isDropped ? 3.0 : 2.2;
                 let pulse = 1.0 + Math.sin(time * CONFIG.visual.velocidadeAnimacaoComida * pulseFreq + this.wO) * pulseBase;
@@ -1808,6 +1890,9 @@
                 let r = this.radius * pulse;
                 let img = this.isDropped ? TextureManager.getDroppedFood(this.color) : TextureManager.getFood(this.color);
                 ctx.drawImage(img, (this.x + driftX) - r, (this.y + driftY) - r, r * 2, r * 2);
+            }
+            updateGrid(index) {
+                if (this.attractSpeed > 0) updateFoodGrid(this, index);
             }
         }
 
@@ -1818,10 +1903,10 @@
                 else if (rnd < 0.90) { this.color = '#00ffaa'; this.glowColor = 'rgba(0,255,150,'; this.value = 350; this.rarity = 'rare'; }
                 else { this.color = '#cc44ff'; this.glowColor = 'rgba(180,50,255,'; this.value = 600; this.rarity = 'epic'; }
                 this.x = x; this.y = y; this.radius = this.rarity === 'epic' ? 12 : this.rarity === 'rare' ? 10 : 9;
-                this.angle = Math.random() * Math.PI * 2; this.speed = 1.8; this.targetSpeed = 1.8;
-                this.wO = Math.random() * Math.PI * 2; this.isFleeing = false;
+                this.angle = Math.random() * TWO_PI; this.speed = 1.8; this.targetSpeed = 1.8;
+                this.wO = Math.random() * TWO_PI; this.isFleeing = false;
                 this.trailPoints = [];
-                this.phase = Math.random() * Math.PI * 2;
+                this.phase = Math.random() * TWO_PI;
             }
             update() {
                 let nearest = null, minDist = 450;
@@ -1829,11 +1914,10 @@
                 if (nearest && minDist < 300) {
                     let evadeAngle = Math.atan2(this.y - nearest.y, this.x - nearest.x);
                     let diff = evadeAngle - this.angle;
-                    while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
+                    while (diff < -Math.PI) diff += TWO_PI; while (diff > Math.PI) diff -= TWO_PI;
                     this.angle += diff * 0.15;
                     this.targetSpeed = 6.5; this.isFleeing = true;
                 } else {
-                    // Movimento de borboleta: fluttering (oscilando o ângulo)
                     this.angle += Math.sin(performance.now() * 0.002 + this.phase) * 0.05 + (Math.random() - 0.5) * 0.1;
                     this.targetSpeed = 1.8 + Math.sin(performance.now() * 0.005 + this.phase) * 0.5;
                     this.isFleeing = false;
@@ -1854,37 +1938,30 @@
                 }
             }
             draw(ctx, time) {
-                // MOBILE: Renderização simplificada (círculo com glow básico)
                 if (IS_MOBILE_CLIENT) {
-                    // Glow simples
                     ctx.globalAlpha = 0.5;
                     ctx.fillStyle = this.color;
-                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2); ctx.fill();
-                    // Corpo sólido
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 2, 0, TWO_PI); ctx.fill();
                     ctx.globalAlpha = 1;
                     ctx.fillStyle = this.color;
-                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill();
-                    // Brilho central
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, TWO_PI); ctx.fill();
                     ctx.fillStyle = '#fff';
                     ctx.globalAlpha = 0.8;
-                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 0.35, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 0.35, 0, TWO_PI); ctx.fill();
                     ctx.globalAlpha = 1;
                     return;
                 }
 
-                // PC: Renderização completa com asas e rastro
-                // Rastro de poeira estelar (sparkles)
                 for (let t of this.trailPoints) {
                     ctx.globalAlpha = t.life * 0.6;
                     ctx.fillStyle = this.color;
                     ctx.beginPath();
                     if (this.rarity === 'epic' && Math.random() > 0.5) {
-                        // Desenha uma pequena estrela/brilho
                         let s = t.size * t.life;
                         ctx.moveTo(t.x, t.y - s); ctx.lineTo(t.x + s / 2, t.y - s / 2); ctx.lineTo(t.x + s, t.y); ctx.lineTo(t.x + s / 2, t.y + s / 2);
                         ctx.lineTo(t.x, t.y + s); ctx.lineTo(t.x - s / 2, t.y + s / 2); ctx.lineTo(t.x - s, t.y); ctx.lineTo(t.x - s / 2, t.y - s / 2);
                     } else {
-                        ctx.arc(t.x, t.y, t.size * t.life, 0, Math.PI * 2);
+                        ctx.arc(t.x, t.y, t.size * t.life, 0, TWO_PI);
                     }
                     ctx.fill();
                 }
@@ -1892,43 +1969,29 @@
 
                 ctx.save();
                 ctx.translate(this.x, this.y);
-                ctx.rotate(this.angle + Math.PI / 2); // Orienta para o movimento
+                ctx.rotate(this.angle + Math.PI / 2);
 
-                // Efeito de bater asas (wing flap)
-                let flap = Math.sin(time * 0.015); // Velocidade do bater de asas
+                let flap = Math.sin(time * 0.015);
                 let flapScale = 0.3 + Math.abs(flap) * 0.7;
 
-                // Brilho sob a borboleta
                 let g = ctx.createRadialGradient(0, 0, 0, 0, 0, this.radius * 3);
                 g.addColorStop(0, this.glowColor + '0.4)');
                 g.addColorStop(1, this.glowColor + '0)');
-                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, this.radius * 3, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, this.radius * 3, 0, TWO_PI); ctx.fill();
 
-                // Desenho das Asas (SVG Estilizado no Canvas)
                 ctx.lineWidth = 1.5;
                 ctx.lineJoin = 'round';
 
-                // Asas Esquerdas
-                ctx.save();
-                ctx.scale(flapScale, 1);
-                this.drawWing(ctx, -1, this.color);
-                ctx.restore();
+                ctx.save(); ctx.scale(flapScale, 1); this.drawWing(ctx, -1, this.color); ctx.restore();
+                ctx.save(); ctx.scale(flapScale, 1); this.drawWing(ctx, 1, this.color); ctx.restore();
 
-                // Asas Direitas
-                ctx.save();
-                ctx.scale(flapScale, 1);
-                this.drawWing(ctx, 1, this.color);
-                ctx.restore();
-
-                // Corpo
                 let bodyG = ctx.createLinearGradient(0, -this.radius, 0, this.radius);
                 bodyG.addColorStop(0, '#111'); bodyG.addColorStop(0.5, '#333'); bodyG.addColorStop(1, '#000');
                 ctx.fillStyle = bodyG;
                 ctx.beginPath();
-                ctx.ellipse(0, 0, this.radius * 0.2, this.radius * 1.2, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, 0, this.radius * 0.2, this.radius * 1.2, 0, 0, TWO_PI);
                 ctx.fill();
 
-                // Antenas
                 ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
                 ctx.beginPath(); ctx.moveTo(-1, -this.radius * 0.8); ctx.quadraticCurveTo(-4, -this.radius * 1.8, -2, -this.radius * 2.2); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(1, -this.radius * 0.8); ctx.quadraticCurveTo(4, -this.radius * 1.8, 2, -this.radius * 2.2); ctx.stroke();
@@ -1939,24 +2002,19 @@
             drawWing(ctx, side, color) {
                 ctx.fillStyle = color;
                 ctx.strokeStyle = shadeColor(color, -60);
-
-                // Asa Superior
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.bezierCurveTo(side * this.radius * 3, -this.radius * 2, side * this.radius * 4, this.radius, 0, this.radius * 0.5);
                 ctx.fill(); ctx.stroke();
-
-                // Asa Inferior
                 ctx.beginPath();
                 ctx.moveTo(0, this.radius * 0.3);
                 ctx.bezierCurveTo(side * this.radius * 2.5, this.radius * 0.5, side * this.radius * 3, this.radius * 2.5, 0, this.radius * 1.2);
                 ctx.fill(); ctx.stroke();
 
-                // Detalhes Internos das Asas (Padronagem)
                 ctx.globalAlpha = 0.3;
                 ctx.fillStyle = '#fff';
-                ctx.beginPath(); ctx.arc(side * this.radius * 1.5, -this.radius * 0.5, this.radius * 0.4, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(side * this.radius * 1.2, this.radius * 0.8, this.radius * 0.3, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(side * this.radius * 1.5, -this.radius * 0.5, this.radius * 0.4, 0, TWO_PI); ctx.fill();
+                ctx.beginPath(); ctx.arc(side * this.radius * 1.2, this.radius * 0.8, this.radius * 0.3, 0, TWO_PI); ctx.fill();
                 ctx.globalAlpha = 1;
             }
         }
@@ -1964,22 +2022,20 @@
 
         class Firefly {
             constructor() {
-                let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * 2 * Math.PI;
+                let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * TWO_PI;
                 this.x = WORLD_CENTER + r * Math.cos(t);
                 this.y = WORLD_CENTER + r * Math.sin(t);
                 this.radius = 1.5 + Math.random() * 2;
-                this.angle = Math.random() * Math.PI * 2;
+                this.angle = Math.random() * TWO_PI;
                 this.speed = 1.0; this.targetSpeed = 1.0;
-                this.offset = Math.random() * Math.PI * 2;
-                this.blinkSpeed = 0.002 + Math.random() * 0.005; // variação de frequência
-                // Cor variada: branco, azul-claro, verde-limão
+                this.offset = Math.random() * TWO_PI;
+                this.blinkSpeed = 0.002 + Math.random() * 0.005;
                 let colorRnd = Math.random();
                 if (colorRnd < 0.55) { this.color = '255,255,255'; }
                 else if (colorRnd < 0.82) { this.color = '140,220,255'; }
                 else { this.color = '180,255,140'; }
             }
             update() {
-                // MOBILE: atualiza vagalumes com menos frequência
                 if (IS_MOBILE_CLIENT && frameCount % 3 !== 0) {
                     this.x += Math.cos(this.angle) * this.speed;
                     this.y += Math.sin(this.angle) * this.speed;
@@ -1994,14 +2050,13 @@
                 if (count > 0) {
                     let away = Math.atan2(this.y - (dY / count), this.x - (dX / count));
                     let diff = away - this.angle;
-                    while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
+                    while (diff < -Math.PI) diff += TWO_PI; while (diff > Math.PI) diff -= TWO_PI;
                     this.angle += diff * 0.15;
                     this.targetSpeed = 4.5;
                 } else {
                     this.angle += (Math.random() - 0.5) * 0.1;
                     this.targetSpeed = 1.2;
                 }
-                // Aceleração gradual
                 this.speed += (this.targetSpeed - this.speed) * 0.08;
                 this.x += Math.cos(this.angle) * this.speed;
                 this.y += Math.sin(this.angle) * this.speed;
@@ -2009,36 +2064,31 @@
                     this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
             }
             draw(ctx, time) {
-                // Piscar com frequência própria de cada vagalume
                 let blink = Math.sin(time * this.blinkSpeed + this.offset);
-                let brightness = Math.max(0, blink); // só brilha na metade positiva do ciclo
-                if (brightness < 0.05) return; // apagado — não desenha nada
+                let brightness = Math.max(0, blink);
+                if (brightness < 0.05) return;
 
                 let cR = Math.max(0.8, this.radius * (0.6 + brightness * 0.8));
 
-                // MOBILE: Apenas ponto simples sem gradiente
                 if (IS_MOBILE_CLIENT) {
                     ctx.globalAlpha = 0.4 + brightness * 0.6;
                     ctx.fillStyle = `rgb(${this.color})`;
-                    ctx.beginPath(); ctx.arc(this.x, this.y, cR * 1.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(this.x, this.y, cR * 1.2, 0, TWO_PI); ctx.fill();
                     ctx.globalAlpha = 1;
                     return;
                 }
 
-                // PC: Halo de brilho completo com gradiente
                 let g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, cR * 5);
                 g.addColorStop(0, `rgba(${this.color},${brightness * 0.5})`);
                 g.addColorStop(1, `rgba(${this.color},0)`);
-                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, cR * 5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, cR * 5, 0, TWO_PI); ctx.fill();
 
-                // Corpinho oval
                 ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle);
                 ctx.globalAlpha = 0.5 + brightness * 0.5;
                 ctx.fillStyle = `rgb(${this.color})`;
-                ctx.beginPath(); ctx.ellipse(0, 0, cR * 1.4, cR * 0.8, 0, 0, Math.PI * 2); ctx.fill();
-                // Barriga brilhante
+                ctx.beginPath(); ctx.ellipse(0, 0, cR * 1.4, cR * 0.8, 0, 0, TWO_PI); ctx.fill();
                 ctx.fillStyle = `rgba(255,255,255,${brightness * 0.9})`;
-                ctx.beginPath(); ctx.arc(0, 0, cR * 0.45, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(0, 0, cR * 0.45, 0, TWO_PI); ctx.fill();
                 ctx.globalAlpha = 1;
                 ctx.restore();
             }
@@ -2047,15 +2097,14 @@
         class Snake {
             constructor(x, y, n, sI, isP = false, startScore = CONFIG.cobra.pontosIniciais, aI = 0) {
                 this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.accId = aI; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
-                this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle;
+                this.angle = Math.random() * TWO_PI; this.targetAngle = this.angle;
                 this.conf = IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc;
                 this.speed = this.conf.velocidadeBase; this.isBoosting = false; this.score = startScore;
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 this.segments = []; this.trails = []; this.eatTimer = 0;
-                this.tongueTime = 0; // Para animação da língua fixa
+                this.tongueTime = 0; this.lastScanFrame = -1;
 
-                // Inicializar segmentos espalhados atrás da cabeça — o taper fica visível desde o início
                 let spc = this.conf.espessuraInicial * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.targetLength; i++) {
                     this.segments.push({
@@ -2065,7 +2114,6 @@
                 }
             }
             updateAI() {
-                // ── INICIALIZAÇÃO ──────────────────────────────────────────────────────
                 if (this.aiPersonality === undefined) {
                     const aggressive = ["Rei", "Titã", "Guardião", "Mago", "Tempestade", "Veneno"];
                     const coward = ["Vila", "Milagre", "Helena"];
@@ -2083,7 +2131,7 @@
                     this.aiEncirclePhase = 0;
                     this.aiEncircleTarget = null;
                     this.aiLastDodgeFrame = -999;
-                    this.aiWanderAngle = Math.random() * Math.PI * 2;
+                    this.aiWanderAngle = Math.random() * TWO_PI;
                     this.aiBoostCooldown = 0;
                     this.aiTrauma = 0;
                     this.aiConfidence = 0;
@@ -2091,16 +2139,13 @@
                 if (this.isKing) this.aiPersonality = 2;
                 if (this.aiBoostCooldown > 0) this.aiBoostCooldown--;
 
-                // Adaptar com experiência (cobras maiores ficam mais letais)
                 if (frameCount % 30 === 0) {
                     this.aiConfidence = Math.min(1.0, this.score / 2000);
                     if (this.aiTrauma > 0) this.aiTrauma = Math.max(0, this.aiTrauma - 0.05);
-                    // Pros reagem mais rápido e erram menos
                     this.aiReactionDelay = Math.max(0, Math.floor(3 - this.aiConfidence * 3));
                     this.aiMicroError = Math.max(0.005, 0.03 - this.aiConfidence * 0.025);
                 }
 
-                // ── 1. VARREDURA DE PERIGO ─────────────────────────────────────────────
                 let danger = false, evadeAngle = 0, dangerUrgency = 0, dangerSnake = null;
                 let scanRadius = this.radius * (10 + this.aiConfidence * 6);
 
@@ -2117,14 +2162,13 @@
                         if (ds < hitZone) {
                             let angleToSeg = Math.atan2(seg.y - this.y, seg.x - this.x);
                             let angleDiff = angleToSeg - this.angle;
-                            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                            while (angleDiff > Math.PI) angleDiff -= TWO_PI;
+                            while (angleDiff < -Math.PI) angleDiff += TWO_PI;
                             if (Math.abs(angleDiff) < 1.6) {
                                 danger = true;
                                 dangerSnake = other;
                                 dangerUrgency = Math.max(dangerUrgency, 1 - (ds / hitZone));
                                 evadeAngle = Math.atan2(this.y - seg.y, this.x - seg.x);
-                                // Analisa saídas
                                 let left = evadeAngle + Math.PI * 0.5;
                                 let right = evadeAngle - Math.PI * 0.5;
                                 let clearL = true, clearR = true;
@@ -2148,7 +2192,6 @@
                     if (danger) break;
                 }
 
-                // ── 2. REAÇÃO AO PERIGO ────────────────────────────────────────────────
                 if (danger) {
                     if (dangerUrgency > 0.7) {
                         this.aiTrauma = Math.min(1.0, this.aiTrauma + 0.3);
@@ -2159,7 +2202,6 @@
                         let err = (Math.random() - 0.5) * this.aiMicroError * (1 - dangerUrgency);
                         let finalAngle = evadeAngle + err;
 
-                        // Contra-ataque: se sou maior posso tentar cortar a frente do agressor
                         if (dangerSnake && this.score > dangerSnake.score * 1.8 && this.aiConfidence > 0.4 && Math.random() < 0.4) {
                             let cutAngle = Math.atan2(dangerSnake.y - this.y, dangerSnake.x - this.x);
                             let perpAngle = dangerSnake.angle + Math.PI * 0.5 * (Math.random() > 0.5 ? 1 : -1);
@@ -2167,7 +2209,6 @@
                             this.isBoosting = this.aiBoostCooldown === 0;
                             if (this.isBoosting) this.aiBoostCooldown = 15;
                         } else {
-                            // Esquiva normal com boost se urgente
                             this.isBoosting = dangerUrgency > 0.4 && this.aiBoostCooldown === 0 && this.score > 100;
                             if (this.isBoosting) this.aiBoostCooldown = 20 + Math.floor(Math.random() * 20);
                         }
@@ -2177,16 +2218,13 @@
                     return;
                 }
 
-                // ── 3. COMPORTAMENTO ESTRATÉGICO ───────────────────────────────────────
                 this.aiDecisionTimer--;
                 if (this.aiDecisionTimer > 0) return;
                 this.isBoosting = false;
 
-                // Decisões mais rápidas = reações mais humanas (10-35 frames)
                 let baseInterval = this.aiPersonality === 0 ? 10 : this.aiPersonality === 2 ? 12 : 18;
                 this.aiDecisionTimer = baseInterval + Math.floor(Math.random() * 18);
 
-                // Bordas da arena
                 let distToCenter = Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER);
                 if (distToCenter > currentArenaRadius - 600) {
                     this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x) + (Math.random() - 0.5) * 0.3;
@@ -2195,14 +2233,12 @@
                     return;
                 }
 
-                // Continuar cerco ativo
                 if (this.aiEncirclePhase > 0 && this.aiEncircleTarget) {
                     let t = this.aiEncircleTarget;
                     if (!t.alive || Math.hypot(t.x - this.x, t.y - this.y) > 1500) {
                         this.aiEncirclePhase = 0; this.aiEncircleTarget = null;
                     } else {
                         let dToTarget = Math.hypot(t.x - this.x, t.y - this.y);
-                        // Fase 1: Posicionar à frente do alvo (intercept)
                         if (this.aiEncirclePhase < 30) {
                             let aheadDist = t.radius * (12 + this.aiConfidence * 8);
                             let ix = t.x + Math.cos(t.angle) * aheadDist;
@@ -2211,14 +2247,12 @@
                             this.isBoosting = dToTarget > 200 && this.aiBoostCooldown === 0;
                             if (this.isBoosting) this.aiBoostCooldown = 8;
                         }
-                        // Fase 2: Cruzar na frente (o corte mortal)
                         else if (this.aiEncirclePhase < 80) {
                             let crossAngle = t.angle + Math.PI * 0.5;
                             this.targetAngle = crossAngle;
                             this.isBoosting = this.aiBoostCooldown === 0 && this.score > 150;
                             if (this.isBoosting) this.aiBoostCooldown = 5;
                         }
-                        // Fase 3: Orbitar (loop de morte)
                         else if (this.score > t.score * 1.5) {
                             let angToTarget = Math.atan2(t.y - this.y, t.x - this.x);
                             this.targetAngle = angToTarget + Math.PI * 0.42;
@@ -2231,7 +2265,6 @@
                     }
                 }
 
-                // ── SCAN DE OPORTUNIDADES ──────────────────────────────────────────────
                 let prey = null, preyDist = 9999;
                 let threat = null, threatDist = 9999;
                 let nearestFood = null, bestFoodScore = -1;
@@ -2241,19 +2274,16 @@
                     if (s === this || !s.alive) continue;
                     let d = Math.hypot(s.x - this.x, s.y - this.y);
                     if (d < 1800) {
-                        // Qualquer cobra menor é presa potencial (threshold mais agressivo)
                         if (s.score < this.score * 0.85 && d < preyDist) { prey = s; preyDist = d; }
                         if (s.score > this.score * 1.2 && d < threatDist) { threat = s; threatDist = d; }
                     }
                 }
 
-                // Busca comida com raio maior
                 let nearbyIndices = getNearbyFoodIndices(this.x, this.y, 900);
                 for (let idx of nearbyIndices) {
                     let f = foods[idx];
                     if (!f || f.dead) continue;
                     let d = Math.hypot(f.x - this.x, f.y - this.y);
-                    // Comida dropped vale MUITO mais (os pros correm para ela)
                     let valMult = f.isDropped ? (4 + this.aiConfidence * 3) : 1;
                     let scoreVal = (f.value * valMult) / Math.max(1, d);
                     if (scoreVal > bestFoodScore) { bestFoodScore = scoreVal; nearestFood = f; }
@@ -2264,10 +2294,6 @@
                 }
 
                 let decidedAngle = this.targetAngle;
-
-                // ── DECISÃO PRINCIPAL ──────────────────────────────────────────────────
-
-                // ATAQUE: Cortar na frente da presa (o movimento mais letal)
                 let wantAttack = prey && preyDist < 800 && (
                     (this.aiPersonality === 0 && Math.random() < this.aiAggression + 0.2) ||
                     (this.aiPersonality === 2 && Math.random() < this.aiAggression) ||
@@ -2276,25 +2302,21 @@
                 );
 
                 if (wantAttack) {
-                    // Calcular ponto de intercepção à frente da presa
                     let aheadFactor = 8 + this.aiConfidence * 10;
                     let ix = prey.x + Math.cos(prey.angle) * prey.radius * aheadFactor;
                     let iy = prey.y + Math.sin(prey.angle) * prey.radius * aheadFactor;
                     let dToIntercept = Math.hypot(ix - this.x, iy - this.y);
 
                     if (preyDist < 400 && this.score > prey.score * 1.3) {
-                        // Perto e maior: iniciar cerco
                         this.aiEncircleTarget = prey;
                         this.aiEncirclePhase = 1;
                         decidedAngle = Math.atan2(iy - this.y, ix - this.x);
                     } else {
-                        // Cortar caminho: ir para frente da presa
                         decidedAngle = Math.atan2(iy - this.y, ix - this.x);
                     }
                     this.isBoosting = dToIntercept < 700 && dToIntercept > 100 && this.score > 150 && this.aiBoostCooldown === 0;
                     if (this.isBoosting) this.aiBoostCooldown = 12;
                 }
-                // REI: perseguir jogador ativamente
                 else if (this.aiPersonality === 2 && player && player.alive) {
                     let dP = Math.hypot(player.x - this.x, player.y - this.y);
                     if (dP < 2500) {
@@ -2311,10 +2333,8 @@
                         decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
                     }
                 }
-                // FUGA de ameaças
                 else if (threat && threatDist < 900 && Math.random() > this.aiRiskTolerance) {
                     let fleeAngle = Math.atan2(this.y - threat.y, this.x - threat.x);
-                    // Foge mas tenta pegar comida no caminho
                     if (nearestFood && threatDist > 500) {
                         let foodAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
                         decidedAngle = fleeAngle * 0.65 + foodAngle * 0.35;
@@ -2324,31 +2344,25 @@
                     this.isBoosting = threatDist < 600 && this.aiBoostCooldown === 0;
                     if (this.isBoosting) this.aiBoostCooldown = 25;
                 }
-                // ALIMENTAÇÃO
                 else if (nearestFood) {
                     let foodD = Math.hypot(nearestFood.x - this.x, nearestFood.y - this.y);
                     decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                    // Serpenteia levemente enquanto vai para comida (movimento humano)
                     if (this.aiConfidence > 0.3) decidedAngle += Math.sin(frameCount * 0.04) * 0.15;
-                    // Boost para comida dropped (morte recente = muito valor!)
                     if (nearestFood.isDropped && foodD > 150 && foodD < 800 && this.aiBoostCooldown === 0) {
                         this.isBoosting = true;
                         this.aiBoostCooldown = 10;
                     }
                 }
-                // BORBOLETAS
                 else if (nearestButterfly && bDist < 800) {
                     decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x);
                     this.isBoosting = bDist < 400 && bDist > 100 && this.aiBoostCooldown === 0;
                     if (this.isBoosting) this.aiBoostCooldown = 15;
                 }
-                // EXPLORAR: movimento serpentino de zona control
                 else {
                     this.aiWanderAngle += Math.sin(frameCount * 0.015 + this.score) * 0.25 + (Math.random() - 0.5) * 0.4;
                     decidedAngle = this.aiWanderAngle;
                 }
 
-                // Aplicar com micro-erro humano
                 decidedAngle += (Math.random() - 0.5) * this.aiMicroError;
                 this.targetAngle = decidedAngle;
             }
@@ -2365,7 +2379,9 @@
                         this.score -= CONFIG.cobra.custoDoTurbo;
                         let t = this.segments[this.segments.length - 1];
                         for (let q = 0; q < CONFIG.cobra.quantidadeOrbeTurbo; q++) {
-                            foods.push(new Food(t.x + (Math.random() * 14 - 7), t.y + (Math.random() * 14 - 7), CONFIG.cobra.tamanhoOrbeTurbo, this.skin[this.segments.length % this.skin.length], true, CONFIG.cobra.custoDoTurbo));
+                            let f = new Food(t.x + (Math.random() * 14 - 7), t.y + (Math.random() * 14 - 7), CONFIG.cobra.tamanhoOrbeTurbo, this.skin[this.segments.length % this.skin.length], true, CONFIG.cobra.custoDoTurbo);
+                            foods.push(f);
+                            addToFoodGrid(f, foods.length - 1);
                         }
                     }
                 } else { this.speed = this.conf.velocidadeBase; this.isBoosting = false; }
@@ -2374,29 +2390,30 @@
 
                 if (this.isPlayer) {
                     if (joystickActive) this.targetAngle = joystickAngle; else if (!IS_MOBILE_CLIENT) this.targetAngle = Math.atan2((mouseY - vpHeight / 2) / camera.zoom, (mouseX - vpWidth / 2) / camera.zoom);
-                    // Verifica os Títulos Evolutivos
                     for (let i = EVOLUTIONS.length - 1; i >= 0; i--) {
                         if (this.score >= EVOLUTIONS[i].score && currentEvo < i) { currentEvo = i; showEvolution(EVOLUTIONS[i]); break; }
                     }
                 } else {
-                    // Otimização: Bots longe do jogador processam IA com menos frequência (Throttling)
                     let dToPlayer = player ? Math.hypot(player.x - this.x, player.y - this.y) : 2000;
                     let throttleRate = dToPlayer > 2000 ? 10 : (dToPlayer > 1000 ? 5 : 1);
                     if (frameCount % throttleRate === 0) this.updateAI();
                 }
 
-                let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
+                let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += TWO_PI; while (diff > Math.PI) diff -= TWO_PI;
                 let tS = Math.max(0.04, 0.04 - (this.radius * 0.00012)); if (this.isBoosting) tS *= 1.35;
                 if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
                 if (this.eatTimer > 0) this.eatTimer--;
-                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > currentArenaRadius) { this.die(false); return; }
+                if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > currentArenaRadius) { this.die(false, "BARREIRA ARENA"); return; }
 
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
-                for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
+                for (let i = 0; i < this.segments.length; i++) {
+                    let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy);
+                    if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; }
+                    pX = s.x; pY = s.y;
+                }
 
-                // Colisão de comida otimizada com Spatial Hash
                 let eatRadius = Math.max(CONFIG.mundo.forcaAtracao, this.radius + 15);
                 let nearFoodIdx = getNearbyFoodIndices(this.x, this.y, eatRadius);
                 for (let i of nearFoodIdx) {
@@ -2406,13 +2423,11 @@
                     let hitDist = (this.radius * 0.82) + f.radius;
 
                     if (dist < eatRadius) {
-                        // 🧲 Magnetismo com aceleração progressiva
                         f.attractSpeed = Math.min(12, f.attractSpeed + 0.7);
                         let pullStrength = 1.0 - (dist / (eatRadius * 1.2));
                         f.x -= (dx / dist) * f.attractSpeed * pullStrength;
                         f.y -= (dy / dist) * f.attractSpeed * pullStrength;
 
-                        // CONSUMO
                         if (dist < hitDist) {
                             this.score += f.value; this.eatTimer = 15; f.dead = true;
                             if (this.isPlayer) {
@@ -2432,15 +2447,25 @@
                     }
                 }
             }
-            die(dropFood = true) {
+            die(dropFood = true, killerName = null) {
                 this.alive = false; createExplosion(this.x, this.y, this.mainColor, 35);
 
                 if (this.isPlayer) {
                     camera.shake = 25; AudioSys.play('die'); Haptic.strong();
+                    let sessionTime = (performance.now() - lastPlayTime) / 1000;
                     PLAYER_STATS.highScore = Math.max(PLAYER_STATS.highScore, Math.floor(this.score));
-                    PLAYER_STATS.totalKills += playerKills; PLAYER_STATS.save();
+                    PLAYER_STATS.totalKills += playerKills;
+                    PLAYER_STATS.totalFood += Math.max(0, Math.floor(this.score - CONFIG.cobra.pontosIniciais));
+                    PLAYER_STATS.totalTime += Math.floor(sessionTime);
+                    PLAYER_STATS.save();
 
-                    // Tela de Morte Social (Dynamic Message)
+                    if (killerName) {
+                        UI.killerName.innerText = killerName;
+                        UI.killerBox.style.display = 'block';
+                    } else {
+                        UI.killerBox.style.display = 'none';
+                    }
+
                     let msg = "FOI QUASE...";
                     if (this.score > 2000) msg = "BOM TRABALHO!";
                     if (this.score > 5000) msg = "UM VERDADEIRO REI!";
@@ -2451,7 +2476,8 @@
                     setTimeout(() => {
                         updateMissionsUI(); UI.deathLen.innerText = Math.floor(this.score).toLocaleString(); UI.deathKills.innerText = playerKills;
                         if (UI.deathSize) UI.deathSize.innerText = this.segments.length;
-                        UI.death.classList.remove('hidden'); UI.lb.style.display = 'none'; UI.status.style.display = 'none'; UI.mini.style.display = 'none'; UI.ctrls.style.display = 'none';
+                        UI.death.classList.remove('hidden'); UI.death.classList.add('anim-death-entry');
+                        UI.status.style.display = 'none'; UI.mini.style.display = 'none'; UI.ctrls.style.display = 'none';
                     }, 1500);
                 }
                 if (dropFood) {
@@ -2459,7 +2485,9 @@
                     for (let i = 0; i < this.segments.length; i += step) {
                         let s = this.segments[i];
                         let rSize = CONFIG.mundo.tamanhoOrbeMorte + Math.min(CONFIG.mundo.tamanhoOrbeMorteBonus, val / 30);
-                        foods.push(new Food(s.x + (Math.random() * 6 - 3), s.y + (Math.random() * 6 - 3), rSize, this.skin[i % this.skin.length], true, val));
+                        let f = new Food(s.x + (Math.random() * 6 - 3), s.y + (Math.random() * 6 - 3), rSize, this.skin[i % this.skin.length], true, val);
+                        foods.push(f);
+                        addToFoodGrid(f, foods.length - 1);
                     }
                 }
             }
@@ -2475,47 +2503,43 @@
                         if (this.skinId === 31 || this.skinId === 36) {
                             let s = this.radius * (0.8 + t.life * 0.4) * 1.5; ctx.fillRect(t.x - s / 2, t.y - s / 2, s, s);
                         } else if (this.skinId === 13 || this.skinId === 34) {
-                            ctx.globalAlpha = t.life * 0.2; ctx.beginPath(); ctx.arc(t.x, t.y, this.radius * (1.5 + t.life * 0.8), 0, Math.PI * 2); ctx.fill();
+                            ctx.globalAlpha = t.life * 0.2; ctx.beginPath(); ctx.arc(t.x, t.y, this.radius * (1.5 + t.life * 0.8), 0, TWO_PI); ctx.fill();
                         } else if (this.skinId === 4 || this.skinId === 11) {
                             let s = this.radius * (0.5 + t.life * 0.5); ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.life * 10); ctx.beginPath(); ctx.moveTo(0, -s); ctx.lineTo(s, s); ctx.lineTo(-s, s); ctx.closePath(); ctx.fill(); ctx.restore();
                         } else if (this.skinId === 30) {
                             let s = this.radius * (0.4 + t.life * 0.4); ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.life * 5); ctx.beginPath(); for (let j = 0; j < 5; j++) { ctx.lineTo(Math.cos(j * 4 * Math.PI / 5) * s, Math.sin(j * 4 * Math.PI / 5) * s); } ctx.closePath(); ctx.fill(); ctx.restore();
-                        } else { ctx.beginPath(); ctx.arc(t.x, t.y, this.radius * (0.8 + t.life * 0.4), 0, Math.PI * 2); ctx.fill(); }
+                        } else { ctx.beginPath(); ctx.arc(t.x, t.y, this.radius * (0.8 + t.life * 0.4), 0, TWO_PI); ctx.fill(); }
                     } ctx.globalAlpha = 1.0;
                 }
 
                 const totalSegs = this.segments.length;
                 let headR = this.radius;
 
-                // Pass 1: Outline contour (Borda mais suave para um look premium Slither)
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
                 ctx.beginPath();
-                for (let i = totalSegs - 1; i >= 0; i -= 1) { // i-=1 para contorno mais contínuo e suave
+                for (let i = totalSegs - 1; i >= 0; i -= 1) {
                     let seg = this.segments[i];
                     let r = Math.max(0.5, this.radius);
                     ctx.moveTo(seg.x + r + 1.2, seg.y);
-                    ctx.arc(seg.x, seg.y, r + 1.2, 0, Math.PI * 2);
+                    ctx.arc(seg.x, seg.y, r + 1.2, 0, TWO_PI);
                 }
                 ctx.fill();
 
-                // Pass 1.1: Contorno da Cabeça suportando alongamento
                 let cabecaMult = CONFIG.cobra.multiplicadorCabeca || 1.15;
                 ctx.beginPath();
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
-                if (ctx.ellipse) ctx.ellipse(0, 0, headR * cabecaMult + 1.2, headR + 1.2, 0, 0, Math.PI * 2);
-                else ctx.arc(0, 0, headR + 1.2, 0, Math.PI * 2);
+                if (ctx.ellipse) ctx.ellipse(0, 0, headR * cabecaMult + 1.2, headR + 1.2, 0, 0, TWO_PI);
+                else ctx.arc(0, 0, headR + 1.2, 0, TWO_PI);
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
                 ctx.fill();
                 ctx.restore();
 
-                // Pass 2: Renderização corpor com Skin AAA
                 for (let i = totalSegs - 1; i >= 0; i--) {
                     let seg = this.segments[i];
                     let r = Math.max(1.5, this.radius);
 
-                    // Alinha textura com a curva natural
                     let nextSeg = (i === 0) ? { x: this.x, y: this.y } : this.segments[i - 1];
                     let ang = Math.atan2(nextSeg.y - seg.y, nextSeg.x - seg.x);
 
@@ -2526,7 +2550,6 @@
                     ctx.restore();
                 }
 
-                // Renderização da Cabeça (Circular e natural como no print, SEM distorção scale)
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
@@ -2535,7 +2558,6 @@
                 let headW = headR * (CONFIG.cobra.multiplicadorCabeca || 1.15);
                 ctx.drawImage(headTex, -headW, -headR, headW * 2, headR * 2);
 
-                // Língua
                 if (this.eatTimer > 0 || Math.sin(frameCount * 0.1 + this.score) > 0.94) {
                     ctx.strokeStyle = '#ff4444'; ctx.lineWidth = headR * 0.13; ctx.lineCap = 'round';
                     let tBase = headR * 0.95;
@@ -2560,12 +2582,10 @@
                     let bob = Math.sin(now * 0.004) * 3;
                     let cx = this.x, cy = this.y - headR - 52 + bob;
                     let cr = 13;
-                    // Brilho pulsante
                     let glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr * 2.5);
                     glow.addColorStop(0, `rgba(255,223,0,${0.35 + Math.sin(now * 0.006) * 0.15})`);
                     glow.addColorStop(1, 'rgba(255,223,0,0)');
-                    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, cr * 2.5, 0, Math.PI * 2); ctx.fill();
-                    // Coroa desenhada vetorialmente
+                    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, cr * 2.5, 0, TWO_PI); ctx.fill();
                     ctx.fillStyle = '#ffdf00';
                     ctx.strokeStyle = '#cc9900';
                     ctx.lineWidth = 1;
@@ -2578,57 +2598,74 @@
                     ctx.lineTo(cx + cr, cy - cr * 0.3);
                     ctx.lineTo(cx + cr, cy + cr * 0.5);
                     ctx.closePath(); ctx.fill(); ctx.stroke();
-                    // Joias pequenas nos 3 picos
                     let gems = [[cx, cy - cr - 3], [cx - cr - 2, cy - cr * 0.3 - 2], [cx + cr + 2, cy - cr * 0.3 - 2]];
                     let gemColors = ['#ff4444', '#44aaff', '#44ff88'];
                     for (let g = 0; g < gems.length; g++) {
-                        ctx.fillStyle = gemColors[g]; ctx.beginPath(); ctx.arc(gems[g][0], gems[g][1], 2.5, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = gemColors[g]; ctx.beginPath(); ctx.arc(gems[g][0], gems[g][1], 2.5, 0, TWO_PI); ctx.fill();
                     }
                 } ctx.restore();
             }
         }
 
-        // Inicializações Básicas
+        // 🚀 OTIMIZAÇÃO HUD: Cache visual para não forçar redesenho DOM
+        let lastHudScore = -1;
+        let lastHudRank = -1;
+
         function updateHUD() {
             if (gameState !== 'playing' || !player) return;
-            UI.score.innerText = Math.floor(player.score).toLocaleString();
-            let act = snakes.filter(s => s.alive); let sorted = [...act].sort((a, b) => b.score - a.score);
-            UI.rank.innerText = sorted.findIndex(s => s === player) + 1; UI.total.innerText = sorted.length;
-            let html = '';
-            for (let i = 0; i < Math.min(10, sorted.length); i++) {
-                let s = sorted[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`;
+
+            let currentScore = Math.floor(player.score);
+            if (currentScore !== lastHudScore) {
+                UI.score.innerText = currentScore.toLocaleString();
+                lastHudScore = currentScore;
             }
-            UI.lbList.innerHTML = html;
-            mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
+
+            leaderBoardList.length = 0;
+            for (let i = 0; i < snakes.length; i++) if (snakes[i].alive) leaderBoardList.push(snakes[i]);
+            leaderBoardList.sort((a, b) => b.score - a.score);
+            let myRank = leaderBoardList.findIndex(s => s === player) + 1;
+
+            if (myRank !== lastHudRank || frameCount % 60 === 0) {
+                UI.rank.innerText = myRank;
+                UI.total.innerText = leaderBoardList.length;
+                let html = '';
+                for (let i = 0; i < Math.min(10, leaderBoardList.length); i++) {
+                    let s = leaderBoardList[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`;
+                }
+                UI.lbList.innerHTML = html;
+                lastHudRank = myRank;
+            }
+
+            mCtxElement.clearRect(0, 0, 140, 140);
+            mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, TWO_PI); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill();
             mCtxElement.strokeStyle = 'rgba(255,255,255,0.15)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
             let sc = 70 / currentArenaRadius;
-            // Desenha bots primeiro
-            for (let s of act) {
+
+            for (let i = 0; i < leaderBoardList.length; i++) {
+                let s = leaderBoardList[i];
                 if (s === player) continue;
                 let mX = 70 + (s.x - WORLD_CENTER) * sc;
                 let mY = 70 + (s.y - WORLD_CENTER) * sc;
                 let dist = Math.hypot(mX - 70, mY - 70);
                 if (dist > 67) { let ag = Math.atan2(mY - 70, mX - 70); mX = 70 + Math.cos(ag) * 67; mY = 70 + Math.sin(ag) * 67; }
                 mCtxElement.beginPath();
-                mCtxElement.arc(mX, mY, 1.5, 0, Math.PI * 2);
+                mCtxElement.arc(mX, mY, 1.5, 0, TWO_PI);
                 mCtxElement.fillStyle = 'rgba(255,255,255,0.35)';
                 mCtxElement.fill();
             }
-            // Desenha jogador POR CIMA com brilho pulsante
+
             if (player && player.alive) {
                 let pX = 70 + (player.x - WORLD_CENTER) * sc;
                 let pY = 70 + (player.y - WORLD_CENTER) * sc;
                 let dist = Math.hypot(pX - 70, pY - 70);
                 if (dist > 65) { let ag = Math.atan2(pY - 70, pX - 70); pX = 70 + Math.cos(ag) * 65; pY = 70 + Math.sin(ag) * 65; }
                 let pulse = 0.6 + Math.sin(performance.now() * 0.005) * 0.4;
-                // Glow exterior
                 mCtxElement.beginPath();
-                mCtxElement.arc(pX, pY, 7, 0, Math.PI * 2);
+                mCtxElement.arc(pX, pY, 7, 0, TWO_PI);
                 mCtxElement.fillStyle = `rgba(255,255,255,${0.15 * pulse})`;
                 mCtxElement.fill();
-                // Ponto central branco
                 mCtxElement.beginPath();
-                mCtxElement.arc(pX, pY, 3.5, 0, Math.PI * 2);
+                mCtxElement.arc(pX, pY, 3.5, 0, TWO_PI);
                 mCtxElement.fillStyle = '#ffffff';
                 mCtxElement.fill();
             }
@@ -2640,29 +2677,24 @@
             const viewDiag = Math.sqrt(viewportW * viewportW + viewportH * viewportH) / 2;
             const distFromCenter = Math.hypot(camX - WORLD_CENTER, camY - WORLD_CENTER);
 
-            // Só processa se a borda estiver perto (com margem para o Glow suave)
             if (distFromCenter + viewDiag > currentArenaRadius - 300) {
                 ctx.save();
-
-                const glowWidth = 140; // Espessura da transição/suavização
+                const glowWidth = 140;
                 const pulse = Math.sin(performance.now() * 0.0025) * 0.06;
                 const baseOpacity = 0.22 + pulse;
 
-                // Gradiente Radial que cria o efeito "Aura/Fumaça" na borda
                 let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, currentArenaRadius - glowWidth, WORLD_CENTER, WORLD_CENTER, currentArenaRadius + glowWidth);
-                grad.addColorStop(0, 'rgba(255, 0, 0, 0)');                         // Interno (Seguro)
-                grad.addColorStop(0.4, `rgba(255, 0, 0, ${baseOpacity * 0.5})`);      // Início do Esfumaçado
-                grad.addColorStop(0.5, `rgba(255, 0, 0, ${baseOpacity + 0.15})`);    // Linha de Limite (Glow)
-                grad.addColorStop(0.6, `rgba(255, 0, 0, ${baseOpacity * 0.8})`);      // Queda de intensidade
-                grad.addColorStop(1, 'rgba(255, 0, 0, 0.22)');                       // Zona de Perigo Profunda
+                grad.addColorStop(0, 'rgba(255, 0, 0, 0)');
+                grad.addColorStop(0.4, `rgba(255, 0, 0, ${baseOpacity * 0.5})`);
+                grad.addColorStop(0.5, `rgba(255, 0, 0, ${baseOpacity + 0.15})`);
+                grad.addColorStop(0.6, `rgba(255, 0, 0, ${baseOpacity * 0.8})`);
+                grad.addColorStop(1, 'rgba(255, 0, 0, 0.22)');
 
                 ctx.fillStyle = grad;
                 ctx.beginPath();
                 ctx.rect(startX, startY, viewportW, viewportH);
-                // "Furo" no centro para performance: não pintamos o miolo da arena
-                ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius - glowWidth, 0, Math.PI * 2, true);
+                ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius - glowWidth, 0, TWO_PI, true);
                 ctx.fill();
-
                 ctx.restore();
             }
         }
@@ -2670,27 +2702,22 @@
         function drawGrid(ctx, camX, camY, zoom) {
             const viewportW = vpWidth / zoom, viewportH = vpHeight / zoom;
             const startX = camX - viewportW / 2, startY = camY - viewportH / 2;
-
             const mundoConf = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
 
-            // 1. Fundo Sólido
             ctx.fillStyle = mundoConf.corFundo; ctx.fillRect(startX, startY, viewportW, viewportH);
 
-            // 2. Grade Hexagonal Otimizada (Pattern Caching)
             const size = mundoConf.tamanhoHexagono;
             const gridPattern = TextureManager.getGridPattern(size, mundoConf.corGrade, !APP_SETTINGS.highGfx);
             ctx.save();
             ctx.fillStyle = gridPattern;
-            ctx.translate(0, 0); // O pattern já alinha com o mundo
+            ctx.translate(0, 0);
             ctx.fillRect(startX, startY, viewportW, viewportH);
             ctx.restore();
 
-            // 3. Vinheta/Gradiente de Centro
             let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, 0, WORLD_CENTER, WORLD_CENTER, currentArenaRadius);
             grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx.fillStyle = grad; ctx.fillRect(startX, startY, viewportW, viewportH);
 
-            // Borda da Arena (Chamada Independente agora)
             drawArenaBoundary(ctx, camX, camY, zoom);
         }
 
@@ -2703,41 +2730,101 @@
             } catch (e) { console.warn("Fullscreen bloqueado pelo navegador."); }
         }
 
-        function resize() { vpWidth = window.innerWidth; vpHeight = window.innerHeight; dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, MOBILE_DPR_CAP) : (window.devicePixelRatio || 1); if (gameCanvasElement) { gameCanvasElement.width = vpWidth * dpr; gameCanvasElement.height = vpHeight * dpr; gameCanvasElement.style.width = vpWidth + 'px'; gameCanvasElement.style.height = vpHeight + 'px'; } if (minimapCanvasElement) { minimapCanvasElement.width = 140 * dpr; minimapCanvasElement.height = 140 * dpr; minimapCanvasElement.style.width = '100%'; minimapCanvasElement.style.height = '100%'; mCtxElement.setTransform(1, 0, 0, 1, 0, 0); mCtxElement.scale(dpr, dpr); } if (IS_MOBILE_CLIENT) UI.orient.style.display = vpHeight > vpWidth ? 'flex' : 'none'; }
+        function resize() {
+            vpWidth = window.innerWidth;
+            vpHeight = window.innerHeight;
+            dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, MOBILE_DPR_CAP) : (window.devicePixelRatio || 1);
+            if (gameCanvasElement) {
+                gameCanvasElement.width = vpWidth * dpr;
+                gameCanvasElement.height = vpHeight * dpr;
+                gameCanvasElement.style.width = vpWidth + 'px';
+                gameCanvasElement.style.height = vpHeight + 'px';
+            }
+            if (minimapCanvasElement) {
+                minimapCanvasElement.width = 140 * dpr;
+                minimapCanvasElement.height = 140 * dpr;
+                minimapCanvasElement.style.width = '100%';
+                minimapCanvasElement.style.height = '100%';
+                mCtxElement.setTransform(1, 0, 0, 1, 0, 0);
+                mCtxElement.scale(dpr, dpr);
+            }
+            if (IS_MOBILE_CLIENT) UI.orient.style.display = vpHeight > vpWidth ? 'flex' : 'none';
+        }
+
+        // 🚀 OTIMIZAÇÃO: Debounce do evento Resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(resize, 200);
+        });
+
         function showEvolution(evo) { UI.lvlTitle.innerText = evo.name; UI.lvlTitle.style.color = evo.color; UI.lvlPopup.classList.add('show'); AudioSys.play('dash'); setTimeout(() => UI.lvlPopup.classList.remove('show'), 3500); }
-        function updateMissionsUI() { let k = Math.min(PLAYER_STATS.totalKills, MISSIONS.killsReq), f = Math.min(PLAYER_STATS.totalFood, MISSIONS.foodReq), t = Math.min(PLAYER_STATS.totalTime, MISSIONS.timeReq); document.getElementById('m-desc-1').innerText = `Abates (${k}/${MISSIONS.killsReq})`; document.getElementById('m-bar-1').style.width = (k / MISSIONS.killsReq * 100) + '%'; document.getElementById('m-desc-2').innerText = `Orbes (${f}/${MISSIONS.foodReq})`; document.getElementById('m-bar-2').style.width = (f / MISSIONS.foodReq * 100) + '%'; document.getElementById('m-desc-3').innerText = `Sobrevivência (${Math.floor(t / 60)}/${Math.floor(MISSIONS.timeReq / 60)}m)`; document.getElementById('m-bar-3').style.width = (t / MISSIONS.timeReq * 100) + '%'; if (k >= MISSIONS.killsReq && f >= MISSIONS.foodReq && t >= MISSIONS.timeReq) { document.getElementById('mission-reward').classList.remove('hidden'); } }
+        function updateMissionsUI() {
+            let sessionKills = player && gameState !== 'menu' ? playerKills : 0;
+            let sessionFood = player && gameState !== 'menu' ? (player.score - CONFIG.cobra.pontosIniciais) : 0;
+            let sessionTime = player && gameState !== 'menu' ? (accumulatedTime + (performance.now() - lastPlayTime) / 1000) : 0;
+
+            let k = Math.min(PLAYER_STATS.totalKills + sessionKills, MISSIONS.killsReq);
+            let f = Math.min(PLAYER_STATS.totalFood + (sessionFood > 0 ? sessionFood : 0), MISSIONS.foodReq);
+            let t = Math.min(PLAYER_STATS.totalTime + (sessionTime > 0 ? sessionTime : 0), MISSIONS.timeReq);
+
+            document.getElementById('m-desc-1').innerText = `Abates (${Math.floor(k)}/${MISSIONS.killsReq})`;
+            document.getElementById('m-bar-1').style.width = (k / MISSIONS.killsReq * 100) + '%';
+            document.getElementById('m-desc-2').innerText = `Orbes (${Math.floor(f)}/${MISSIONS.foodReq})`;
+            document.getElementById('m-bar-2').style.width = (f / MISSIONS.foodReq * 100) + '%';
+            document.getElementById('m-desc-3').innerText = `Sobrevivência (${Math.floor(t / 60)}/${Math.floor(MISSIONS.timeReq / 60)}m)`;
+            document.getElementById('m-bar-3').style.width = (t / MISSIONS.timeReq * 100) + '%';
+
+            if (k >= MISSIONS.killsReq && f >= MISSIONS.foodReq && t >= MISSIONS.timeReq) {
+                document.getElementById('mission-reward').classList.remove('hidden');
+            }
+        }
         function updateSkinUI() { UI.skinName.innerText = SKIN_NAMES[skinIndex]; let req = SKIN_REQUIREMENTS[skinIndex]; let isLocked = false; if (req) { if (req.type === 'score' && PLAYER_STATS.highScore < req.val) isLocked = true; if (req.type === 'kills' && PLAYER_STATS.totalKills < req.val) isLocked = true; } if (isLocked) { UI.lockOverlay.classList.remove('hidden'); UI.reqTitle.innerText = `🔒 REQUER ${req.desc}`; UI.reqStatus.innerText = req.type === 'score' ? `RECORDE ATUAL: ${PLAYER_STATS.highScore.toLocaleString()}` : `ABATES TOTAIS: ${PLAYER_STATS.totalKills}`; UI.ok.style.background = '#333333'; UI.ok.style.color = '#777777'; UI.ok.style.boxShadow = 'none'; UI.ok.style.pointerEvents = 'none'; UI.skinName.style.color = '#555'; } else { UI.lockOverlay.classList.add('hidden'); UI.ok.style.background = '#ffdf00'; UI.ok.style.color = '#000000'; UI.ok.style.boxShadow = '0 5px 20px rgba(255, 223, 0, 0.25)'; UI.ok.style.pointerEvents = 'auto'; UI.skinName.style.color = '#ffdf00'; } }
 
         function gameLoop(time) {
-            // Adaptive Performance Monitoring
             const now = performance.now();
             const delta = now - lastFrameTime;
             lastFrameTime = now;
 
-            if (frameCount > 60) { // Espera estabilizar
+            if (frameCount > 60) {
                 frameTimeBuffer.push(delta);
                 if (frameTimeBuffer.length > 20) frameTimeBuffer.shift();
 
-                // Se a média do frame time for > 22ms (aprox < 45fps)
                 let avg = frameTimeBuffer.reduce((a, b) => a + b, 0) / frameTimeBuffer.length;
                 if (avg > 22 && APP_SETTINGS.highGfx && !APP_SETTINGS.performanceMode) {
                     APP_SETTINGS.highGfx = false;
                     APP_SETTINGS.performanceMode = true;
-                    console.warn("Performance baixa detectada. Reduzindo qualidade visual.");
+                    console.warn("Performance baixa detectada. Reduzindo qualidade visual automaticamente.");
+                    updateOptionsUI();
                 }
             }
 
             mainCtx.setTransform(1, 0, 0, 1, 0, 0); mainCtx.clearRect(0, 0, gameCanvasElement.width, gameCanvasElement.height); mainCtx.scale(dpr, dpr);
 
-            // Lógica Core de Atualização (Roda SEMPRE, mesmo no menu, para o Fundo Animado)
-            if (gameState === 'playing' && player && player.alive) {
-                // Sincronização Inteligente: Mobile usa variáveis específicas, PC usa o Mouse
-                player.isBoosting = IS_MOBILE_CLIENT ? isMouseDown : isMouseDown;
-                // Nota: isMouseDown já é atualizado pelos botões de touch no mobile.
-                // Mas garantimos que o estado seja limpo se não houver toque.
-                if (frameCount % 60 === 0) PLAYER_STATS.totalTime++;
+            activeAliveSnakes.length = 0;
+            for (let i = snakes.length - 1; i >= 0; i--) {
+                if (!snakes[i].alive && !snakes[i].isPlayer) {
+                    fastRemove(snakes, i);
+                } else if (snakes[i].alive) {
+                    activeAliveSnakes.push(snakes[i]);
+                }
+            }
 
-                // 1. LOOK-AHEAD: câmera antecipa a direção do movimento
+            if (gameState === 'playing' && player && player.alive) {
+                player.isBoosting = isTurboActive;
+
+                // Track real-world time instead of frame count
+                const timeNow = performance.now();
+                if (lastPlayTime) {
+                    const elapsed = (timeNow - lastPlayTime) / 1000;
+                    accumulatedTime += elapsed;
+                    if (accumulatedTime >= 1.0) {
+                        PLAYER_STATS.totalTime += Math.floor(accumulatedTime);
+                        accumulatedTime %= 1.0;
+                    }
+                }
+                lastPlayTime = timeNow;
+
                 let lookAheadStrength = player.isBoosting ? 120 : 75;
                 let targetCamX = player.x + Math.cos(player.angle) * lookAheadStrength;
                 let targetCamY = player.y + Math.sin(player.angle) * lookAheadStrength;
@@ -2745,54 +2832,57 @@
                 camera.x += (targetCamX - camera.x) * camLerp;
                 camera.y += (targetCamY - camera.y) * camLerp;
 
-                // 2. ZOOM BASEADO NO TAMANHO REAL (radius), não no score
                 let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc'];
                 let sizeZoom = Math.max(zV.minimo, zV.inicial - (player.radius - (IS_MOBILE_CLIENT ? CONFIG.cobra.mobile.espessuraInicial : CONFIG.cobra.pc.espessuraInicial)) * 0.028);
 
-                // 3. TURBO EMPURRA CÂMERA PARA FRENTE — zoom out extra ao turbinar
                 let turboZoomMult = player.isBoosting ? 0.88 : 1.0;
                 let targetZoom = sizeZoom * turboZoomMult;
                 camera.zoom += (targetZoom - camera.zoom) * 0.06;
             } else if (gameState === 'menu') {
-                // CÂMARA CINEMÁTICA NO MENU
                 camera.x = WORLD_CENTER + Math.cos(time * 0.0001) * 1500;
                 camera.y = WORLD_CENTER + Math.sin(time * 0.0001) * 1500;
                 camera.zoom = 0.55;
             }
 
-            if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) {
+            if (activeAliveSnakes.length < CONFIG.mundo.quantidadeBots) {
                 let sI = Math.floor(Math.random() * SKINS.length);
-                let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0; // Bots têm 20% de chance de ter acessório
-                snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], sI, false, CONFIG.cobra.pontosIniciais, aI));
+                let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0;
+                const spawn = getSafeSpawnPos(1500);
+                snakes.push(new Snake(spawn.x, spawn.y, BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], sI, false, CONFIG.cobra.pontosIniciais, aI));
             }
 
-            // Cálculo Dinâmico do Raio (Expansão do Mapa)
             const totalScoreOnMap = snakes.reduce((sum, s) => sum + (s.alive ? s.score : 0), 0);
             targetArenaRadius = CONFIG.mundo.tamanhoRaio + (totalScoreOnMap / 28);
-            // Interpolação super suave para ser "singela"
             currentArenaRadius += (targetArenaRadius - currentArenaRadius) * 0.005;
 
-            // Limpeza batch de comida morta (tombstone) a cada 60 frames
-            if (frameCount % 60 === 0) foods = foods.filter(f => !f.dead);
+            if (frameCount % 600 === 0) TextureManager.expireCache();
+
+            if (frameCount % 60 === 0) {
+                for (let i = foods.length - 1; i >= 0; i--) {
+                    if (foods[i].dead) {
+                        fastRemoveFood(i);
+                    }
+                }
+            }
             let activeFoodCount = 0;
-            for (let i = 0; i < foods.length; i++) if (!foods[i].dead) activeFoodCount++;
+            for (let i = 0; i < foods.length; i++) if (!foods[i].dead) {
+                activeFoodCount++;
+                foods[i].updateGrid(i);
+            }
             if (activeFoodCount < CONFIG.mundo.quantidadeComida) spawnFood(IS_MOBILE_CLIENT ? 8 : 15);
             if (butterflies.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
-            // Rebuild spatial hash para comida e segmentos
-            rebuildFoodGrid();
+            // rebuildFoodGrid() removed - now incremental via updateGrid/spawn/eat
             rebuildSegmentGrid();
 
             for (let s of snakes) s.update();
             for (let b of butterflies) b.update();
 
-            // Colisão cobra-cobra otimizada com Spatial Hash
-            let segStep = IS_MOBILE_CLIENT ? 8 : 4; // Passo maior em mobile
+            let segStep = IS_MOBILE_CLIENT ? 8 : 4;
             for (let i = 0; i < snakes.length; i++) {
                 let s1 = snakes[i];
                 if (!s1.alive) continue;
 
-                // Busca apenas cobras em células vizinhas (O(1) amortizado)
                 let searchRadius = s1.radius + 150;
                 let nearSnakesIdx = getNearbySnakesIndices(s1.x, s1.y, searchRadius);
 
@@ -2802,22 +2892,18 @@
 
                     let hitDist = (s1.radius * 0.85) + (s2.radius * 0.85);
 
-                    // Distância rápida entre cabeças antes de checar segmentos
                     if (Math.abs(s1.x - s2.x) < 300 && Math.abs(s1.y - s2.y) < 300) {
-                        // Colisão cabeça-cabeça (raro e mortal)
                         if (Math.hypot(s1.x - s2.x, s1.y - s2.y) < hitDist) {
-                            if (s1.score > s2.score) s2.die(true); else s1.die(true);
+                            if (s1.score > s2.score) s2.die(true, s1.name); else s1.die(true, s2.name);
                         }
                     }
 
-                    // Checa colisão da cabeça de S1 com o corpo de S2
                     for (let k = 0; k < s2.segments.length; k += segStep) {
                         let seg = s2.segments[k];
-                        // Otimização: AABB check antes de Hypot (caro)
                         if (Math.abs(s1.x - seg.x) < hitDist && Math.abs(s1.y - seg.y) < hitDist) {
                             if (Math.hypot(s1.x - seg.x, s1.y - seg.y) < hitDist) {
                                 if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; }
-                                s1.die(true);
+                                s1.die(true, s2.name);
                                 break;
                             }
                         }
@@ -2826,19 +2912,15 @@
                 }
             }
 
-            snakes = snakes.filter(s => s.alive || s.isPlayer);
-            // Partículas: limitar quantidade no mobile e usar Pool
             let maxParticles = IS_MOBILE_CLIENT ? 40 : 250;
             for (let i = particles.length - 1; i >= 0; i--) {
                 particles[i].update();
                 if (particles[i].dead) {
-                    ParticlePool.recycle(particles[i]);
-                    particles.splice(i, 1);
+                    fastRemove(particles, i, true);
                 }
             }
-            if (particles.length > maxParticles) {
-                let overflow = particles.splice(0, particles.length - maxParticles);
-                overflow.forEach(p => ParticlePool.recycle(p));
+            while (particles.length > maxParticles) {
+                fastRemove(particles, 0, true);
             }
             for (let ff of fireflies) ff.update();
 
@@ -2857,9 +2939,8 @@
             for (let b of butterflies) { if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
             for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
 
-            let dL = [...snakes].sort((a, b) => a.score - b.score);
-            for (let s of dL) {
-                // Correção Planejada: Culling agora considera o comprimento real em pixels (segmentos * raio * espaçamento)
+            activeAliveSnakes.sort((a, b) => a.score - b.score);
+            for (let s of activeAliveSnakes) {
                 let pixelLength = s.segments.length * (s.radius * CONFIG.cobra.distanciaGomos);
                 if (Math.hypot(s.x - camera.x, s.y - camera.y) < cullingDist + pixelLength + s.radius * 2) {
                     s.draw(mainCtx);
@@ -2867,12 +2948,8 @@
             }
             mainCtx.restore();
 
-            // RENDERIZAÇÃO ESPECÍFICA DA UI SOBRE O CANVAS
-            if (gameState === 'menu') {
-                // O fundo semi-transparente é lidado pelo CSS, então o jogo corre limpo por baixo!
-            }
-            else if (gameState === 'skin-menu') {
-                mainCtx.fillStyle = 'rgba(5,5,5,0.95)'; mainCtx.fillRect(0, 0, vpWidth, vpHeight); // Fundo sólido na loja
+            if (gameState === 'skin-menu') {
+                mainCtx.fillStyle = 'rgba(5,5,5,0.95)'; mainCtx.fillRect(0, 0, vpWidth, vpHeight);
                 let act = SKINS[skinIndex], rad = IS_MOBILE_CLIENT ? 26 : 38, len = 32, spc = rad * 0.45;
                 let headX = (vpWidth / 2) + ((len * spc) / 2), centerY = vpHeight / 2 - 20, segs = [];
                 for (let i = 0; i < len; i++) segs.push({ x: headX - (i * spc), y: centerY + Math.sin(time * 0.005 - i * 0.18) * (rad * 1.5) });
@@ -2895,15 +2972,15 @@
             }
             else if (gameState === 'playing' || gameState === 'dead') {
                 let hudThrottle = IS_MOBILE_CLIENT ? 30 : 10;
-                if (frameCount % hudThrottle === 0) updateHUD();
+                if (frameCount % hudThrottle === 0) {
+                    updateHUD();
+                    updateMissionsUI();
+                }
             }
 
             frameCount++; requestAnimationFrame(gameLoop);
         }
 
-
-
-        // Compartilhar Social
         UI.share.addEventListener('click', () => {
             const text = `🐍 Fiz ${Math.floor(player.score).toLocaleString()} pontos e destruí ${playerKills} inimigos no Serpente - O Conto do Rei! Consegues bater o meu recorde?`;
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -2911,22 +2988,23 @@
             } else { let input = document.createElement('textarea'); input.value = text; document.body.appendChild(input); input.select(); document.execCommand('copy'); document.body.removeChild(input); UI.share.innerText = "COPIADO!"; setTimeout(() => UI.share.innerText = "COMPARTILHAR", 2000); }
         });
 
-        // Iniciadores de Interação e Jogabilidade
-        window.addEventListener('resize', resize); window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
-        window.addEventListener('mousedown', (e) => { if (e.button === 0) isMouseDown = true; }); window.addEventListener('mouseup', (e) => { if (e.button === 0) isMouseDown = false; });
+        window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+        window.addEventListener('mousedown', (e) => { if (e.button === 0) isTurboActive = true; }); window.addEventListener('mouseup', (e) => { if (e.button === 0) isTurboActive = false; });
 
         UI.play.addEventListener('click', async () => {
             AudioSys.init(); await enterFullscreen();
-            if (player) { let idx = snakes.indexOf(player); if (idx > -1) snakes.splice(idx, 1); } // Limpa jogador antigo se houver
-            playerKills = 0; currentEvo = -1;
+            if (player) { let idx = snakes.indexOf(player); if (idx > -1) snakes.splice(idx, 1); }
+            playerKills = 0; currentEvo = -1; currentKillStreak = 0; lastKillTime = 0; // Reset KillStreak logic
             const spawn = getSafeSpawnPos(1200);
             player = new Snake(spawn.x, spawn.y, UI.nick.value.trim() || "LENDA", skinIndex, true, CONFIG.cobra.pontosIniciais, accIndex);
-            // Sincronização Instantânea da Câmera (Evita "surto" de zoom ou pulo no início)
+
             let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc'];
             camera.zoom = zV.inicial;
-            camera.x = player.x + Math.cos(player.angle) * 75; // Já inicia compensando o "look-ahead"
+            camera.x = player.x + Math.cos(player.angle) * 75;
             camera.y = player.y + Math.sin(player.angle) * 75;
-            isMouseDown = false; // Reset de segurança do turbo
+            isTurboActive = false;
+            lastPlayTime = performance.now();
+            accumulatedTime = 0;
             snakes.push(player);
             gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
             UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
@@ -2938,7 +3016,6 @@
         UI.left.addEventListener('click', () => { skinIndex = (skinIndex - 1 + SKINS.length) % SKINS.length; updateSkinUI(); });
         UI.right.addEventListener('click', () => { skinIndex = (skinIndex + 1) % SKINS.length; updateSkinUI(); });
 
-        // Eventos de Opções (Ajustes)
         function updateOptionsUI() {
             if (!UI.optAudio) return;
             UI.optAudio.innerText = APP_SETTINGS.audio ? "LIGADO" : "DESL.";
@@ -2954,7 +3031,6 @@
         UI.optAudio.addEventListener('click', () => { APP_SETTINGS.audio = !APP_SETTINGS.audio; updateOptionsUI(); localStorage.setItem('serpente_audio', APP_SETTINGS.audio); });
         UI.optGfx.addEventListener('click', () => { APP_SETTINGS.highGfx = !APP_SETTINGS.highGfx; updateOptionsUI(); localStorage.setItem('serpente_gfx', APP_SETTINGS.highGfx); });
 
-        // Eventos de Acessórios
         const accUI = {
             btn: document.getElementById('acc-btn'),
             preview: document.getElementById('acc-preview-ui'),
@@ -2987,7 +3063,6 @@
             if (gameState !== 'playing' || !player) return;
             for (let i = 0; i < e.changedTouches.length; i++) {
                 const touch = e.changedTouches[i];
-                // Joystick na metade esquerda
                 if (touch.clientX < vpWidth / 2 && joystickTouchId === null) {
                     joystickTouchId = touch.identifier;
                     joystickActive = true;
@@ -3027,7 +3102,7 @@
         window.addEventListener('touchcancel', releaseJoystick);
 
         UI.boost.addEventListener('touchstart', (e) => {
-            isMouseDown = true;
+            isTurboActive = true;
             UI.boost.classList.add('boosting');
             Haptic.medium();
             e.stopPropagation();
@@ -3035,14 +3110,14 @@
         }, { passive: false });
 
         UI.boost.addEventListener('touchend', (e) => {
-            isMouseDown = false;
+            isTurboActive = false;
             UI.boost.classList.remove('boosting');
             e.stopPropagation();
             e.preventDefault();
         }, { passive: false });
 
         UI.boost.addEventListener('touchcancel', (e) => {
-            isMouseDown = false;
+            isTurboActive = false;
             UI.boost.classList.remove('boosting');
             e.stopPropagation();
         }, { passive: false });
@@ -3064,7 +3139,6 @@
                 if (e.changedTouches[i].identifier === swipeTouchId) {
                     let dx = e.changedTouches[i].clientX - touchStartX, dy = e.changedTouches[i].clientY - touchStartY;
                     let dt = performance.now() - swipeStartTime;
-                    // Swipe rápido e longo o suficiente
                     if (dt < 300 && (Math.abs(dx) > 50 || Math.abs(dy) > 50)) {
                         if (player.score > 25) {
                             player.score -= 15;
@@ -3081,18 +3155,19 @@
             }
         });
 
-        // Boot Inicial (Arranque do Simulador de Fundo)
+        // Boot Inicial
         resize(); updateMissionsUI();
-        // Restaurar nick guardado
         UI.nick.value = localStorage.getItem('serpente_nick') || '';
         UI.nick.addEventListener('input', () => localStorage.setItem('serpente_nick', UI.nick.value.trim()));
         for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) {
             let sI = Math.floor(Math.random() * SKINS.length);
             let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0;
-            snakes.push(new Snake(...Object.values(getSafeSpawnPos(800)), BOT_NAMES[i % BOT_NAMES.length], sI, false, CONFIG.cobra.pontosIniciais, aI));
+            const spawn = getSafeSpawnPos(800);
+            snakes.push(new Snake(spawn.x, spawn.y, BOT_NAMES[i % BOT_NAMES.length], sI, false, CONFIG.cobra.pontosIniciais, aI));
         }
         spawnFood(CONFIG.mundo.quantidadeComida);
         for (let i = 0; i < CONFIG.visual.quantidadeVagalumes; i++) fireflies.push(new Firefly());
+        rebuildFoodGrid(); // Force initial build
         requestAnimationFrame(gameLoop);
     </script>
 </body>
