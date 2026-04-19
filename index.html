@@ -1154,7 +1154,7 @@
                     comprimentoMaximo: 400,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
                     velocidadeBase: 1.3,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
                     velocidadeTurbo: 3.0,       // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
-                    velocidadeGiro: 0.05        // [PC] Agilidade de rotação padrão.
+                    velocidadeGiro: 0.06        // [PC] Agilidade de rotação padrão.
                 },
                 mobile: {
                     espessuraInicial: 2.6,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
@@ -1162,7 +1162,7 @@
                     comprimentoInicial: 10,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 400,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
                     velocidadeBase: 1.3,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
-                    velocidadeTurbo: 3.0,       // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
+                    velocidadeTurbo: 2.7,       // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                     velocidadeGiro: 0.085        // [MOBILE] Rotação fechada e ágil para telemóveis (maior = curva mais apertada).
                 },
                 // Variáveis Comuns a todas as plataformas:
@@ -1214,8 +1214,8 @@
                 tamanhoOrbeMorteBonus: 3.0,    // (Recomendado: 5.0 a 20.0) Crescimento máximo extra dependendo da pontuação que a cobra tinha.
                 forcaAtracao: 23,               // (Recomendado: 30 a 100) Distância em pixeis que o seu "íman" suga a comida para a boca.
                 pc: {
-                    corGrade: '#21344f', // Grade sutil e elegante estilo Premium
-                    corFundo: '#0d1117', // Fundo sólido e profundo
+                    corGrade: '#283b56', // Azul acinzentado mais profundo
+                    corFundo: '#05070a', // Quase preto para maior contraste
                     tamanhoHexagono: 14
                 },
                 mobile: {
@@ -1349,16 +1349,22 @@
         // 🗺️ SPATIAL HASH — Acelera busca de comida de O(n) para O(1)
         // ═══════════════════════════════════════════════════════════════
         const FOOD_CELL_SIZE = 200;
-        let foodGrid = {};
-        function foodGridKey(x, y) { return ((x / FOOD_CELL_SIZE) | 0) + ',' + ((y / FOOD_CELL_SIZE) | 0); }
+        let foodGrid = new Map();
+        // M8: Chave numérica otimizada para evitar alocação de strings per frame
+        function foodGridKey(x, y) {
+            const cx = (x / FOOD_CELL_SIZE) | 0;
+            const cy = (y / FOOD_CELL_SIZE) | 0;
+            return (cx << 16) | (cy & 0xFFFF);
+        }
         function rebuildFoodGrid() {
-            foodGrid = {};
+            foodGrid.clear();
             for (let i = 0; i < foods.length; i++) {
                 let f = foods[i];
                 if (f.dead) continue;
                 let key = foodGridKey(f.x, f.y);
-                if (!foodGrid[key]) foodGrid[key] = [];
-                foodGrid[key].push(i);
+                let list = foodGrid.get(key);
+                if (!list) { list = []; foodGrid.set(key, list); }
+                list.push(i);
             }
         }
         function getNearbyFoodIndices(x, y, radius) {
@@ -1367,9 +1373,10 @@
             let cellRange = Math.ceil(radius / FOOD_CELL_SIZE);
             for (let dx = -cellRange; dx <= cellRange; dx++) {
                 for (let dy = -cellRange; dy <= cellRange; dy++) {
-                    let key = (cx + dx) + ',' + (cy + dy);
-                    if (foodGrid[key]) {
-                        for (let idx of foodGrid[key]) results.push(idx);
+                    let key = ((cx + dx) << 16) | ((cy + dy) & 0xFFFF);
+                    let list = foodGrid.get(key);
+                    if (list) {
+                        for (let idx of list) results.push(idx);
                     }
                 }
             }
@@ -1380,21 +1387,34 @@
         // 🐍 SEGMENT HASH — Acelera colisão de cobras de O(N*M) para O(1)
         // ═══════════════════════════════════════════════════════════════
         const SEGMENT_CELL_SIZE = 250;
-        let segmentGrid = {};
+        let segmentGrid = new Map();
         function rebuildSegmentGrid() {
-            segmentGrid = {};
+            segmentGrid.clear();
+
             for (let i = 0; i < snakes.length; i++) {
                 let s = snakes[i];
                 if (!s.alive) continue;
-                // M8: passo dinâmico proporcional ao raio — cobras grossas cobrem mais espaço
-                // então precisam de granularidade maior no grid para não criar "buracos" de colisão
+
+                // 🔧 Passo dinâmico baseado no raio
                 let step = Math.max(1, Math.floor(s.radius / 4));
+
                 for (let k = 0; k < s.segments.length; k += step) {
                     let seg = s.segments[k];
-                    let key = ((seg.x / SEGMENT_CELL_SIZE) | 0) + ',' + ((seg.y / SEGMENT_CELL_SIZE) | 0);
-                    if (!segmentGrid[key]) segmentGrid[key] = [];
-                    if (segmentGrid[key][segmentGrid[key].length - 1] !== i) {
-                        segmentGrid[key].push(i);
+
+                    let cellX = (seg.x / SEGMENT_CELL_SIZE) | 0;
+                    let cellY = (seg.y / SEGMENT_CELL_SIZE) | 0;
+
+                    let key = (cellX << 16) | (cellY & 0xFFFF);
+
+                    let list = segmentGrid.get(key);
+                    if (!list) {
+                        list = [];
+                        segmentGrid.set(key, list);
+                    }
+
+                    // evita duplicidade
+                    if (list[list.length - 1] !== i) {
+                        list.push(i);
                     }
                 }
             }
@@ -1405,9 +1425,10 @@
             let cellRange = Math.ceil(radius / SEGMENT_CELL_SIZE);
             for (let dx = -cellRange; dx <= cellRange; dx++) {
                 for (let dy = -cellRange; dy <= cellRange; dy++) {
-                    let key = (cx + dx) + ',' + (cy + dy);
-                    if (segmentGrid[key]) {
-                        for (let idx of segmentGrid[key]) results.add(idx);
+                    let key = ((cx + dx) << 16) | ((cy + dy) & 0xFFFF);
+                    let list = segmentGrid.get(key);
+                    if (list) {
+                        for (let idx of list) results.add(idx);
                     }
                 }
             }
@@ -1570,20 +1591,55 @@
                 c.width = w * 2; c.height = h;
                 const cx = c.getContext('2d');
                 const drawHex = (x, y) => {
-                    let s = size * 0.92; // Gap mínimo para visual uniforme
+                    let s = size * 0.92;
                     cx.beginPath(); cx.moveTo(x + s, y);
                     for (let i = 1; i <= 6; i++) cx.lineTo(x + s * Math.cos(i * Math.PI / 3), y + s * Math.sin(i * Math.PI / 3));
                     cx.closePath();
-
                     cx.fillStyle = color;
                     cx.fill();
-                    // Brilho muito sutil apenas para profundidade, fixo para performance
-                    cx.fillStyle = 'rgba(255,255,255,0.02)';
-                    cx.fill();
+                    // Textura de grão sutil para evitar banding e dar profundidade "premium"
+                    if (!IS_MOBILE_CLIENT) {
+                        cx.fillStyle = 'rgba(255,255,255,0.015)';
+                        cx.fill();
+                    }
                 };
                 drawHex(0, 0); drawHex(w, h / 2); drawHex(w * 2, 0); drawHex(0, h); drawHex(w * 2, h);
                 const pattern = mainCtx.createPattern(c, 'repeat');
                 this.cache[key] = pattern; return pattern;
+            },
+            getNebula: function () {
+                if (this.cache['nebula']) return this.cache['nebula'];
+                const c = document.createElement('canvas');
+                c.width = 1024; c.height = 1024;
+                const cx = c.getContext('2d');
+                // Procedural Nebula (Efeito Galático)
+                for (let i = 0; i < 3; i++) {
+                    let rx = Math.random() * 1024, ry = Math.random() * 1024;
+                    let r = 350 + Math.random() * 400;
+                    let g = cx.createRadialGradient(rx, ry, 0, rx, ry, r);
+                    let col = i === 0 ? 'rgba(57,255,20,0.018)' : i === 1 ? 'rgba(0,180,255,0.015)' : 'rgba(150,0,255,0.012)';
+                    g.addColorStop(0, col);
+                    g.addColorStop(1, 'rgba(0,0,0,0)');
+                    cx.fillStyle = g;
+                    cx.fillRect(0, 0, 1024, 1024);
+                }
+                this.cache['nebula'] = c;
+                return c;
+            },
+            getVignette: function (w, h) {
+                const key = `vig_${w}_${h}`;
+                if (this.cache[key]) return this.cache[key];
+                const c = document.createElement('canvas');
+                c.width = w / 4; c.height = h / 4; // Low res perfeitamente esticável
+                const cx = c.getContext('2d');
+                let g = cx.createRadialGradient(c.width / 2, c.height / 2, 0, c.width / 2, c.height / 2, Math.max(c.width, c.height) * 0.7);
+                g.addColorStop(0, 'rgba(0,0,0,0)');
+                g.addColorStop(0.5, 'rgba(0,0,0,0)');
+                g.addColorStop(1, 'rgba(0,0,0,0.45)');
+                cx.fillStyle = g;
+                cx.fillRect(0, 0, c.width, c.height);
+                this.cache[key] = c;
+                return c;
             },
             getFood: function (color) {
                 let key = 'food_' + color; if (this.cache[key]) return this.cache[key];
@@ -2549,24 +2605,28 @@
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
 
-                // Colisão de comida otimizada com Spatial Hash
+                // Colisão de comida otimizada com Spatial Hash + Squared Distance
                 let eatRadius = Math.max(CONFIG.mundo.forcaAtracao, this.radius + 15);
+                let eatRadiusSq = eatRadius * eatRadius;
                 let nearFoodIdx = getNearbyFoodIndices(this.x, this.y, eatRadius);
                 for (let i of nearFoodIdx) {
                     let f = foods[i];
                     if (!f || f.dead) continue;
-                    let dx = f.x - this.x, dy = f.y - this.y, dist = Math.sqrt(dx * dx + dy * dy);
+                    let dx = f.x - this.x, dy = f.y - this.y;
+                    let distSq = dx * dx + dy * dy;
                     let hitDist = (this.radius * 0.82) + f.radius;
+                    let hitDistSq = hitDist * hitDist;
 
-                    if (dist < eatRadius) {
+                    if (distSq < eatRadiusSq) {
                         // 🧲 Magnetismo com aceleração progressiva
+                        let dist = Math.sqrt(distSq); // Só faz a raiz se estiver no raio de atração
                         f.attractSpeed = Math.min(12, f.attractSpeed + 0.7);
                         let pullStrength = 1.0 - (dist / (eatRadius * 1.2));
                         f.x -= (dx / dist) * f.attractSpeed * pullStrength;
                         f.y -= (dy / dist) * f.attractSpeed * pullStrength;
 
                         // CONSUMO
-                        if (dist < hitDist) {
+                        if (distSq < hitDistSq) {
                             this.score += f.value; this.eatTimer = 15; f.dead = true;
                             if (this.isPlayer) {
                                 PLAYER_STATS.totalFood++;
@@ -2822,31 +2882,32 @@
 
         function drawArenaBoundary(ctx, camX, camY, zoom) {
             const viewportW = vpWidth / zoom, viewportH = vpHeight / zoom;
-            const startX = camX - viewportW / 2, startY = camY - viewportH / 2;
             const viewDiag = Math.sqrt(viewportW * viewportW + viewportH * viewportH) / 2;
             const distFromCenter = Math.hypot(camX - WORLD_CENTER, camY - WORLD_CENTER);
 
-            // Só processa se a borda estiver perto (com margem para o Glow suave)
             if (distFromCenter + viewDiag > currentArenaRadius - 300) {
                 ctx.save();
-
-                const glowWidth = 140; // Espessura da transição/suavização
+                const glowWidth = 140;
                 const pulse = Math.sin(performance.now() * 0.0025) * 0.06;
                 const baseOpacity = 0.22 + pulse;
 
-                // Gradiente Radial que cria o efeito "Aura/Fumaça" na borda
+                // OTIMIZAÇÃO: Usa stroke em vez de fill-rect com furo (MUITO mais rápido)
                 let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, currentArenaRadius - glowWidth, WORLD_CENTER, WORLD_CENTER, currentArenaRadius + glowWidth);
-                grad.addColorStop(0, 'rgba(255, 0, 0, 0)');                         // Interno (Seguro)
-                grad.addColorStop(0.4, `rgba(255, 0, 0, ${baseOpacity * 0.5})`);      // Início do Esfumaçado
-                grad.addColorStop(0.5, `rgba(255, 0, 0, ${baseOpacity + 0.15})`);    // Linha de Limite (Glow)
-                grad.addColorStop(0.6, `rgba(255, 0, 0, ${baseOpacity * 0.8})`);      // Queda de intensidade
-                grad.addColorStop(1, 'rgba(255, 0, 0, 0.22)');                       // Zona de Perigo Profunda
+                grad.addColorStop(0, 'rgba(255, 0, 0, 0)');
+                grad.addColorStop(0.5, `rgba(255, 0, 0, ${baseOpacity + 0.15})`);
+                grad.addColorStop(1, 'rgba(255, 0, 10, 0.25)');
 
-                ctx.fillStyle = grad;
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = glowWidth * 2;
                 ctx.beginPath();
-                ctx.rect(startX, startY, viewportW, viewportH);
-                // "Furo" no centro para performance: não pintamos o miolo da arena
-                ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius - glowWidth, 0, Math.PI * 2, true);
+                ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Zona externa (vazio profundo)
+                ctx.fillStyle = 'rgba(20, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.rect(camX - viewportW / 2, camY - viewportH / 2, viewportW, viewportH);
+                ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius + glowWidth, 0, Math.PI * 2, true);
                 ctx.fill();
 
                 ctx.restore();
@@ -2859,16 +2920,41 @@
 
             const mundoConf = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
 
-            // 1. Fundo Sólido
-            ctx.fillStyle = mundoConf.corFundo; ctx.fillRect(startX, startY, viewportW, viewportH);
+            // 1. Fundo Sólido (Liso e Rápido)
+            ctx.fillStyle = mundoConf.corFundo;
+            ctx.fillRect(startX, startY, viewportW, viewportH);
 
-            // 2. Grade Hexagonal Otimizada (Sempre Premium e Única)
+            // 2. Camada Premium: Nebula Parallax (Otimizado)
+            if (APP_SETTINGS.highGfx) {
+                const nebula = TextureManager.getNebula();
+                ctx.save();
+                // Parallax suave (anda a 5% da velocidade da câmera)
+                ctx.translate(startX + viewportW / 2, startY + viewportH / 2);
+                ctx.rotate(camX * 0.00001); // Leve rotação cósmica
+                let pX = -((camX * 0.06) % 1024);
+                let pY = -((camY * 0.06) % 1024);
+                ctx.globalAlpha = 0.6;
+                ctx.drawImage(nebula, pX, pY, 1536, 1536);
+                ctx.drawImage(nebula, pX + 1024, pY, 1536, 1536);
+                ctx.drawImage(nebula, pX, pY + 1024, 1536, 1536);
+                ctx.drawImage(nebula, pX + 1024, pY + 1024, 1536, 1536);
+                ctx.restore();
+            }
+
+            // 3. Grade Hexagonal (Hardware Accelerated Pattern)
             const size = mundoConf.tamanhoHexagono;
             const gridPattern = TextureManager.getGridPattern(size, mundoConf.corGrade, false);
-            ctx.save();
             ctx.fillStyle = gridPattern;
             ctx.fillRect(startX, startY, viewportW, viewportH);
-            ctx.restore();
+
+            // 4. Vinheta de Profundidade (Vignette Overlay)
+            if (APP_SETTINGS.highGfx) {
+                const vig = TextureManager.getVignette(vpWidth, vpHeight);
+                ctx.save();
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // Desenha em coordenadas de tela puras
+                ctx.drawImage(vig, 0, 0, vpWidth, vpHeight);
+                ctx.restore();
+            }
 
             // Borda da Arena (Chamada Independente)
             drawArenaBoundary(ctx, camX, camY, zoom);
@@ -2983,9 +3069,11 @@
                     let hitDist = (s1.radius * 0.85) + (s2.radius * 0.85);
 
                     // Distância rápida entre cabeças antes de checar segmentos
-                    if (Math.abs(s1.x - s2.x) < 300 && Math.abs(s1.y - s2.y) < 300) {
+                    let dx = s1.x - s2.x;
+                    let dy = s1.y - s2.y;
+                    if (Math.abs(dx) < 300 && Math.abs(dy) < 300) {
                         // Colisão cabeça-cabeça (raro e mortal)
-                        if (Math.hypot(s1.x - s2.x, s1.y - s2.y) < hitDist) {
+                        if (dx * dx + dy * dy < hitDist * hitDist) {
                             if (s1.score > s2.score) s2.die(true); else s1.die(true);
                         }
                     }
@@ -2993,9 +3081,10 @@
                     // Checa colisão da cabeça de S1 com o corpo de S2
                     for (let k = 0; k < s2.segments.length; k += segStep) {
                         let seg = s2.segments[k];
-                        // Otimização: AABB check antes de Hypot (caro)
-                        if (Math.abs(s1.x - seg.x) < hitDist && Math.abs(s1.y - seg.y) < hitDist) {
-                            if (Math.hypot(s1.x - seg.x, s1.y - seg.y) < hitDist) {
+                        let sdx = s1.x - seg.x;
+                        let sdy = s1.y - seg.y;
+                        if (Math.abs(sdx) < hitDist && Math.abs(sdy) < hitDist) {
+                            if (sdx * sdx + sdy * sdy < hitDist * hitDist) {
                                 if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; }
                                 s1.die(true);
                                 break;
@@ -3037,13 +3126,19 @@
             for (let b of butterflies) { if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
             for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
 
-            let dL = [...snakes].sort((a, b) => a.score - b.score);
+            let dL = snakes.slice().sort((a, b) => a.score - b.score);
+            const frustumMargin = CONFIG.visual.dRender;
+            const camMinX = camera.x - (vpWidth / camera.zoom / 2) - frustumMargin;
+            const camMaxX = camera.x + (vpWidth / camera.zoom / 2) + frustumMargin;
+            const camMinY = camera.y - (vpHeight / camera.zoom / 2) - frustumMargin;
+            const camMaxY = camera.y + (vpHeight / camera.zoom / 2) + frustumMargin;
+
             for (let s of dL) {
-                // Correção Planejada: Culling agora considera o comprimento real em pixels (segmentos * raio * espaçamento)
+                // OTIMIZAÇÃO: Culling de Frustum (AABB check muito mais rápido que hypot)
                 let pixelLength = s.segments.length * (s.radius * CONFIG.cobra.distanciaGomos);
-                if (Math.hypot(s.x - camera.x, s.y - camera.y) < cullingDist + pixelLength + s.radius * 2) {
-                    s.draw(mainCtx);
-                }
+                let bboxHalf = (pixelLength + s.radius * 2);
+                if (s.x + bboxHalf < camMinX || s.x - bboxHalf > camMaxX || s.y + bboxHalf < camMinY || s.y - bboxHalf > camMaxY) continue;
+                s.draw(mainCtx);
             }
             mainCtx.restore();
 
