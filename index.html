@@ -1156,7 +1156,7 @@
                     velocidadeTurbo: 3.2        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
-                    espessuraInicial: 4.5,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
+                    espessuraInicial: 1.5,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
                     espessuraMaxima: 8,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 10,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 400,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
@@ -1183,7 +1183,7 @@
                     fatorAfastamento: 0.03     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
                 },
                 mobile: {
-                    inicial: 2.60,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
+                    inicial: 3.60,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
                     minimo: 0.40,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
                     fatorAfastamento: 0.03    // Suavidade do afastamento no telemóvel.
                 }
@@ -2754,18 +2754,13 @@
                 // Mas garantimos que o estado seja limpo se não houver toque.
                 if (frameCount % 60 === 0) PLAYER_STATS.totalTime++;
 
-                // 1. LOOK-AHEAD DINÂMICO: câmera antecipa e reage ao boost
-                let isBoostingNow = player.isBoosting && player.score > 30;
-                let lookAheadStrength = isBoostingNow ? 160 : 75;
-                let targetCamX = player.x + Math.cos(player.angle) * lookAheadStrength;
-                let targetCamY = player.y + Math.sin(player.angle) * lookAheadStrength;
+                // 1. FOCO NO CENTRO: câmera sempre na cabeça da cobra
+                camera.x = player.x;
+                camera.y = player.y;
 
                 // Feedback tátil visual: leve tremor ao ligar o turbo
+                let isBoostingNow = player.isBoosting && player.score > 30;
                 if (isBoostingNow && frameCount % 10 === 0) camera.shake = Math.max(camera.shake, 1.5);
-
-                let camLerp = isBoostingNow ? 0.04 : 0.08;
-                camera.x += (targetCamX - camera.x) * camLerp;
-                camera.y += (targetCamY - camera.y) * camLerp;
 
                 // 2. ZOOM BASEADO NO TAMANHO REAL (radius), não no score
                 let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc'];
@@ -2946,8 +2941,8 @@
             // Sincronização Instantânea da Câmera (Evita "surto" de zoom ou pulo no início)
             let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc'];
             camera.zoom = zV.inicial;
-            camera.x = player.x + Math.cos(player.angle) * 75; // Já inicia compensando o "look-ahead"
-            camera.y = player.y + Math.sin(player.angle) * 75;
+            camera.x = player.x;
+            camera.y = player.y;
             isMouseDown = false; // Reset de segurança do turbo
             snakes.push(player);
             gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
