@@ -1157,11 +1157,11 @@
                     velocidadeGiro: 0.06        // [PC] Agilidade de rotação padrão.
                 },
                 mobile: {
-                    espessuraInicial: 3.0,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
-                    espessuraMaxima: 8,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
+                    espessuraInicial: 2.5,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
+                    espessuraMaxima: 6,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 10,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 400,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 1.0,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeBase: 1.3,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 3.2,       // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                     velocidadeGiro: 0.12        // [MOBILE] Rotação mais fechada e ágil para telemóveis.
                 },
@@ -1181,19 +1181,19 @@
             zoom: {
                 pc: {
                     inicial: 3.60,              // (Recomendado: 0.8 a 1.5) Zoom no início. Valores menores = câmara mais afastada.
-                    minimo: 1.10,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
-                    fatorAfastamento: 0.03     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
+                    minimo: 1.00,               // (Recomendado: 0.5 a 1.0) Distância máxima da câmara quando a cobra for gigante.
+                    fatorAfastamento: 1.03     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
                 },
                 mobile: {
                     inicial: 3.60,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
-                    minimo: 0.40,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
-                    fatorAfastamento: 0.03    // Suavidade do afastamento no telemóvel.
+                    minimo: 1.00,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
+                    fatorAfastamento: 1.03    // Suavidade do afastamento no telemóvel.
                 }
             },
 
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
-                tamanhoRaio: 8000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
+                tamanhoRaio: 7000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
                 quantidadeBots: IS_MOBILE_CLIENT ? 200 : 300,             // Mobile: 12, PC: 20
                 quantidadeComida: IS_MOBILE_CLIENT ? 30000 : 39000,      // Mobile: 4k orbes, PC: 11k orbes
                 quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 1 : 1,   // Menos borboletas no mobile
