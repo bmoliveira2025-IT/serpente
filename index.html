@@ -277,7 +277,6 @@
             position: absolute;
             bottom: 30px;
             right: 160px;
-            /* Posicionado à esquerda do botão de skins */
             cursor: pointer;
             pointer-events: auto;
             display: flex;
@@ -1154,14 +1153,14 @@
                     comprimentoMaximo: 400,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
                     velocidadeBase: 1.3,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
                     velocidadeTurbo: 3.0,       // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
-                    velocidadeGiro: 0.06        // [PC] Agilidade de rotação padrão.
+                    velocidadeGiro: 0.05        // [PC] Agilidade de rotação padrão.
                 },
                 mobile: {
                     espessuraInicial: 2.6,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
                     espessuraMaxima: 6,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 10,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 400,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 1.0,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeBase: 1.3,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 2.7,       // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                     velocidadeGiro: 0.085        // [MOBILE] Rotação fechada e ágil para telemóveis (maior = curva mais apertada).
                 },
@@ -1339,9 +1338,9 @@
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
         let joystickActive = false, joystickAngle = 0, skinIndex = 0;
-        // MOBILE: 00e2ngulo suavizado separado para curvas mais fechadas
+        // MOBILE: ângulo suavizado separado para curvas mais fechadas
         let smoothedJoystickAngle = 0;
-        // Fator de lerp: 0.0=sem resposta, 1.0=instant00e2neo. 0.38=curva apertada com feel t00e1til
+        // Fator de lerp: 0.0=sem resposta, 1.0=instantâneo. 0.38=curva apertada com feel tátil
         const JOYSTICK_LERP_FACTOR = 0.38;
         let vpWidth = window.innerWidth, vpHeight = window.innerHeight, dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, MOBILE_DPR_CAP) : (window.devicePixelRatio || 1);
 
@@ -1390,32 +1389,25 @@
         let segmentGrid = new Map();
         function rebuildSegmentGrid() {
             segmentGrid.clear();
-
             for (let i = 0; i < snakes.length; i++) {
                 let s = snakes[i];
                 if (!s.alive) continue;
 
-                // 🔧 Passo dinâmico baseado no raio
+                // 🔧 FIX M8: Passo dinâmico baseado no raio da cobra
+                // Cobras mais grossas registram mais segmentos (colisão precisa)
+                // Cobras finas registram menos (performance otimizada)
                 let step = Math.max(1, Math.floor(s.radius / 4));
 
                 for (let k = 0; k < s.segments.length; k += step) {
                     let seg = s.segments[k];
-
-                    let cellX = (seg.x / SEGMENT_CELL_SIZE) | 0;
-                    let cellY = (seg.y / SEGMENT_CELL_SIZE) | 0;
-
-                    let key = (cellX << 16) | (cellY & 0xFFFF);
-
+                    let key = (((seg.x / SEGMENT_CELL_SIZE) | 0) << 16) | (((seg.y / SEGMENT_CELL_SIZE) | 0) & 0xFFFF);
                     let list = segmentGrid.get(key);
                     if (!list) {
                         list = [];
                         segmentGrid.set(key, list);
                     }
-
-                    // evita duplicidade
-                    if (list[list.length - 1] !== i) {
-                        list.push(i);
-                    }
+                    // Evita duplicatas na mesma célula
+                    if (list[list.length - 1] !== i) list.push(i);
                 }
             }
         }
