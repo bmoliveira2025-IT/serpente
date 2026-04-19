@@ -1154,7 +1154,7 @@
                     comprimentoMaximo: 400,     // (⚠️ Limite: 600) Máximo de gomos no corpo. Mais de 600 causa LAG extremo.
                     velocidadeBase: 1.3,        // (Recomendado: 2.5 a 5.0) Velocidade normal ao andar no PC.
                     velocidadeTurbo: 3.0,       // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
-                    velocidadeGiro: 0.06        // [PC] Agilidade de rotação padrão.
+                    velocidadeGiro: 0.05        // [PC] Agilidade de rotação padrão.
                 },
                 mobile: {
                     espessuraInicial: 2.6,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
@@ -1163,7 +1163,7 @@
                     comprimentoMaximo: 400,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
                     velocidadeBase: 1.3,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 3.0,       // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
-                    velocidadeGiro: 0.12        // [MOBILE] Rotação mais fechada e ágil para telemóveis.
+                    velocidadeGiro: 0.085        // [MOBILE] Rotação fechada e ágil para telemóveis (maior = curva mais apertada).
                 },
                 // Variáveis Comuns a todas as plataformas:
                 distanciaGomos: 0.26,           // (Recomendado: 0.15 a 0.35) Espaço entre as partes do corpo (0.15 é super liso e apertado).
@@ -1249,7 +1249,13 @@
         const WORLD_CENTER = CONFIG.mundo.tamanhoRaio; // Centro Fixo (3600, 3600)
         let currentArenaRadius = CONFIG.mundo.tamanhoRaio;
         let targetArenaRadius = CONFIG.mundo.tamanhoRaio;
-        const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã"];
+        // Nomes mapeados por personalidade:
+        // Caçador(0): Titã, Guardião, Mago, Tempestade, Veneno, Sombra
+        // Covarde(1): Vila, Milagre, Helena
+        // Rei(2): Rei
+        // Oportunista(3): Fantasma, Veloz, Príncipe
+        // Territorial(4): Jorge
+        const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã", "Tempestade", "Veneno"];
         const PALETTE_COLORS = [
             '#39ff14', // Neon Green
             '#00ffff', // Cyan
@@ -1333,6 +1339,10 @@
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
         let joystickActive = false, joystickAngle = 0, skinIndex = 0;
+        // MOBILE: 00e2ngulo suavizado separado para curvas mais fechadas
+        let smoothedJoystickAngle = 0;
+        // Fator de lerp: 0.0=sem resposta, 1.0=instant00e2neo. 0.38=curva apertada com feel t00e1til
+        const JOYSTICK_LERP_FACTOR = 0.38;
         let vpWidth = window.innerWidth, vpHeight = window.innerHeight, dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, MOBILE_DPR_CAP) : (window.devicePixelRatio || 1);
 
         // ═══════════════════════════════════════════════════════════════
@@ -1376,13 +1386,13 @@
             for (let i = 0; i < snakes.length; i++) {
                 let s = snakes[i];
                 if (!s.alive) continue;
-                // Apenas as células onde a cobra ocupa espaço
-                // Para economia, vamos iterar os gomos e registrar na grade
-                for (let k = 0; k < s.segments.length; k += 8) { // Passo maior para registro na grade
+                // M8: passo dinâmico proporcional ao raio — cobras grossas cobrem mais espaço
+                // então precisam de granularidade maior no grid para não criar "buracos" de colisão
+                let step = Math.max(1, Math.floor(s.radius / 4));
+                for (let k = 0; k < s.segments.length; k += step) {
                     let seg = s.segments[k];
                     let key = ((seg.x / SEGMENT_CELL_SIZE) | 0) + ',' + ((seg.y / SEGMENT_CELL_SIZE) | 0);
                     if (!segmentGrid[key]) segmentGrid[key] = [];
-                    // Evita duplicatas da mesma cobra na mesma célula
                     if (segmentGrid[key][segmentGrid[key].length - 1] !== i) {
                         segmentGrid[key].push(i);
                     }
@@ -2057,14 +2067,22 @@
                 }
             }
             updateAI() {
-                // ── INICIALIZAÇÃO ──────────────────────────────────────────────────────
+                // ══════════════════════════════════════════════════════════════════
+                // INICIALIZAÇÃO — executada apenas uma vez por bot
+                // ══════════════════════════════════════════════════════════════════
                 if (this.aiPersonality === undefined) {
-                    const aggressive = ["Rei", "Titã", "Guardião", "Mago", "Tempestade", "Veneno"];
-                    const coward = ["Vila", "Milagre", "Helena"];
+                    // M1: 5 personalidades com comportamentos genuinamente distintos
+                    // 0=Caçador, 1=Covarde, 2=Rei, 3=Oportunista, 4=Territorial
+                    const hunterNames = ["Titã", "Guardião", "Mago", "Tempestade", "Veneno", "Sombra"];
+                    const cowardNames = ["Vila", "Milagre", "Helena"];
+                    const opNames = ["Fantasma", "Veloz", "Príncipe"];
+                    const territNames = ["Jorge"];
                     if (this.isKing) this.aiPersonality = 2;
-                    else if (aggressive.includes(this.name)) this.aiPersonality = 0;
-                    else if (coward.includes(this.name)) this.aiPersonality = 1;
-                    else this.aiPersonality = Math.floor(Math.random() * 4);
+                    else if (hunterNames.includes(this.name)) this.aiPersonality = 0;
+                    else if (cowardNames.includes(this.name)) this.aiPersonality = 1;
+                    else if (opNames.includes(this.name)) this.aiPersonality = 3;
+                    else if (territNames.includes(this.name)) this.aiPersonality = 4;
+                    else this.aiPersonality = Math.floor(Math.random() * 5);
 
                     this.aiReactionDelay = 1 + Math.floor(Math.random() * 4);
                     this.aiAggression = 0.4 + Math.random() * 0.6;
@@ -2075,26 +2093,31 @@
                     this.aiEncirclePhase = 0;
                     this.aiEncircleTarget = null;
                     this.aiLastDodgeFrame = -999;
-                    this.aiWanderAngle = Math.random() * Math.PI * 2;
                     this.aiBoostCooldown = 0;
                     this.aiTrauma = 0;
                     this.aiConfidence = 0;
+                    // M3: âncora de território para wander com zona de controle
+                    this.aiHomeX = this.x;
+                    this.aiHomeY = this.y;
+                    this.aiTerritoryRadius = 900 + Math.random() * 700;
+                    this.aiWanderAngle = Math.random() * Math.PI * 2;
                 }
                 if (this.isKing) this.aiPersonality = 2;
                 if (this.aiBoostCooldown > 0) this.aiBoostCooldown--;
 
-                // Adaptar com experiência (cobras maiores ficam mais letais)
+                // Adaptação com experiência
                 if (frameCount % 30 === 0) {
                     this.aiConfidence = Math.min(1.0, this.score / 2000);
-                    if (this.aiTrauma > 0) this.aiTrauma = Math.max(0, this.aiTrauma - 0.05);
-                    // Pros reagem mais rápido e erram menos
+                    // M7: trauma real — decai mais rápido bots mais confiantes
+                    if (this.aiTrauma > 0) this.aiTrauma = Math.max(0, this.aiTrauma - (0.03 + this.aiConfidence * 0.04));
                     this.aiReactionDelay = Math.max(0, Math.floor(3 - this.aiConfidence * 3));
                     this.aiMicroError = Math.max(0.005, 0.03 - this.aiConfidence * 0.025);
                 }
 
-                // ── 1. VARREDURA DE PERIGO ─────────────────────────────────────────────
+                // ── 1. VARREDURA DE PERIGO ────────────────────────────────────────
                 let danger = false, evadeAngle = 0, dangerUrgency = 0, dangerSnake = null;
-                let scanRadius = this.radius * (10 + this.aiConfidence * 6);
+                // M7: trauma reduz o raio de scan de presas e aumenta o de perigo
+                let scanRadius = this.radius * (10 + this.aiConfidence * 6 + this.aiTrauma * 4);
 
                 for (let other of snakes) {
                     if (other === this || !other.alive) continue;
@@ -2116,7 +2139,6 @@
                                 dangerSnake = other;
                                 dangerUrgency = Math.max(dangerUrgency, 1 - (ds / hitZone));
                                 evadeAngle = Math.atan2(this.y - seg.y, this.x - seg.x);
-                                // Analisa saídas
                                 let left = evadeAngle + Math.PI * 0.5;
                                 let right = evadeAngle - Math.PI * 0.5;
                                 let clearL = true, clearR = true;
@@ -2140,45 +2162,44 @@
                     if (danger) break;
                 }
 
-                // ── 2. REAÇÃO AO PERIGO ────────────────────────────────────────────────
+                // ── 2. REAÇÃO AO PERIGO ───────────────────────────────────────────
                 if (danger) {
-                    if (dangerUrgency > 0.7) {
-                        this.aiTrauma = Math.min(1.0, this.aiTrauma + 0.3);
-                    }
+                    // M7: trauma real — acumula e depois bloqueia cerco por alguns frames
+                    if (dangerUrgency > 0.7) this.aiTrauma = Math.min(1.0, this.aiTrauma + 0.3);
+
                     let canReact = (frameCount - this.aiLastDodgeFrame) > this.aiReactionDelay;
                     if (canReact) {
                         this.aiLastDodgeFrame = frameCount;
                         let err = (Math.random() - 0.5) * this.aiMicroError * (1 - dangerUrgency);
                         let finalAngle = evadeAngle + err;
 
-                        // Contra-ataque: se sou maior posso tentar cortar a frente do agressor
-                        if (dangerSnake && this.score > dangerSnake.score * 1.8 && this.aiConfidence > 0.4 && Math.random() < 0.4) {
+                        // M1: Covarde e Territorial nunca contra-atacam em perigo
+                        let canCounterAttack = (this.aiPersonality !== 1 && this.aiPersonality !== 4);
+                        if (canCounterAttack && dangerSnake && this.score > dangerSnake.score * 1.8 && this.aiConfidence > 0.4 && this.aiTrauma < 0.3 && Math.random() < 0.4) {
                             let cutAngle = Math.atan2(dangerSnake.y - this.y, dangerSnake.x - this.x);
                             let perpAngle = dangerSnake.angle + Math.PI * 0.5 * (Math.random() > 0.5 ? 1 : -1);
                             finalAngle = cutAngle + (perpAngle - cutAngle) * 0.3;
                             this.isBoosting = this.aiBoostCooldown === 0;
                             if (this.isBoosting) this.aiBoostCooldown = 15;
                         } else {
-                            // Esquiva normal com boost se urgente
                             this.isBoosting = dangerUrgency > 0.4 && this.aiBoostCooldown === 0 && this.score > 100;
                             if (this.isBoosting) this.aiBoostCooldown = 20 + Math.floor(Math.random() * 20);
                         }
                         this.targetAngle = finalAngle;
-                        this.aiEncirclePhase = 0;
+                        this.aiEncirclePhase = 0; // Interrompe cerco quando em perigo
                     }
                     return;
                 }
 
-                // ── 3. COMPORTAMENTO ESTRATÉGICO ───────────────────────────────────────
+                // ── 3. COMPORTAMENTO ESTRATÉGICO ─────────────────────────────────
                 this.aiDecisionTimer--;
                 if (this.aiDecisionTimer > 0) return;
                 this.isBoosting = false;
 
-                // Decisões mais rápidas = reações mais humanas (10-35 frames)
                 let baseInterval = this.aiPersonality === 0 ? 10 : this.aiPersonality === 2 ? 12 : 18;
                 this.aiDecisionTimer = baseInterval + Math.floor(Math.random() * 18);
 
-                // Bordas da arena
+                // Borda da arena — todos fogem
                 let distToCenter = Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER);
                 if (distToCenter > currentArenaRadius - 600) {
                     this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x) + (Math.random() - 0.5) * 0.3;
@@ -2187,18 +2208,19 @@
                     return;
                 }
 
-                // Continuar cerco ativo
-                if (this.aiEncirclePhase > 0 && this.aiEncircleTarget) {
+                // ── M2: CERCO QUE REALMENTE FECHA ────────────────────────────────
+                // M7: trauma bloqueia cerco enquanto bot está assustado
+                if (this.aiEncirclePhase > 0 && this.aiEncircleTarget && this.aiTrauma < 0.5) {
                     let t = this.aiEncircleTarget;
                     if (!t.alive || Math.hypot(t.x - this.x, t.y - this.y) > 1500) {
                         this.aiEncirclePhase = 0; this.aiEncircleTarget = null;
                     } else {
                         let dToTarget = Math.hypot(t.x - this.x, t.y - this.y);
-                        // Fase 1: Posicionar à frente do alvo (intercept)
+                        // Fase 1: Posicionar à frente da presa usando intercepção balística (M5)
                         if (this.aiEncirclePhase < 30) {
-                            let aheadDist = t.radius * (12 + this.aiConfidence * 8);
-                            let ix = t.x + Math.cos(t.angle) * aheadDist;
-                            let iy = t.y + Math.sin(t.angle) * aheadDist;
+                            let timeEst = dToTarget / Math.max(1, this.speed);
+                            let ix = t.x + Math.cos(t.angle) * t.speed * timeEst;
+                            let iy = t.y + Math.sin(t.angle) * t.speed * timeEst;
                             this.targetAngle = Math.atan2(iy - this.y, ix - this.x);
                             this.isBoosting = dToTarget > 200 && this.aiBoostCooldown === 0;
                             if (this.isBoosting) this.aiBoostCooldown = 8;
@@ -2210,11 +2232,18 @@
                             this.isBoosting = this.aiBoostCooldown === 0 && this.score > 150;
                             if (this.isBoosting) this.aiBoostCooldown = 5;
                         }
-                        // Fase 3: Orbitar (loop de morte)
+                        // Fase 3: ÓRBITA QUE ESPIRALA — raio diminui progressivamente até o corte final
                         else if (this.score > t.score * 1.5) {
-                            let angToTarget = Math.atan2(t.y - this.y, t.x - this.x);
-                            this.targetAngle = angToTarget + Math.PI * 0.42;
-                            this.isBoosting = dToTarget > 150 && this.aiBoostCooldown === 0;
+                            // M2: raio orbital reduz com o tempo → espiral para dentro real
+                            let progress = Math.min(1.0, (this.aiEncirclePhase - 80) / 120);
+                            let orbitRadius = t.radius * (8 - progress * 5); // de 8x a 3x o raio da presa
+                            orbitRadius = Math.max(t.radius * 2.5, orbitRadius);
+                            let angToTarget = Math.atan2(this.y - t.y, this.x - t.x);
+                            // Órbita com sentido de curvatura consistente (anti-horário)
+                            let targetOX = t.x + Math.cos(angToTarget + 0.18) * orbitRadius;
+                            let targetOY = t.y + Math.sin(angToTarget + 0.18) * orbitRadius;
+                            this.targetAngle = Math.atan2(targetOY - this.y, targetOX - this.x);
+                            this.isBoosting = dToTarget > orbitRadius * 1.3 && this.aiBoostCooldown === 0;
                             if (this.isBoosting) this.aiBoostCooldown = 8;
                         }
                         this.aiEncirclePhase++;
@@ -2223,124 +2252,234 @@
                     }
                 }
 
-                // ── SCAN DE OPORTUNIDADES ──────────────────────────────────────────────
+                // ── SCAN DE OPORTUNIDADES ─────────────────────────────────────────
                 let prey = null, preyDist = 9999;
                 let threat = null, threatDist = 9999;
                 let nearestFood = null, bestFoodScore = -1;
                 let nearestButterfly = null, bDist = 9999;
 
+                // M7: trauma reduz distância de scan de presas
+                let preyRange = 1800 * (1 - this.aiTrauma * 0.4);
+
                 for (let s of snakes) {
                     if (s === this || !s.alive) continue;
                     let d = Math.hypot(s.x - this.x, s.y - this.y);
-                    if (d < 1800) {
-                        // Qualquer cobra menor é presa potencial (threshold mais agressivo)
+                    if (d < preyRange) {
                         if (s.score < this.score * 0.85 && d < preyDist) { prey = s; preyDist = d; }
                         if (s.score > this.score * 1.2 && d < threatDist) { threat = s; threatDist = d; }
                     }
                 }
 
-                // Busca comida com raio maior
                 let nearbyIndices = getNearbyFoodIndices(this.x, this.y, 900);
                 for (let idx of nearbyIndices) {
                     let f = foods[idx];
                     if (!f || f.dead) continue;
                     let d = Math.hypot(f.x - this.x, f.y - this.y);
-                    // Comida dropped vale MUITO mais (os pros correm para ela)
                     let valMult = f.isDropped ? (4 + this.aiConfidence * 3) : 1;
                     let scoreVal = (f.value * valMult) / Math.max(1, d);
                     if (scoreVal > bestFoodScore) { bestFoodScore = scoreVal; nearestFood = f; }
                 }
+
+                // M6: scan de borboletas via spatial hash em vez de loop completo
+                let butterflySearchR = 800;
+                let bCX = (this.x / FOOD_CELL_SIZE) | 0, bCY = (this.y / FOOD_CELL_SIZE) | 0;
                 for (let b of butterflies) {
                     let d = Math.hypot(b.x - this.x, b.y - this.y);
-                    if (d < bDist) { bDist = d; nearestButterfly = b; }
+                    if (d < bDist && d < butterflySearchR) { bDist = d; nearestButterfly = b; }
                 }
 
                 let decidedAngle = this.targetAngle;
 
-                // ── DECISÃO PRINCIPAL ──────────────────────────────────────────────────
+                // ══════════════════════════════════════════════════════════════════
+                // M1: DECISÃO POR PERSONALIDADE — pesos de prioridade distintos
+                // ══════════════════════════════════════════════════════════════════
 
-                // ATAQUE: Cortar na frente da presa (o movimento mais letal)
-                let wantAttack = prey && preyDist < 800 && (
-                    (this.aiPersonality === 0 && Math.random() < this.aiAggression + 0.2) ||
-                    (this.aiPersonality === 2 && Math.random() < this.aiAggression) ||
-                    (this.aiConfidence > 0.5 && Math.random() < this.aiAggression * 0.7) ||
-                    (Math.random() < this.aiAggression * 0.3)
-                );
-
-                if (wantAttack) {
-                    // Calcular ponto de intercepção à frente da presa
-                    let aheadFactor = 8 + this.aiConfidence * 10;
-                    let ix = prey.x + Math.cos(prey.angle) * prey.radius * aheadFactor;
-                    let iy = prey.y + Math.sin(prey.angle) * prey.radius * aheadFactor;
-                    let dToIntercept = Math.hypot(ix - this.x, iy - this.y);
-
-                    if (preyDist < 400 && this.score > prey.score * 1.3) {
-                        // Perto e maior: iniciar cerco
-                        this.aiEncircleTarget = prey;
-                        this.aiEncirclePhase = 1;
-                        decidedAngle = Math.atan2(iy - this.y, ix - this.x);
-                    } else {
-                        // Cortar caminho: ir para frente da presa
-                        decidedAngle = Math.atan2(iy - this.y, ix - this.x);
-                    }
-                    this.isBoosting = dToIntercept < 700 && dToIntercept > 100 && this.score > 150 && this.aiBoostCooldown === 0;
-                    if (this.isBoosting) this.aiBoostCooldown = 12;
-                }
-                // REI: perseguir jogador ativamente
-                else if (this.aiPersonality === 2 && player && player.alive) {
-                    let dP = Math.hypot(player.x - this.x, player.y - this.y);
-                    if (dP < 2500) {
-                        if (dP < 500 && this.score > player.score * 0.5) {
-                            this.aiEncircleTarget = player;
-                            this.aiEncirclePhase = 1;
+                // ── PERSONALIDADE 0: CAÇADOR ──────────────────────────────────────
+                // Ataca primeiro, foge só quando urgente, ignora borboletas
+                if (this.aiPersonality === 0) {
+                    let wantAttack = prey && preyDist < 900 && Math.random() < this.aiAggression + 0.25;
+                    if (wantAttack) {
+                        // M5: intercepção balística — calcula onde a presa ESTARÁ
+                        let timeEst = preyDist / Math.max(1, this.speed);
+                        let ix = prey.x + Math.cos(prey.angle) * prey.speed * timeEst;
+                        let iy = prey.y + Math.sin(prey.angle) * prey.speed * timeEst;
+                        let dToIntercept = Math.hypot(ix - this.x, iy - this.y);
+                        if (preyDist < 400 && this.score > prey.score * 1.3) {
+                            this.aiEncircleTarget = prey; this.aiEncirclePhase = 1;
                         }
-                        let ix = player.x + Math.cos(player.angle) * player.radius * 10;
-                        let iy = player.y + Math.sin(player.angle) * player.radius * 10;
+                        decidedAngle = Math.atan2(iy - this.y, ix - this.x);
+                        this.isBoosting = dToIntercept < 700 && dToIntercept > 100 && this.score > 150 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 12;
+                    } else if (threat && threatDist < 500 && Math.random() > this.aiRiskTolerance + 0.3) {
+                        // Caçador só foge quando a ameaça está muito perto
+                        decidedAngle = Math.atan2(this.y - threat.y, this.x - threat.x);
+                        this.isBoosting = threatDist < 350 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 20;
+                    } else if (nearestFood) {
+                        let foodD = Math.hypot(nearestFood.x - this.x, nearestFood.y - this.y);
+                        decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
+                        if (this.aiConfidence > 0.3) decidedAngle += Math.sin(frameCount * 0.04) * 0.12;
+                        if (nearestFood.isDropped && foodD < 800 && this.aiBoostCooldown === 0) { this.isBoosting = true; this.aiBoostCooldown = 10; }
+                    } else {
+                        // M3: wander com atração pela âncora de território
+                        let dHome = Math.hypot(this.x - this.aiHomeX, this.y - this.aiHomeY);
+                        if (dHome > this.aiTerritoryRadius) {
+                            decidedAngle = Math.atan2(this.aiHomeY - this.y, this.aiHomeX - this.x) + (Math.random() - 0.5) * 0.5;
+                        } else {
+                            this.aiWanderAngle += Math.sin(frameCount * 0.015 + this.score) * 0.25 + (Math.random() - 0.5) * 0.35;
+                            decidedAngle = this.aiWanderAngle;
+                        }
+                    }
+                }
+
+                // ── PERSONALIDADE 1: COVARDE ──────────────────────────────────────
+                // Foge preventivamente de qualquer ameaça, busca comida segura, NUNCA ataca
+                else if (this.aiPersonality === 1) {
+                    if (threat && threatDist < 1200) {
+                        // Foge cedo, mistura com comida no caminho se tiver margem
+                        let fleeAngle = Math.atan2(this.y - threat.y, this.x - threat.x);
+                        if (nearestFood && threatDist > 700) {
+                            let foodAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
+                            decidedAngle = fleeAngle * 0.7 + foodAngle * 0.3;
+                        } else {
+                            decidedAngle = fleeAngle;
+                        }
+                        this.isBoosting = threatDist < 700 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 30;
+                    } else if (nearestButterfly && bDist < 600) {
+                        // Covarde prefere borboletas (seguras, valor alto)
+                        decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x);
+                        this.isBoosting = bDist < 350 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 15;
+                    } else if (nearestFood) {
+                        decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
+                    } else {
+                        // M3: wander conservador próximo à âncora
+                        let dHome = Math.hypot(this.x - this.aiHomeX, this.y - this.aiHomeY);
+                        if (dHome > this.aiTerritoryRadius * 0.7) {
+                            decidedAngle = Math.atan2(this.aiHomeY - this.y, this.aiHomeX - this.x) + (Math.random() - 0.5) * 0.3;
+                        } else {
+                            this.aiWanderAngle += (Math.random() - 0.5) * 0.3;
+                            decidedAngle = this.aiWanderAngle;
+                        }
+                    }
+                }
+
+                // ── PERSONALIDADE 2: REI ──────────────────────────────────────────
+                // Persegue o jogador ativamente, usa cerco, é o mais perigoso
+                else if (this.aiPersonality === 2) {
+                    let dP = player && player.alive ? Math.hypot(player.x - this.x, player.y - this.y) : 9999;
+                    if (player && player.alive && dP < 2500) {
+                        if (dP < 500 && this.score > player.score * 0.5) {
+                            this.aiEncircleTarget = player; this.aiEncirclePhase = 1;
+                        }
+                        // M5: intercepção balística no jogador
+                        let timeEst = dP / Math.max(1, this.speed);
+                        let ix = player.x + Math.cos(player.angle) * player.speed * timeEst;
+                        let iy = player.y + Math.sin(player.angle) * player.speed * timeEst;
                         decidedAngle = Math.atan2(iy - this.y, ix - this.x);
                         this.isBoosting = dP < 800 && dP > 150 && this.score > player.score * 0.5 && this.aiBoostCooldown === 0;
                         if (this.isBoosting) this.aiBoostCooldown = 15;
                     } else if (nearestFood) {
                         decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                    }
-                }
-                // FUGA de ameaças
-                else if (threat && threatDist < 900 && Math.random() > this.aiRiskTolerance) {
-                    let fleeAngle = Math.atan2(this.y - threat.y, this.x - threat.x);
-                    // Foge mas tenta pegar comida no caminho
-                    if (nearestFood && threatDist > 500) {
-                        let foodAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                        decidedAngle = fleeAngle * 0.65 + foodAngle * 0.35;
+                    } else if (prey && preyDist < 1200) {
+                        let timeEst = preyDist / Math.max(1, this.speed);
+                        let ix = prey.x + Math.cos(prey.angle) * prey.speed * timeEst;
+                        let iy = prey.y + Math.sin(prey.angle) * prey.speed * timeEst;
+                        decidedAngle = Math.atan2(iy - this.y, ix - this.x);
                     } else {
-                        decidedAngle = fleeAngle;
+                        this.aiWanderAngle += Math.sin(frameCount * 0.01) * 0.2 + (Math.random() - 0.5) * 0.4;
+                        decidedAngle = this.aiWanderAngle;
                     }
-                    this.isBoosting = threatDist < 600 && this.aiBoostCooldown === 0;
-                    if (this.isBoosting) this.aiBoostCooldown = 25;
-                }
-                // ALIMENTAÇÃO
-                else if (nearestFood) {
-                    let foodD = Math.hypot(nearestFood.x - this.x, nearestFood.y - this.y);
-                    decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                    // Serpenteia levemente enquanto vai para comida (movimento humano)
-                    if (this.aiConfidence > 0.3) decidedAngle += Math.sin(frameCount * 0.04) * 0.15;
-                    // Boost para comida dropped (morte recente = muito valor!)
-                    if (nearestFood.isDropped && foodD > 150 && foodD < 800 && this.aiBoostCooldown === 0) {
-                        this.isBoosting = true;
-                        this.aiBoostCooldown = 10;
-                    }
-                }
-                // BORBOLETAS
-                else if (nearestButterfly && bDist < 800) {
-                    decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x);
-                    this.isBoosting = bDist < 400 && bDist > 100 && this.aiBoostCooldown === 0;
-                    if (this.isBoosting) this.aiBoostCooldown = 15;
-                }
-                // EXPLORAR: movimento serpentino de zona control
-                else {
-                    this.aiWanderAngle += Math.sin(frameCount * 0.015 + this.score) * 0.25 + (Math.random() - 0.5) * 0.4;
-                    decidedAngle = this.aiWanderAngle;
                 }
 
-                // Aplicar com micro-erro humano
+                // ── PERSONALIDADE 3: OPORTUNISTA ─────────────────────────────────
+                // Prioridade máxima: comida dropped de mortes. Ataca apenas cobras quase mortas (score < 50).
+                // Foge de qualquer coisa maior.
+                else if (this.aiPersonality === 3) {
+                    // Busca exclusivamente comida dropped primeiro
+                    let droppedFood = null, bestDropVal = -1;
+                    let dFoodIndices = getNearbyFoodIndices(this.x, this.y, 1200);
+                    for (let idx of dFoodIndices) {
+                        let f = foods[idx];
+                        if (!f || f.dead || !f.isDropped) continue;
+                        let d = Math.hypot(f.x - this.x, f.y - this.y);
+                        let score = f.value / Math.max(1, d);
+                        if (score > bestDropVal) { bestDropVal = score; droppedFood = f; }
+                    }
+
+                    if (droppedFood) {
+                        let dd = Math.hypot(droppedFood.x - this.x, droppedFood.y - this.y);
+                        decidedAngle = Math.atan2(droppedFood.y - this.y, droppedFood.x - this.x);
+                        this.isBoosting = dd > 150 && dd < 900 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 12;
+                    } else if (threat && threatDist < 1000) {
+                        // Foge de qualquer ameaça para não morrer
+                        decidedAngle = Math.atan2(this.y - threat.y, this.x - threat.x);
+                        this.isBoosting = threatDist < 600 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 25;
+                    } else if (prey && preyDist < 500 && prey.score < 50) {
+                        // Ataca somente cobras minúsculas (oportunismo puro)
+                        let timeEst = preyDist / Math.max(1, this.speed);
+                        let ix = prey.x + Math.cos(prey.angle) * prey.speed * timeEst;
+                        let iy = prey.y + Math.sin(prey.angle) * prey.speed * timeEst;
+                        decidedAngle = Math.atan2(iy - this.y, ix - this.x);
+                    } else if (nearestFood) {
+                        decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
+                    } else if (nearestButterfly && bDist < 700) {
+                        decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x);
+                        this.isBoosting = bDist < 400 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 15;
+                    } else {
+                        this.aiWanderAngle += (Math.random() - 0.5) * 0.5;
+                        decidedAngle = this.aiWanderAngle;
+                    }
+                }
+
+                // ── PERSONALIDADE 4: TERRITORIAL ─────────────────────────────────
+                // M3: Patrulha uma zona fixa. Expulsa invasores. Ignora tudo fora do raio.
+                else if (this.aiPersonality === 4) {
+                    let dHome = Math.hypot(this.x - this.aiHomeX, this.y - this.aiHomeY);
+                    let inTerrit = dHome < this.aiTerritoryRadius;
+
+                    // Se há um invasor no território, expulsar
+                    let invader = null, invaderDist = 9999;
+                    if (inTerrit) {
+                        for (let s of snakes) {
+                            if (s === this || !s.alive) continue;
+                            let dInv = Math.hypot(s.x - this.aiHomeX, s.y - this.aiHomeY);
+                            let dToMe = Math.hypot(s.x - this.x, s.y - this.y);
+                            if (dInv < this.aiTerritoryRadius && dToMe < invaderDist) { invader = s; invaderDist = dToMe; }
+                        }
+                    }
+
+                    if (invader && invaderDist < 1200 && this.score > invader.score * 0.8 && this.aiTrauma < 0.4) {
+                        // Expulsar: cortar caminho do invasor
+                        let timeEst = invaderDist / Math.max(1, this.speed);
+                        let ix = invader.x + Math.cos(invader.angle) * invader.speed * timeEst;
+                        let iy = invader.y + Math.sin(invader.angle) * invader.speed * timeEst;
+                        decidedAngle = Math.atan2(iy - this.y, ix - this.x);
+                        this.isBoosting = invaderDist < 600 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 12;
+                    } else if (!inTerrit) {
+                        // Voltar para o território com urgência
+                        decidedAngle = Math.atan2(this.aiHomeY - this.y, this.aiHomeX - this.x) + (Math.random() - 0.5) * 0.2;
+                        this.isBoosting = dHome > this.aiTerritoryRadius * 1.5 && this.aiBoostCooldown === 0;
+                        if (this.isBoosting) this.aiBoostCooldown = 15;
+                    } else if (nearestFood && Math.hypot(nearestFood.x - this.aiHomeX, nearestFood.y - this.aiHomeY) < this.aiTerritoryRadius) {
+                        // Comer só dentro do território
+                        decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
+                    } else {
+                        // Patrulha circular em torno da âncora
+                        let patrolAngle = Math.atan2(this.y - this.aiHomeY, this.x - this.aiHomeX);
+                        let patrolR = this.aiTerritoryRadius * 0.6;
+                        let tX = this.aiHomeX + Math.cos(patrolAngle + 0.08) * patrolR;
+                        let tY = this.aiHomeY + Math.sin(patrolAngle + 0.08) * patrolR;
+                        decidedAngle = Math.atan2(tY - this.y, tX - this.x);
+                    }
+                }
+
+                // Micro-erro humano
                 decidedAngle += (Math.random() - 0.5) * this.aiMicroError;
                 this.targetAngle = decidedAngle;
             }
@@ -2365,7 +2504,21 @@
                 for (let i = this.trails.length - 1; i >= 0; i--) { this.trails[i].life -= 0.05; if (this.trails[i].life <= 0) this.trails.splice(i, 1); }
 
                 if (this.isPlayer) {
-                    if (joystickActive) this.targetAngle = joystickAngle; else if (!IS_MOBILE_CLIENT) this.targetAngle = Math.atan2((mouseY - vpHeight / 2) / camera.zoom, (mouseX - vpWidth / 2) / camera.zoom);
+                    if (IS_MOBILE_CLIENT) {
+                        if (joystickActive) {
+                            // MOBILE: lerp angular para suavizar a entrada do joystick sem perder responsividade
+                            // Calcula a diferença mínima no círculo para interpolar pelo caminho mais curto
+                            let jDiff = joystickAngle - smoothedJoystickAngle;
+                            while (jDiff > Math.PI) jDiff -= Math.PI * 2;
+                            while (jDiff < -Math.PI) jDiff += Math.PI * 2;
+                            smoothedJoystickAngle += jDiff * JOYSTICK_LERP_FACTOR;
+                            this.targetAngle = smoothedJoystickAngle;
+                        }
+                        // Se joystick solto: mantém o último ângulo suavizado (sem deriva)
+                    } else {
+                        // PC: mouse direto, sem alteração
+                        this.targetAngle = Math.atan2((mouseY - vpHeight / 2) / camera.zoom, (mouseX - vpWidth / 2) / camera.zoom);
+                    }
                     // Verifica os Títulos Evolutivos
                     for (let i = EVOLUTIONS.length - 1; i >= 0; i--) {
                         if (this.score >= EVOLUTIONS[i].score && currentEvo < i) { currentEvo = i; showEvolution(EVOLUTIONS[i]); break; }
@@ -2378,7 +2531,15 @@
                 }
 
                 let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
-                let tS = Math.max(0.03, this.conf.velocidadeGiro - (this.radius * 0.00015)); if (this.isBoosting) tS *= 1.35;
+                // MOBILE: velocidadeGiro aumenta com a intensidade do input do joystick
+                // — quanto mais longe o joystick do centro, mais agressiva a curva
+                let tS = Math.max(0.03, this.conf.velocidadeGiro - (this.radius * 0.00015));
+                if (IS_MOBILE_CLIENT && joystickActive) {
+                    // Boost de giro proporcional ao tamanho do diff: curvas fechadas ficam ainda mais fechadas
+                    let turnBoost = 1.0 + Math.min(1.2, Math.abs(diff) / Math.PI * 1.5);
+                    tS *= turnBoost;
+                }
+                if (this.isBoosting) tS *= 1.35;
                 if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
@@ -2946,6 +3107,7 @@
             camera.x = player.x;
             camera.y = player.y;
             isMouseDown = false; // Reset de segurança do turbo
+            smoothedJoystickAngle = player.angle; // Sincroniza ângulo suavizado com o spawn
             snakes.push(player);
             gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden');
             UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block';
