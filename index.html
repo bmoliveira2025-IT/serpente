@@ -1156,11 +1156,11 @@
                     velocidadeTurbo: 3.2        // (Recomendado: 7.0 a 12.0) Velocidade máxima ao pressionar o clique (PC).
                 },
                 mobile: {
-                    espessuraInicial: 5.6,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
+                    espessuraInicial: 4.6,       // (Recomendado: 10 a 20) Grossura inicial em Telemóveis.
                     espessuraMaxima: 8,        // [REDUZIDO] Reduz o overdraw de renderização em mobile.
                     comprimentoInicial: 10,     // [REDUZIDO] Início mais ágil para mobile.
                     comprimentoMaximo: 400,     // [REDUZIDO] Limite menor para evitar gargalos de CPU/GPU em mobile.
-                    velocidadeBase: 1.3,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
+                    velocidadeBase: 1.5,        // (Recomendado: 2.5 a 4.5) Velocidade normal no mobile.
                     velocidadeTurbo: 3.2        // (Recomendado: 6.0 a 10.0) Velocidade turbo no mobile.
                 },
                 // Variáveis Comuns a todas as plataformas:
@@ -1183,7 +1183,7 @@
                     fatorAfastamento: 0.03     // (Recomendado: 0.005 a 0.03) A rapidez com que a câmara recua conforme se ganha pontos.
                 },
                 mobile: {
-                    inicial: 3.60,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
+                    inicial: 3.00,              // Celulares precisam de câmara mais afastada nativamente para ter visão tática.
                     minimo: 1.10,               // Zoom limite para não perder a cobra de vista num ecrã pequeno.
                     fatorAfastamento: 0.03    // Suavidade do afastamento no telemóvel.
                 }
@@ -1192,8 +1192,8 @@
             // 🌍 3. DEFINIÇÕES DO MUNDO E ENTIDADES (Cuidado: Valores altos exigem bom PC/Mobile)
             mundo: {
                 tamanhoRaio: 8000,              // (⚠️ Limite: 15000) Raio da arena. Acima de 15000 o mapa ficará muito vazio e maçador.
-                quantidadeBots: IS_MOBILE_CLIENT ? 250 : 300,             // Mobile: 12, PC: 20
-                quantidadeComida: IS_MOBILE_CLIENT ? 39000 : 39000,      // Mobile: 4k orbes, PC: 11k orbes
+                quantidadeBots: IS_MOBILE_CLIENT ? 200 : 300,             // Mobile: 12, PC: 20
+                quantidadeComida: IS_MOBILE_CLIENT ? 30000 : 39000,      // Mobile: 4k orbes, PC: 11k orbes
                 quantidadeInsetosDourados: IS_MOBILE_CLIENT ? 1 : 1,   // Menos borboletas no mobile
                 distribuicaoBots: {
                     // Probabilidade de cada categoria nascer (Soma deve ser 1.0)
