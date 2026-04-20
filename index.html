@@ -294,6 +294,76 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(5px);
+            transition: width 0.3s ease, height 0.3s ease, padding 0.3s ease;
+        }
+
+        #lb-toggle-btn {
+            display: none;
+            width: 100%;
+            padding: 8px 0;
+            margin-bottom: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffdf00;
+            text-align: center;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            pointer-events: auto;
+            background: rgba(255, 223, 0, 0.1);
+            border: 1px solid rgba(255, 223, 0, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: background 0.2s;
+        }
+
+        #lb-toggle-btn:hover {
+            background: rgba(255, 223, 0, 0.2);
+        }
+
+        #leaderboard.collapsed #lb-list {
+            display: none;
+        }
+
+        #leaderboard.collapsed {
+            width: 80px;
+            height: auto;
+            padding: 5px;
+        }
+
+        @media (max-width: 1024px) {
+            #leaderboard {
+                top: calc(10px + env(safe-area-inset-top));
+                right: calc(10px + env(safe-area-inset-right));
+                width: 130px;
+                padding: 6px 8px;
+                font-size: 8.5px;
+                gap: 1px;
+                background: rgba(0, 0, 0, 0.08);
+                border-color: rgba(255, 255, 255, 0.04);
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                width: 80px;
+                height: auto;
+                padding: 5px;
+            }
+
+            #lb-toggle-btn {
+                display: block;
+            }
+
+            #leaderboard #lb-list {
+                display: none;
+            }
+
+            #leaderboard.expanded #lb-list {
+                display: flex;
+            }
+
+            #leaderboard.expanded {
+                width: 130px;
+                padding: 6px 8px;
+            }
         }
 
         #lb-list {
@@ -1285,6 +1355,7 @@
             <div class="hud-stat">RANK <span id="rank-display">0</span> / <span id="total-display">0</span></div>
         </div>
         <div id="leaderboard" class="glass-panel">
+            <button id="lb-toggle-btn" class="glass-panel">TOP 10</button>
             <div id="lb-list"></div>
         </div>
         <div id="minimap-wrapper">
@@ -1467,11 +1538,29 @@
                         </div>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 12px; margin: 5px 0 0 0;">PADRÕES AUTOMÁTICOS</h3>
+                    <h3 style="color: #ccc; font-size: 12px; margin: 5px 0 0 0;">PALETA RÁPIDA</h3>
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <button class="quick-color-btn" data-color="#ff0000" title="Vermelho"
+                            style="background: #ff0000; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                        <button class="quick-color-btn" data-color="#00ff00" title="Verde"
+                            style="background: #00ff00; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                        <button class="quick-color-btn" data-color="#0000ff" title="Azul"
+                            style="background: #0000ff; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                        <button class="quick-color-btn" data-color="#ffff00" title="Amarelo"
+                            style="background: #ffff00; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                        <button class="quick-color-btn" data-color="#ff00ff" title="Magenta"
+                            style="background: #ff00ff; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                        <button class="quick-color-btn" data-color="#00ffff" title="Ciano"
+                            style="background: #00ffff; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                    </div>
+
+                    <h3 style="color: #ccc; font-size: 12px; margin: 10px 0 5px 0;">PADRÕES AUTOMÁTICOS</h3>
                     <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                         <button class="preset-btn" data-preset="rainbow">ARCO-ÍRIS</button>
                         <button class="preset-btn" data-preset="stripes">LISTRAS</button>
                         <button class="preset-btn" data-preset="gradient">DEGRADÊ</button>
+                        <button class="preset-btn" data-preset="checkered">XADREZ</button>
+                        <button class="preset-btn" data-preset="radial">RADIAL</button>
                     </div>
 
                     <h3 style="color: #ccc; font-size: 12px; margin: 5px 0 0 0;">EFEITOS (VFX)</h3>
@@ -1487,6 +1576,13 @@
                         </label>
                     </div>
                 </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <label
+                    style="color: #ccc; font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
+                    <input type="text" id="editor-skin-name" placeholder="Nome da Skin (opcional)"
+                        style="flex: 1; padding: 6px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(0,0,0,0.3); color: #fff; font-size: 11px;">
+                </label>
             </div>
             <div style="display: flex; gap: 15px; margin-top: 15px; justify-content: center;">
                 <button id="btn-close-editor" class="btn-aaa"
@@ -1632,7 +1728,7 @@
         };
         const POWERUP_KEYS = Object.keys(POWERUP_TYPES);
         let powerUpSpawnTimer = 600 + Math.floor(Math.random() * 600);
-        let starShowerActive = false, starShowerTimer = 0, starShowerCooldown = 60 * 75; // ~75s
+
 
         class PowerUp {
             constructor(x, y, type) {
@@ -1688,19 +1784,7 @@
             powerUps.push(new PowerUp(pos.x, pos.y, type));
         }
 
-        function startStarShower() {
-            starShowerActive = true; starShowerTimer = 60 * 15; // 15s
-            const banner = document.getElementById('event-banner');
-            if (banner) { banner.classList.remove('show'); void banner.offsetWidth; banner.classList.add('show'); }
-            AudioSys.play('dash');
-            // Spawn de orbes dourados em sequência
-            for (let i = 0; i < 80; i++) {
-                let pos = getRandomPosInCircle(80);
-                let f = new Food(pos.x, pos.y, 4 + Math.random() * 2.5, '#ffdf00', 1, 8 + Math.random() * 6);
-                f.isStar = true;
-                foods.push(f);
-            }
-        }
+
 
         function applyPowerUp(snake, type) {
             if (!snake || !snake.alive) return;
@@ -2244,7 +2328,9 @@
             let act = snakes.filter(s => s.alive); let sorted = [...act].sort((a, b) => b.score - a.score);
             UI.rank.innerText = sorted.findIndex(s => s === player) + 1; UI.total.innerText = sorted.length;
             let html = ''; for (let i = 0; i < Math.min(10, sorted.length); i++) { let s = sorted[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`; }
-            UI.lbList.innerHTML = html;
+            if (UI.lb && (UI.lb.classList.contains('expanded') || !IS_MOBILE_CLIENT)) {
+                UI.lbList.innerHTML = html;
+            }
             mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill(); mCtxElement.strokeStyle = 'rgba(255,255,255,0.15)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
             let sc = 70 / currentArenaRadius;
             for (let s of act) { if (s === player) continue; let mX = 70 + (s.x - WORLD_CENTER) * sc; let mY = 70 + (s.y - WORLD_CENTER) * sc; let dist = Math.hypot(mX - 70, mY - 70); if (dist > 67) { let ag = Math.atan2(mY - 70, mX - 70); mX = 70 + Math.cos(ag) * 67; mY = 70 + Math.sin(ag) * 67; } mCtxElement.beginPath(); mCtxElement.arc(mX, mY, 1.5, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.35)'; mCtxElement.fill(); }
@@ -2334,6 +2420,15 @@
             renderRibbon();
         };
 
+        document.querySelectorAll('.quick-color-btn').forEach(btn => {
+            btn.onclick = () => {
+                let color = btn.getAttribute('data-color');
+                document.getElementById('editor-color-picker').value = color;
+                edSkin.segments[activeSegIndex] = color;
+                renderRibbon();
+            };
+        });
+
         document.querySelectorAll('.preset-btn').forEach(btn => {
             btn.onclick = () => {
                 const type = btn.getAttribute('data-preset');
@@ -2361,6 +2456,28 @@
                         let r = Math.round(c1.r + (c2.r - c1.r) * (i / (len - 1)));
                         let g = Math.round(c1.g + (c2.g - c1.g) * (i / (len - 1)));
                         let b = Math.round(c1.b + (c2.b - c1.b) * (i / (len - 1)));
+                        edSkin.segments.push(rgbToHex(r, g, b));
+                    }
+                } else if (type === 'checkered') {
+                    if (edSkin.segments.length < 2) { edSkin.segments.push('#000000'); edSkin.segments.push('#ffffff'); }
+                    let c1 = edSkin.segments[0], c2 = edSkin.segments[1];
+                    let len = Math.max(12, edSkin.segments.length);
+                    edSkin.segments = [];
+                    for (let i = 0; i < len; i++) {
+                        let row = Math.floor(i / 4);
+                        let col = i % 4;
+                        edSkin.segments.push(((row + col) % 2 === 0) ? c1 : c2);
+                    }
+                } else if (type === 'radial') {
+                    let baseColor = edSkin.segments[0] || '#ffdf00';
+                    let len = Math.max(12, edSkin.segments.length);
+                    edSkin.segments = [];
+                    for (let i = 0; i < len; i++) {
+                        let brightness = 1 - (i / len) * 0.6;
+                        let c = hexToRgb(baseColor);
+                        let r = Math.round(c.r * brightness);
+                        let g = Math.round(c.g * brightness);
+                        let b = Math.round(c.b * brightness);
                         edSkin.segments.push(rgbToHex(r, g, b));
                     }
                 }
@@ -2435,16 +2552,18 @@
             finalSkinColors.effects = [];
             if (document.getElementById('chk-glow').checked) finalSkinColors.effects.push('glow');
             if (document.getElementById('chk-pulse').checked) finalSkinColors.effects.push('pulse');
-            finalSkinColors.name = "CUSTOM " + (savedCustomSkins.length + 1);
+            let customName = document.getElementById('editor-skin-name').value.trim();
+            finalSkinColors.name = customName || ("CUSTOM " + (savedCustomSkins.length + 1));
 
             SKINS.push(finalSkinColors);
             SKIN_NAMES.push(finalSkinColors.name);
 
             let exportData = {
                 name: finalSkinColors.name,
-                segments: edSkin.segments,
+                segments: [...edSkin.segments],
                 effects: finalSkinColors.effects,
-                pattern: 'custom'
+                pattern: 'custom',
+                timestamp: Date.now()
             };
             savedCustomSkins.push(exportData);
             localStorage.setItem('serpente_custom_skins', JSON.stringify(savedCustomSkins));
@@ -2502,18 +2621,7 @@
             if (gameState === 'playing') {
                 powerUpSpawnTimer--;
                 if (powerUpSpawnTimer <= 0) { spawnPowerUp(); powerUpSpawnTimer = 600 + Math.floor(Math.random() * 900); }
-                if (starShowerActive) {
-                    starShowerTimer--;
-                    if (frameCount % 4 === 0 && foods.filter(f => f.isStar).length < 200) {
-                        let pos = getRandomPosInCircle(80);
-                        let f = new Food(pos.x, pos.y, 4 + Math.random() * 2.5, '#ffdf00', 1, 8 + Math.random() * 6);
-                        f.isStar = true; foods.push(f);
-                    }
-                    if (starShowerTimer <= 0) { starShowerActive = false; starShowerCooldown = 60 * (60 + Math.floor(Math.random() * 60)); }
-                } else {
-                    starShowerCooldown--;
-                    if (starShowerCooldown <= 0) startStarShower();
-                }
+
             }
             // Update + cull power-ups
             for (let i = powerUps.length - 1; i >= 0; i--) {
@@ -2656,13 +2764,13 @@
             AudioSys.init(); await enterFullscreen();
             if (player) { let idx = snakes.indexOf(player); if (idx > -1) snakes.splice(idx, 1); }
             playerKills = 0; currentEvo = -1;
-            powerUps = []; starShowerActive = false; starShowerTimer = 0; starShowerCooldown = 60 * 60; powerUpSpawnTimer = 60 * 25;
+            powerUps = []; powerUpSpawnTimer = 60 * 25;
             const puHud = document.getElementById('powerup-hud'); if (puHud) puHud.innerHTML = '';
             const spawn = getSafeSpawnPos(1200);
             player = new Snake(spawn.x, spawn.y, UI.nick.value.trim() || "LENDA", skinIndex, true, CONFIG.cobra.pontosIniciais, accIndex);
             player.activePowers = {};
             let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc']; camera.zoom = zV.inicial; camera.x = player.x; camera.y = player.y; isMouseDown = false; smoothedJoystickAngle = player.angle; snakes.push(player);
-            gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden'); UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block'; if (IS_MOBILE_CLIENT) { UI.ctrls.style.display = 'block'; UI.ctrls.style.opacity = '1'; }
+            gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden'); UI.lb.style.display = 'block'; if (IS_MOBILE_CLIENT) UI.lb.classList.remove('expanded'); UI.status.style.display = 'flex'; UI.mini.style.display = 'block'; if (IS_MOBILE_CLIENT) { UI.ctrls.style.display = 'block'; UI.ctrls.style.opacity = '1'; }
         });
 
         UI.skins.addEventListener('click', () => { gameState = 'skin-menu'; UI.start.style.display = 'none'; UI.preview.classList.remove('hidden'); updateSkinUI(); });
@@ -2684,7 +2792,12 @@
         function updateAccUI() { accUI.name.innerText = ACCESSORIES[accIndex].name.toUpperCase(); }
         UI.again.addEventListener('click', () => { UI.death.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
 
-        const JOYSTICK_DEADZONE = 5, JOYSTICK_MAX_RADIUS = 50; let joystickTouchId = null;
+        const lbToggleBtn = document.getElementById('lb-toggle-btn');
+        if (lbToggleBtn && UI.lb) {
+            lbToggleBtn.addEventListener('click', () => {
+                UI.lb.classList.toggle('expanded');
+            });
+        } const JOYSTICK_DEADZONE = 5, JOYSTICK_MAX_RADIUS = 50; let joystickTouchId = null;
         function updateJoystick(touch) { const r = UI.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2; const dx = touch.clientX - cX, dy = touch.clientY - cY, dist = Math.hypot(dx, dy); if (dist > JOYSTICK_DEADZONE) { joystickAngle = Math.atan2(dy, dx); } const capD = Math.min(dist, JOYSTICK_MAX_RADIUS); UI.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`; }
 
         window.addEventListener('touchstart', (e) => {
