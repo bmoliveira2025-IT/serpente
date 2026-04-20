@@ -246,55 +246,58 @@
             left: 25px;
             display: none;
             flex-direction: column;
-            gap: 8px;
-            padding: 16px 28px;
-            border-radius: 12px;
+            gap: 6px;
+            padding: 14px 24px;
+            border-radius: 14px;
             z-index: 50;
-            background: rgba(20, 27, 47, 0.7);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 39, 0.82);
+            border: 1px solid rgba(0, 217, 255, 0.18);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+            backdrop-filter: blur(12px);
         }
 
         .hud-stat {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(160, 174, 192, 0.85);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
 
         .hud-stat span {
             color: var(--primary);
-            font-size: 18px;
-            font-weight: 700;
-            margin-left: 6px;
+            font-size: 20px;
+            font-weight: 800;
+            margin-left: 8px;
+            text-shadow: 0 0 12px rgba(0, 217, 255, 0.4);
         }
 
         /* HUD - MOBILE */
         @media (max-width: 1024px) {
             #hud-status {
-                bottom: 12px !important;
+                bottom: 14px !important;
                 left: 50% !important;
                 transform: translateX(-50%) !important;
                 flex-direction: row !important;
-                gap: 16px !important;
-                padding: 8px 16px !important;
-                border-radius: 10px !important;
+                gap: 18px !important;
+                padding: 10px 20px !important;
+                border-radius: 40px !important;
                 white-space: nowrap;
-                background: rgba(20, 27, 47, 0.8) !important;
-                border-color: var(--border-color) !important;
+                background: rgba(10, 14, 39, 0.88) !important;
+                border: 1px solid rgba(0, 217, 255, 0.22) !important;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,217,255,0.05) !important;
             }
 
             .hud-stat {
                 font-size: 9px !important;
                 display: flex;
                 align-items: center;
-                gap: 4px;
+                gap: 5px;
+                letter-spacing: 1px !important;
             }
 
             .hud-stat span {
-                font-size: 14px !important;
+                font-size: 16px !important;
                 margin-left: 0 !important;
             }
         }
@@ -304,16 +307,16 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            width: 180px;
+            width: 185px;
             padding: 12px;
-            border-radius: 12px;
+            border-radius: 14px;
             display: none;
             font-size: 11px;
-            background: rgba(20, 27, 47, 0.7);
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(10px);
+            background: rgba(8, 12, 30, 0.85);
+            border: 1px solid rgba(0, 217, 255, 0.15);
+            backdrop-filter: blur(12px);
             transition: all 0.3s ease;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.04);
         }
 
         #lb-toggle-btn {
@@ -800,17 +803,17 @@
 
         #joystick-base {
             position: absolute;
-            width: 110px;
-            height: 110px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(4px);
+            background: radial-gradient(circle at 40% 38%, rgba(255,255,255,0.14) 0%, rgba(0,217,255,0.05) 55%, rgba(0,0,0,0.1) 100%);
+            border: 1.5px solid rgba(0, 217, 255, 0.28);
+            box-shadow: 0 0 20px rgba(0,217,255,0.12), inset 0 0 12px rgba(0,0,0,0.2);
             pointer-events: none;
             touch-action: none;
             opacity: 0;
-            transform: translate(-50%, -50%) scale(0.5);
-            transition: opacity 0.2s, transform 0.2s;
+            transform: translate(-50%, -50%) scale(0.4);
+            transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 2000;
         }
 
@@ -823,13 +826,15 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.35);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: radial-gradient(circle at 38% 35%, rgba(255,255,255,0.85) 0%, rgba(0,217,255,0.55) 45%, rgba(0,150,200,0.3) 100%);
+            border: 1.5px solid rgba(0, 217, 255, 0.5);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.35), 0 0 12px rgba(0,217,255,0.25);
             transform: translate(-50%, -50%);
             pointer-events: none;
+            transition: width 0.1s, height 0.1s;
         }
 
         .action-btn {
@@ -861,48 +866,56 @@
         #btn-turbo {
             bottom: 50px;
             right: 30px;
-            width: 60px;
-            height: 60px;
+            width: 68px;
+            height: 68px;
             color: var(--accent);
-            border-color: rgba(255, 223, 0, 0.2);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.2s;
+            border-color: rgba(255, 223, 0, 0.25);
+            background: rgba(20, 15, 0, 0.60);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+            transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 10px;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        #btn-turbo::after {
+            content: 'TURBO';
+            font-size: 7px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: rgba(255,183,0,0.6);
+            margin-top: 2px;
         }
 
         #btn-turbo.boosting {
-            transform: scale(1.1);
-            background: rgba(255, 223, 0, 0.2);
+            transform: scale(1.15);
+            background: rgba(255, 183, 0, 0.22);
             border-color: var(--accent);
-            box-shadow: 0 0 20px rgba(255, 223, 0, 0.4);
+            box-shadow: 0 0 28px rgba(255, 183, 0, 0.5), 0 0 10px rgba(255,100,0,0.3);
             color: #fff;
-            animation: pulse-turbo 1s infinite alternate;
+            animation: pulse-turbo 0.7s infinite alternate;
         }
 
         @keyframes pulse-turbo {
-            from {
-                box-shadow: 0 0 12px rgba(255, 223, 0, 0.3);
-            }
-
-            to {
-                box-shadow: 0 0 24px rgba(255, 223, 0, 0.5);
-            }
+            from { box-shadow: 0 0 16px rgba(255, 183, 0, 0.4); }
+            to   { box-shadow: 0 0 32px rgba(255, 183, 0, 0.7), 0 0 12px rgba(255,80,0,0.4); }
         }
 
         @media (max-width: 1024px) {
             #btn-turbo {
-                bottom: 130px;
-                right: 20px;
-                width: 55px;
-                height: 55px;
+                bottom: 140px;
+                right: 22px;
+                width: 62px;
+                height: 62px;
             }
         }
 
         @media (max-width: 480px) {
             #btn-turbo {
-                bottom: 120px;
-                right: 15px;
-                width: 50px;
-                height: 50px;
+                bottom: 125px;
+                right: 16px;
+                width: 56px;
+                height: 56px;
             }
         }
 
@@ -951,196 +964,359 @@
             backdrop-filter: blur(5px);
         }
 
-        /* EDITOR DE SKINS CUSTOMIZADAS */
+        /* ============================================
+           SKIN STUDIO — REDESIGN AAA
+        ============================================ */
         #skin-editor-ui {
             position: fixed;
             inset: 0;
             z-index: 300;
             display: flex;
             flex-direction: column;
-            background: rgba(20, 27, 47, 0.95);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: clamp(12px, 3vw, 20px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(15px);
-            height: 100vh;
-            width: 100vw;
+            background: #07091a;
             overflow: hidden;
-            max-width: 100vw;
-            max-height: 100vh;
         }
 
-        @media (max-width: 1024px) {
-            #skin-editor-ui {
-                inset: 0;
-                padding: clamp(10px, 2.5vw, 16px);
-                height: 100vh;
-                width: 100vw;
-                border-radius: 8px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            #skin-editor-ui {
-                padding: 8px;
-                border-radius: 6px;
-            }
-        }
-
-        .editor-body {
+        .studio-header {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 12px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        @media (max-width: 900px) {
-            .editor-body {
-                flex-direction: column;
-                padding: 8px;
-                gap: 8px;
-            }
-        }
-
-        .preview-container {
-            background: linear-gradient(135deg, rgba(15, 20, 35, 0.8) 0%, rgba(10, 15, 30, 0.95) 100%);
-            border-radius: 10px;
-            position: relative;
-            display: flex;
-            justify-content: center;
             align-items: center;
-            border: 2px solid var(--primary);
-            box-shadow: 0 0 20px rgba(0, 217, 255, 0.2), inset 0 0 10px rgba(0, 217, 255, 0.05);
-            flex: 0 0 auto;
-            width: 100%;
-            height: clamp(100px, 25vw, 150px);
-            backdrop-filter: blur(5px);
+            justify-content: space-between;
+            padding: 11px 18px;
+            border-bottom: 1px solid rgba(0,217,255,0.10);
+            background: rgba(0,0,0,0.45);
+            flex-shrink: 0;
+            gap: 10px;
         }
-
-        @media (max-width: 1024px) {
-            .preview-container {
-                height: clamp(90px, 20vw, 130px);
-                border-radius: 8px;
-                border-width: 1.5px;
-            }
+        .studio-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
         }
-
-        @media (max-width: 480px) {
-            .preview-container {
-                height: clamp(80px, 18vw, 110px);
-                border-radius: 6px;
-                border-width: 1px;
-            }
+        .studio-close {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.10);
+            color: var(--text-secondary);
+            padding: 7px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            flex-shrink: 0;
         }
+        .studio-close:hover { background: rgba(255,60,60,0.12); border-color: #ff4444; color: #ff6666; }
 
-        .controls-container {
-            overflow-y: visible;
-            display: flex;
-            flex-direction: column;
-            gap: clamp(6px, 1.5vw, 10px);
-            padding: clamp(6px, 1.5vw, 10px);
+        .studio-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             flex: 1;
-            justify-content: flex-start;
+            overflow: hidden;
             min-height: 0;
         }
 
-        .controls-container::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .controls-container::-webkit-scrollbar-thumb {
-            background: rgba(0, 217, 255, 0.3);
-            border-radius: 3px;
-        }
-
-        #segment-ribbon {
+        /* ---- PAINEL ESQUERDO: PREVIEW ---- */
+        .studio-preview {
             display: flex;
-            overflow-x: auto;
-            gap: 4px;
-            padding: 6px;
-            background: rgba(15, 20, 35, 0.4);
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            flex-shrink: 0;
+            flex-direction: column;
+            border-right: 1px solid rgba(0,217,255,0.09);
+            overflow: hidden;
         }
-
-        #segment-ribbon::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        #segment-ribbon::-webkit-scrollbar-thumb {
-            background: rgba(0, 217, 255, 0.3);
-            border-radius: 2px;
-        }
-
-        .segment-box {
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            border: 1px solid rgba(0, 217, 255, 0.2);
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        @media (max-width: 768px) {
-            .segment-box {
-                width: 32px;
-                height: 32px;
-            }
-        }
-
-        .segment-box:hover {
-            transform: scale(1.1);
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
-        }
-
-        .segment-box.active {
-            border-color: var(--primary);
-            transform: scale(1.15);
-            box-shadow: 0 0 16px rgba(0, 217, 255, 0.5), inset 0 0 8px rgba(0, 217, 255, 0.1);
-        }
-
-        .preset-btn {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(0, 217, 255, 0.06) 100%);
-            border: 1px solid rgba(0, 217, 255, 0.3);
-            color: var(--text-primary);
-            padding: 7px 11px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 9.5px;
-            font-weight: 600;
+        .studio-canvas-wrap {
             flex: 1;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(0, 217, 255, 0.1);
-            letter-spacing: 0.2px;
-            min-height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: radial-gradient(ellipse at 50% 55%, rgba(0,217,255,0.05) 0%, #07091a 68%);
+            overflow: hidden;
+            position: relative;
+            min-height: 0;
         }
+        .studio-canvas-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 100%, rgba(0,217,255,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .studio-canvas-wrap canvas { max-width: 100%; max-height: 100%; display: block; }
 
-        .preset-btn:hover {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.18) 0%, rgba(0, 217, 255, 0.1) 100%);
+        /* ---- STRIP DE SEGMENTOS ---- */
+        .studio-body-strip {
+            flex-shrink: 0;
+            padding: 10px 14px 12px;
+            border-top: 1px solid rgba(0,217,255,0.09);
+            background: rgba(0,0,0,0.30);
+        }
+        .studio-strip-label {
+            font-size: 8px;
+            font-weight: 800;
+            color: rgba(160,174,192,0.5);
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-bottom: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .studio-strip-row {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            align-items: center;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,217,255,0.2) transparent;
+        }
+        .studio-strip-row::-webkit-scrollbar { height: 3px; }
+        .studio-strip-row::-webkit-scrollbar-thumb { background: rgba(0,217,255,0.2); border-radius: 2px; }
+
+        .s-seg {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: 2.5px solid rgba(255,255,255,0.10);
+            transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1), border-color 0.14s, box-shadow 0.14s;
+            position: relative;
+        }
+        .s-seg:first-child::before {
+            content: 'CAB';
+            position: absolute;
+            bottom: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 6px;
+            color: rgba(0,217,255,0.5);
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .s-seg.active {
             border-color: var(--primary);
-            box-shadow: 0 4px 10px rgba(0, 217, 255, 0.2);
+            transform: scale(1.25);
+            box-shadow: 0 0 0 3px rgba(0,217,255,0.15), 0 0 16px rgba(0,217,255,0.40);
+            z-index: 2;
+        }
+        .s-seg:hover:not(.active) { border-color: rgba(255,255,255,0.38); transform: scale(1.12); }
+        .strip-btn-group { display: flex; gap: 4px; flex-shrink: 0; }
+        .strip-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.65);
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.14s;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .strip-btn:hover { background: rgba(0,217,255,0.14); border-color: var(--primary); color: var(--primary); }
+        .strip-btn.danger:hover { background: rgba(255,60,60,0.14); border-color: #ff4444; color: #ff5555; }
+
+        /* ---- PAINEL DIREITO: CONTROLOS ---- */
+        .studio-controls {
+            overflow-y: auto;
+            padding: 14px 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,217,255,0.15) transparent;
+        }
+        .studio-controls::-webkit-scrollbar { width: 4px; }
+        .studio-controls::-webkit-scrollbar-thumb { background: rgba(0,217,255,0.18); border-radius: 2px; }
+
+        .s-label {
+            font-size: 8px;
+            font-weight: 800;
+            color: rgba(160,174,192,0.48);
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-bottom: 7px;
         }
 
+        /* COR */
+        .s-color-row { display: flex; gap: 9px; align-items: stretch; }
+        .s-swatch {
+            width: 54px;
+            min-height: 54px;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.15);
+            cursor: pointer;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.14s, border-color 0.14s;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+        }
+        .s-swatch:hover { transform: scale(1.06); border-color: var(--primary); }
+        .s-swatch input[type=color] {
+            position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: none; padding: 0;
+        }
+        .s-hex-col { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+        .s-hex-input {
+            background: rgba(0,0,0,0.42);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 9px;
+            color: #fff;
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 9px 11px;
+            letter-spacing: 1.5px;
+            width: 100%;
+            box-sizing: border-box;
+            text-transform: uppercase;
+            transition: border-color 0.2s;
+        }
+        .s-hex-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 10px rgba(0,217,255,0.10); }
+        .s-actions { display: flex; gap: 5px; }
+        .s-action-btn {
+            flex: 1;
+            padding: 7px 4px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.09);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.60);
+            font-size: 9px;
+            font-weight: 800;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.14s;
+            text-align: center;
+        }
+        .s-action-btn:hover { background: rgba(0,217,255,0.11); border-color: var(--primary); color: var(--primary); }
+        .s-action-btn.green { border-color: rgba(0,255,136,0.20); color: var(--success); background: rgba(0,255,136,0.05); }
+        .s-action-btn.green:hover { background: rgba(0,255,136,0.14); }
+
+        /* PALETA */
+        .s-palette {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+        }
+        .s-pal {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.10);
+            cursor: pointer;
+            transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.12s;
+        }
+        .s-pal:hover { transform: scale(1.28); box-shadow: 0 0 10px rgba(255,255,255,0.35); border-color: #fff; }
+        .s-pal.sel { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,217,255,0.28); transform: scale(1.18); }
+
+        /* PADRÕES */
+        .s-preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 7px;
+        }
+        .s-preset-card {
+            border-radius: 10px;
+            border: 1.5px solid rgba(255,255,255,0.07);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1), border-color 0.14s, box-shadow 0.14s;
+            background: rgba(255,255,255,0.03);
+        }
+        .s-preset-card:hover { transform: scale(1.05); border-color: rgba(255,255,255,0.28); box-shadow: 0 4px 18px rgba(0,0,0,0.45); }
+        .s-preset-card:active { transform: scale(0.97); }
+        .s-preset-strip { height: 24px; width: 100%; display: block; }
+        .s-preset-label {
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            color: rgba(255,255,255,0.55);
+            text-align: center;
+            padding: 5px 2px 5px;
+            text-transform: uppercase;
+        }
+
+        /* EFEITOS */
+        .s-effects-row { display: flex; gap: 7px; }
+        .s-eff-btn {
+            flex: 1;
+            padding: 11px 6px 10px;
+            border-radius: 11px;
+            border: 1.5px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.40);
+            font-size: 9px;
+            font-weight: 800;
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-align: center;
+            transition: all 0.18s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .s-eff-icon { font-size: 20px; line-height: 1; }
+        .s-eff-btn:hover { border-color: rgba(255,255,255,0.25); color: #fff; background: rgba(255,255,255,0.06); }
+        .s-eff-btn.on { border-color: var(--primary); background: rgba(0,217,255,0.09); color: var(--primary); }
+        .s-eff-btn.on.pulse-eff { border-color: #ff6bd6; background: rgba(255,107,214,0.09); color: #ff6bd6; }
+
+        /* NOME + SALVAR */
+        .s-name-inp {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(0,0,0,0.40);
+            border: 1.5px solid rgba(255,223,0,0.12);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 14px;
+            letter-spacing: 0.5px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .s-name-inp:focus { outline: none; border-color: rgba(255,223,0,0.45); box-shadow: 0 0 12px rgba(255,223,0,0.07); }
+        .s-name-inp::placeholder { color: rgba(160,174,192,0.35); font-weight: 400; }
+        .s-save-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #001a10;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+            box-shadow: 0 4px 22px rgba(0,255,136,0.22);
+            text-transform: uppercase;
+        }
+        .s-save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,255,136,0.38); }
+        .s-save-btn:active { transform: scale(0.98); }
+
+        /* MOBILE */
         @media (max-width: 768px) {
-            .preset-btn {
-                padding: 6px 9px;
-                font-size: 8.5px;
-                min-height: 28px;
-            }
+            .studio-main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+            .studio-preview { border-right: none; border-bottom: 1px solid rgba(0,217,255,0.09); }
+            .studio-canvas-wrap { height: clamp(100px, 25vw, 150px); min-height: unset; flex: unset; }
+            .studio-controls { gap: 12px; padding: 12px; }
+            .s-palette { grid-template-columns: repeat(8, 1fr); gap: 4px; }
+            .s-preset-grid { grid-template-columns: repeat(3, 1fr); }
+            .s-seg { width: 32px; height: 32px; }
+            .s-swatch { width: 48px; min-height: 48px; }
+            .s-preset-strip { height: 20px; }
         }
-
-        .preset-btn:active {
-            transform: scale(0.98);
+        @media (max-width: 480px) {
+            .studio-canvas-wrap { height: clamp(88px, 22vw, 130px); }
+            .s-palette { grid-template-columns: repeat(6, 1fr); }
+            .s-seg { width: 30px; height: 30px; }
         }
 
         .m-rainbow-text {
@@ -1248,28 +1424,39 @@
         /* POPUP DE NÍVEL */
         #level-popup {
             position: absolute;
-            top: 15%;
+            top: 13%;
             left: 50%;
             transform: translateX(-50%) scale(0.5);
             opacity: 0;
             z-index: 80;
             text-align: center;
             pointer-events: none;
+            background: rgba(0,0,0,0.55);
+            padding: clamp(10px,3vw,18px) clamp(18px,5vw,36px);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(8px);
+        }
+
+        #level-popup.show {
+            animation: popTitle 3.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
 
         #level-popup h3 {
             margin: 0;
-            font-size: 14px;
-            color: white;
-            letter-spacing: 2px;
+            font-size: clamp(9px,2vw,13px);
+            color: rgba(255,255,255,0.65);
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
 
         #level-popup h1 {
-            margin: -5px 0 0 0;
-            font-size: clamp(30px, 6vw, 45px);
+            margin: 4px 0 0 0;
+            font-size: clamp(24px, 5.5vw, 42px);
             font-weight: 800;
-            text-shadow: 0 0 20px currentColor;
+            text-shadow: 0 0 24px currentColor, 0 0 8px currentColor;
             text-transform: uppercase;
+            line-height: 1.1;
         }
 
         #orientation-overlay {
@@ -1619,102 +1806,70 @@
         </div>
 
         <!-- SKIN EDITOR (NOVO) -->
-        <div id="skin-editor-ui" class="hidden glass-panel"
-            style="max-width: 100vw; max-height: 100vh; display: flex; flex-direction: column;">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;">
-                <h2 style="color: var(--primary); margin: 0; font-weight: 800; font-size: 16px; letter-spacing: 0.5px;">
-                    ✨ SKIN STUDIO</h2>
-                <button id="btn-close-editor" class="btn-aaa"
-                    style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border-color: var(--border-color); width: auto; padding: 6px 12px; font-size: 10px; margin:0; box-shadow: none;">✗
-                    FECHAR</button>
+        <div id="skin-editor-ui" class="hidden">
+            <div class="studio-header">
+                <span class="studio-title">✦ SKIN STUDIO</span>
+                <button id="btn-close-editor" class="studio-close">✕ FECHAR</button>
             </div>
-            <div class="editor-body">
-                <div class="preview-container">
-                    <canvas id="editor-canvas" width="400" height="400"
-                        style="width: 100%; height: 100%; object-fit: contain;"></canvas>
-                </div>
-                <div class="controls-container">
-                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
-                        <span style="color: #fff; font-size: 11px; font-weight: 700; flex-shrink: 0;">GOMOS:</span>
-                        <div style="display: flex; gap: 3px;">
-                            <button id="btn-add-seg" class="btn-aaa"
-                                style="padding: 3px 6px; font-size: 9px; width: auto; min-width:0; margin:0;">+
-                                ADD</button>
-                            <button id="btn-rem-seg" class="btn-aaa"
-                                style="padding: 3px 6px; font-size: 9px; width: auto; min-width:0; margin:0; background: #ff4444;">-
-                                REM</button>
+            <div class="studio-main">
+                <!-- LEFT: PREVIEW -->
+                <div class="studio-preview">
+                    <div class="studio-canvas-wrap">
+                        <canvas id="editor-canvas" width="400" height="400"></canvas>
+                    </div>
+                    <div class="studio-body-strip">
+                        <div class="studio-strip-label">
+                            <span>GOMOS</span>
+                            <div class="strip-btn-group">
+                                <button id="btn-add-seg" class="strip-btn" title="Adicionar gomo">+</button>
+                                <button id="btn-rem-seg" class="strip-btn danger" title="Remover gomo">−</button>
+                            </div>
                         </div>
-                    </div>
-
-                    <div id="segment-ribbon"></div>
-
-                    <div
-                        style="display: flex; gap: 6px; align-items: stretch; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
-                        <input type="color" id="editor-color-picker"
-                            style="flex: 0 0 36px; height: 36px; border: none; cursor: pointer; background: transparent; padding: 0; border-radius: 4px;">
-                        <div style="display: flex; flex-direction: column; gap: 3px; flex: 1;">
-                            <button id="btn-fill-all" class="btn-aaa"
-                                style="padding: 3px; font-size: 9px; margin:0; width: 100%; flex: 1;">PREENCHER</button>
-                            <button id="btn-random" class="btn-aaa"
-                                style="padding: 3px; font-size: 9px; background: #00ff88; margin:0; width: 100%; flex: 1;">ALEATÓRIA</button>
-                        </div>
-                    </div>
-
-                    <h3
-                        style="color: #ccc; font-size: 8px; margin: 2px 0 2px 0; font-weight: 600; letter-spacing: 0.5px;">
-                        PALETA</h3>
-                    <div style="display: flex; gap: 2px; flex-wrap: wrap;">
-                        <button class="quick-color-btn" data-color="#ff0000" title="Vermelho"
-                            style="background: #ff0000; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
-                        <button class="quick-color-btn" data-color="#00ff00" title="Verde"
-                            style="background: #00ff00; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
-                        <button class="quick-color-btn" data-color="#0000ff" title="Azul"
-                            style="background: #0000ff; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
-                        <button class="quick-color-btn" data-color="#ffff00" title="Amarelo"
-                            style="background: #ffff00; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
-                        <button class="quick-color-btn" data-color="#ff00ff" title="Magenta"
-                            style="background: #ff00ff; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
-                        <button class="quick-color-btn" data-color="#00ffff" title="Ciano"
-                            style="background: #00ffff; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
-                    </div>
-
-                    <h3
-                        style="color: #ccc; font-size: 8px; margin: 2px 0 2px 0; font-weight: 600; letter-spacing: 0.5px;">
-                        PADRÕES</h3>
-                    <div style="display: flex; gap: 3px; flex-wrap: wrap;">
-                        <button class="preset-btn" data-preset="rainbow">ARCO-ÍRIS</button>
-                        <button class="preset-btn" data-preset="stripes">LISTRAS</button>
-                        <button class="preset-btn" data-preset="gradient">DEGRADÊ</button>
-                        <button class="preset-btn" data-preset="checkered">XADREZ</button>
-                        <button class="preset-btn" data-preset="radial">RADIAL</button>
-                    </div>
-
-                    <h3
-                        style="color: #ccc; font-size: 8px; margin: 2px 0 2px 0; font-weight: 600; letter-spacing: 0.5px;">
-                        EFEITOS</h3>
-                    <div
-                        style="display: flex; gap: 8px; background: rgba(255,255,255,0.05); padding: 6px; border-radius: 6px;">
-                        <label
-                            style="color: white; font-size: 10px; display: flex; align-items: center; gap: 3px; cursor: pointer;">
-                            <input type="checkbox" id="chk-glow"> AURA
-                        </label>
-                        <label
-                            style="color: white; font-size: 10px; display: flex; align-items: center; gap: 3px; cursor: pointer;">
-                            <input type="checkbox" id="chk-pulse"> PULSO
-                        </label>
-                    </div>
-                    <div style="margin-top: 6px; padding: 0 8px;">
-                        <input type="text" id="editor-skin-name" placeholder="Nome da Skin"
-                            style="flex: 1; padding: 6px; border: 1px solid rgba(255, 223, 0, 0.2); border-radius: 4px; background: rgba(0,0,0,0.3); color: #fff; font-size: 10px; transition: border-color 0.3s; width: 100%; box-sizing: border-box;">
+                        <div class="studio-strip-row" id="segment-ribbon"></div>
                     </div>
                 </div>
-            </div>
-            <div
-                style="display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border-color); justify-content: flex-end; flex-shrink: 0;">
-                <button id="btn-save-editor" class="btn-aaa"
-                    style="padding: 8px 16px; background: var(--success); color: var(--bg-dark); font-weight: 700; width: auto; font-size: 12px; box-shadow: 0 2px 8px rgba(6, 255, 165, 0.2);">✓
-                    SALVAR</button>
+                <!-- RIGHT: CONTROLS -->
+                <div class="studio-controls">
+                    <div>
+                        <div class="s-label">COR DO GOMO</div>
+                        <div class="s-color-row">
+                            <div class="s-swatch" id="s-swatch-box">
+                                <input type="color" id="editor-color-picker">
+                            </div>
+                            <div class="s-hex-col">
+                                <input type="text" id="s-hex-input" class="s-hex-input" maxlength="7" placeholder="#FF0000">
+                                <div class="s-actions">
+                                    <button id="btn-fill-all" class="s-action-btn">PREENCHER TUDO</button>
+                                    <button id="btn-random" class="s-action-btn green">ALEATÓRIA</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="s-label">PALETA</div>
+                        <div class="s-palette" id="s-palette"></div>
+                    </div>
+                    <div>
+                        <div class="s-label">PADRÕES</div>
+                        <div class="s-preset-grid" id="s-preset-grid"></div>
+                    </div>
+                    <div>
+                        <div class="s-label">EFEITOS</div>
+                        <div class="s-effects-row">
+                            <button id="btn-effect-glow" class="s-eff-btn" data-effect="glow">
+                                <span class="s-eff-icon">✦</span>AURA
+                            </button>
+                            <button id="btn-effect-pulse" class="s-eff-btn pulse-eff" data-effect="pulse">
+                                <span class="s-eff-icon">◎</span>PULSO
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="s-label">NOME DA SKIN</div>
+                        <input type="text" id="editor-skin-name" class="s-name-inp" placeholder="Ex: Dragão Estelar" maxlength="24">
+                    </div>
+                    <button id="btn-save-editor" class="s-save-btn">✓ SALVAR SKIN</button>
+                </div>
             </div>
         </div>
 
@@ -2168,9 +2323,36 @@
 
         class Particle {
             constructor(x, y, color, s) { this.init(x, y, color, s); }
-            init(x, y, color, s) { this.x = x; this.y = y; this.color = color; let a = Math.random() * Math.PI * 2; this.vx = Math.cos(a) * s; this.vy = Math.sin(a) * s; this.life = 1.0; this.decay = 0.02 + Math.random() * 0.02; this.size = 2 + Math.random() * 3; this.dead = false; }
-            update() { this.x += this.vx; this.y += this.vy; this.life -= this.decay; if (this.life <= 0) this.dead = true; }
-            draw(ctx) { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; }
+            init(x, y, color, s) {
+                this.x = x; this.y = y; this.color = color;
+                let a = Math.random() * Math.PI * 2, speed = s * (0.7 + Math.random() * 0.6);
+                this.vx = Math.cos(a) * speed; this.vy = Math.sin(a) * speed;
+                this.vy -= Math.random() * s * 0.4; // leve impulso para cima
+                this.gravity = 0.04 + Math.random() * 0.06;
+                this.life = 1.0; this.decay = 0.018 + Math.random() * 0.022;
+                this.size = 2.5 + Math.random() * 3.5; this.dead = false;
+                this.shape = Math.random() < 0.3 ? 1 : 0; // 0=círculo, 1=quadrado rotacionado
+                this.rot = Math.random() * Math.PI;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                this.vy += this.gravity; // gravidade
+                this.vx *= 0.98; // fricção do ar
+                this.life -= this.decay; if (this.life <= 0) this.dead = true;
+            }
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.globalAlpha = Math.max(0, this.life * this.life); // easing quadrático
+                ctx.fillStyle = this.color;
+                const r = this.size * this.life;
+                if (this.shape === 1 && !IS_MOBILE_CLIENT) {
+                    ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rot + this.life * 3);
+                    ctx.fillRect(-r, -r, r * 2, r * 2); ctx.restore();
+                } else {
+                    ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+            }
         }
 
         class Food {
@@ -2255,7 +2437,7 @@
                 if (this.aiPersonality === undefined) {
                     const hunterNames = ["Titã", "Guardião", "Mago", "Tempestade", "Veneno", "Sombra"]; const cowardNames = ["Vila", "Milagre", "Helena"]; const opNames = ["Fantasma", "Veloz", "Príncipe"]; const territNames = ["Jorge"];
                     if (this.isKing) this.aiPersonality = 2; else if (hunterNames.includes(this.name)) this.aiPersonality = 0; else if (cowardNames.includes(this.name)) this.aiPersonality = 1; else if (opNames.includes(this.name)) this.aiPersonality = 3; else if (territNames.includes(this.name)) this.aiPersonality = 4; else this.aiPersonality = Math.floor(Math.random() * 5);
-                    this.aiReactionDelay = 1 + Math.floor(Math.random() * 4); this.aiAggression = 0.4 + Math.random() * 0.6; this.aiRiskTolerance = 0.3 + Math.random() * 0.5; this.aiMicroError = 0.02 + Math.random() * 0.04; this.aiGreed = 0.5 + Math.random() * 0.5; this.aiDecisionTimer = 0; this.aiEncirclePhase = 0; this.aiEncircleTarget = null; this.aiLastDodgeFrame = -999; this.aiBoostCooldown = 0; this.aiTrauma = 0; this.aiConfidence = 0; this.aiHomeX = this.x; this.aiHomeY = this.y; this.aiTerritoryRadius = 900 + Math.random() * 700; this.aiWanderAngle = Math.random() * Math.PI * 2;
+                    this.aiReactionDelay = Math.floor(Math.random() * 2); this.aiAggression = 0.58 + Math.random() * 0.42; this.aiRiskTolerance = 0.38 + Math.random() * 0.48; this.aiMicroError = 0.012 + Math.random() * 0.025; this.aiGreed = 0.68 + Math.random() * 0.32; this.aiDecisionTimer = 0; this.aiEncirclePhase = 0; this.aiEncircleTarget = null; this.aiLastDodgeFrame = -999; this.aiBoostCooldown = 0; this.aiTrauma = 0; this.aiConfidence = 0; this.aiHomeX = this.x; this.aiHomeY = this.y; this.aiTerritoryRadius = 900 + Math.random() * 700; this.aiWanderAngle = Math.random() * Math.PI * 2;
                 }
                 if (this.isKing) this.aiPersonality = 2; if (this.aiBoostCooldown > 0) this.aiBoostCooldown--;
                 if (frameCount % 30 === 0) { this.aiConfidence = Math.min(1.0, this.score / 2000); if (this.aiTrauma > 0) this.aiTrauma = Math.max(0, this.aiTrauma - (0.03 + this.aiConfidence * 0.04)); this.aiReactionDelay = Math.max(0, Math.floor(3 - this.aiConfidence * 3)); this.aiMicroError = Math.max(0.005, 0.03 - this.aiConfidence * 0.025); }
@@ -2296,57 +2478,57 @@
                 }
 
                 this.aiDecisionTimer--; if (this.aiDecisionTimer > 0) return; this.isBoosting = false;
-                let baseInterval = this.aiPersonality === 0 ? 10 : this.aiPersonality === 2 ? 12 : 18; this.aiDecisionTimer = baseInterval + Math.floor(Math.random() * 18);
+                let baseInterval = this.aiPersonality === 0 ? 6 : this.aiPersonality === 2 ? 7 : 12; this.aiDecisionTimer = baseInterval + Math.floor(Math.random() * 10);
                 let distToCenter = Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER);
                 if (distToCenter > currentArenaRadius - 600) { this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x) + (Math.random() - 0.5) * 0.3; this.isBoosting = distToCenter > currentArenaRadius - 300 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 10; return; }
 
                 if (this.aiEncirclePhase > 0 && this.aiEncircleTarget && this.aiTrauma < 0.5) {
                     let t = this.aiEncircleTarget; if (!t.alive || Math.hypot(t.x - this.x, t.y - this.y) > 1500) { this.aiEncirclePhase = 0; this.aiEncircleTarget = null; } else {
                         let dToTarget = Math.hypot(t.x - this.x, t.y - this.y);
-                        if (this.aiEncirclePhase < 30) { let timeEst = dToTarget / Math.max(1, this.speed); let ix = t.x + Math.cos(t.angle) * t.speed * timeEst; let iy = t.y + Math.sin(t.angle) * t.speed * timeEst; this.targetAngle = Math.atan2(iy - this.y, ix - this.x); this.isBoosting = dToTarget > 200 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 8; }
-                        else if (this.aiEncirclePhase < 80) { let crossAngle = t.angle + Math.PI * 0.5; this.targetAngle = crossAngle; this.isBoosting = this.aiBoostCooldown === 0 && this.score > 150; if (this.isBoosting) this.aiBoostCooldown = 5; }
+                        if (this.aiEncirclePhase < 30) { let timeEst = dToTarget / Math.max(1, this.speed); let ix = t.x + Math.cos(t.angle) * t.speed * timeEst; let iy = t.y + Math.sin(t.angle) * t.speed * timeEst; this.targetAngle = Math.atan2(iy - this.y, ix - this.x); this.isBoosting = dToTarget > 150 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 5; }
+                        else if (this.aiEncirclePhase < 80) { let crossAngle = t.angle + Math.PI * 0.5; this.targetAngle = crossAngle; this.isBoosting = this.aiBoostCooldown === 0 && this.score > 100; if (this.isBoosting) this.aiBoostCooldown = 4; }
                         else if (this.score > t.score * 1.5) { let progress = Math.min(1.0, (this.aiEncirclePhase - 80) / 120); let orbitRadius = t.radius * (8 - progress * 5); orbitRadius = Math.max(t.radius * 2.5, orbitRadius); let angToTarget = Math.atan2(this.y - t.y, this.x - t.x); let targetOX = t.x + Math.cos(angToTarget + 0.18) * orbitRadius; let targetOY = t.y + Math.sin(angToTarget + 0.18) * orbitRadius; this.targetAngle = Math.atan2(targetOY - this.y, targetOX - this.x); this.isBoosting = dToTarget > orbitRadius * 1.3 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 8; }
                         this.aiEncirclePhase++; if (this.aiEncirclePhase > 200) { this.aiEncirclePhase = 0; this.aiEncircleTarget = null; } return;
                     }
                 }
 
                 let prey = null, preyDist = 9999, threat = null, threatDist = 9999, nearestFood = null, bestFoodScore = -1, nearestButterfly = null, bDist = 9999;
-                let preyRange = 1800 * (1 - this.aiTrauma * 0.4);
+                let preyRange = 2400 * (1 - this.aiTrauma * 0.25);
                 for (let s of snakes) {
                     if (s === this || !s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y);
-                    if (d < preyRange) { if (s.score < this.score * 0.85 && d < preyDist) { prey = s; preyDist = d; } if (s.score > this.score * 1.2 && d < threatDist) { threat = s; threatDist = d; } }
+                    if (d < preyRange) { if (s.score < this.score * 1.15 && d < preyDist) { prey = s; preyDist = d; } if (s.score > this.score * 1.35 && d < threatDist) { threat = s; threatDist = d; } }
                 }
-                let nearbyIndices = getNearbyFoodIndices(this.x, this.y, 900);
-                for (let idx of nearbyIndices) { let f = foods[idx]; if (!f || f.dead) continue; let d = Math.hypot(f.x - this.x, f.y - this.y); let valMult = f.isDropped ? (4 + this.aiConfidence * 3) : 1; let scoreVal = (f.value * valMult) / Math.max(1, d); if (scoreVal > bestFoodScore) { bestFoodScore = scoreVal; nearestFood = f; } }
+                let nearbyIndices = getNearbyFoodIndices(this.x, this.y, 1400);
+                for (let idx of nearbyIndices) { let f = foods[idx]; if (!f || f.dead) continue; let d = Math.hypot(f.x - this.x, f.y - this.y); let valMult = f.isDropped ? (7 + this.aiConfidence * 5) : 1; let scoreVal = (f.value * valMult) / Math.max(1, d); if (scoreVal > bestFoodScore) { bestFoodScore = scoreVal; nearestFood = f; } }
                 for (let b of butterflies) { let d = Math.hypot(b.x - this.x, b.y - this.y); if (d < bDist && d < 800) { bDist = d; nearestButterfly = b; } }
 
                 let decidedAngle = this.targetAngle;
 
                 if (this.aiPersonality === 0) {
-                    let wantAttack = prey && preyDist < 900 && Math.random() < this.aiAggression + 0.25;
-                    if (wantAttack) { let timeEst = preyDist / Math.max(1, this.speed); let ix = prey.x + Math.cos(prey.angle) * prey.speed * timeEst; let iy = prey.y + Math.sin(prey.angle) * prey.speed * timeEst; let dToIntercept = Math.hypot(ix - this.x, iy - this.y); if (preyDist < 400 && this.score > prey.score * 1.3) { this.aiEncircleTarget = prey; this.aiEncirclePhase = 1; } decidedAngle = Math.atan2(iy - this.y, ix - this.x); this.isBoosting = dToIntercept < 700 && dToIntercept > 100 && this.score > 150 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 12; }
-                    else if (threat && threatDist < 500 && Math.random() > this.aiRiskTolerance + 0.3) { decidedAngle = Math.atan2(this.y - threat.y, this.x - threat.x); this.isBoosting = threatDist < 350 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 20; }
-                    else if (nearestFood) { let foodD = Math.hypot(nearestFood.x - this.x, nearestFood.y - this.y); decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x); if (this.aiConfidence > 0.3) decidedAngle += Math.sin(frameCount * 0.04) * 0.12; if (nearestFood.isDropped && foodD < 800 && this.aiBoostCooldown === 0) { this.isBoosting = true; this.aiBoostCooldown = 10; } }
+                    let wantAttack = prey && preyDist < 1500 && Math.random() < this.aiAggression + 0.32;
+                    if (wantAttack) { let timeEst = preyDist / Math.max(1, this.speed); let ix = prey.x + Math.cos(prey.angle) * prey.speed * timeEst; let iy = prey.y + Math.sin(prey.angle) * prey.speed * timeEst; let dToIntercept = Math.hypot(ix - this.x, iy - this.y); if (preyDist < 650 && this.score > prey.score * 1.05) { this.aiEncircleTarget = prey; this.aiEncirclePhase = 1; } decidedAngle = Math.atan2(iy - this.y, ix - this.x); this.isBoosting = dToIntercept < 950 && dToIntercept > 70 && this.score > 80 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 7; }
+                    else if (threat && threatDist < 380 && Math.random() > this.aiRiskTolerance + 0.42) { decidedAngle = Math.atan2(this.y - threat.y, this.x - threat.x); this.isBoosting = threatDist < 280 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 16; }
+                    else if (nearestFood) { let foodD = Math.hypot(nearestFood.x - this.x, nearestFood.y - this.y); decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x); if (this.aiConfidence > 0.3) decidedAngle += Math.sin(frameCount * 0.04) * 0.12; if ((nearestFood.isDropped || (this.aiGreed > 0.75 && foodD < 350)) && this.aiBoostCooldown === 0) { this.isBoosting = true; this.aiBoostCooldown = 7; } }
                     else { let dHome = Math.hypot(this.x - this.aiHomeX, this.y - this.aiHomeY); if (dHome > this.aiTerritoryRadius) { decidedAngle = Math.atan2(this.aiHomeY - this.y, this.aiHomeX - this.x) + (Math.random() - 0.5) * 0.5; } else { this.aiWanderAngle += Math.sin(frameCount * 0.015 + this.score) * 0.25 + (Math.random() - 0.5) * 0.35; decidedAngle = this.aiWanderAngle; } }
                 } else if (this.aiPersonality === 1) {
-                    if (threat && threatDist < 1200) { let fleeAngle = Math.atan2(this.y - threat.y, this.x - threat.x); if (nearestFood && threatDist > 700) { let foodAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x); decidedAngle = fleeAngle * 0.7 + foodAngle * 0.3; } else { decidedAngle = fleeAngle; } this.isBoosting = threatDist < 700 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 30; }
+                    if (threat && threatDist < 850) { let fleeAngle = Math.atan2(this.y - threat.y, this.x - threat.x); if (nearestFood && threatDist > 500) { let foodAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x); decidedAngle = fleeAngle * 0.6 + foodAngle * 0.4; } else { decidedAngle = fleeAngle; } this.isBoosting = threatDist < 550 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 22; }
                     else if (nearestButterfly && bDist < 600) { decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x); this.isBoosting = bDist < 350 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 15; }
                     else if (nearestFood) { decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x); }
                     else { let dHome = Math.hypot(this.x - this.aiHomeX, this.y - this.aiHomeY); if (dHome > this.aiTerritoryRadius * 0.7) { decidedAngle = Math.atan2(this.aiHomeY - this.y, this.aiHomeX - this.x) + (Math.random() - 0.5) * 0.3; } else { this.aiWanderAngle += (Math.random() - 0.5) * 0.3; decidedAngle = this.aiWanderAngle; } }
                 } else if (this.aiPersonality === 2) {
                     let dP = player && player.alive ? Math.hypot(player.x - this.x, player.y - this.y) : 9999;
-                    if (player && player.alive && dP < 2500) { if (dP < 500 && this.score > player.score * 0.5) { this.aiEncircleTarget = player; this.aiEncirclePhase = 1; } let timeEst = dP / Math.max(1, this.speed); let ix = player.x + Math.cos(player.angle) * player.speed * timeEst; let iy = player.y + Math.sin(player.angle) * player.speed * timeEst; decidedAngle = Math.atan2(iy - this.y, ix - this.x); this.isBoosting = dP < 800 && dP > 150 && this.score > player.score * 0.5 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 15; }
-                    else if (nearestFood) { decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x); } else if (prey && preyDist < 1200) { let timeEst = preyDist / Math.max(1, this.speed); let ix = prey.x + Math.cos(prey.angle) * prey.speed * timeEst; let iy = prey.y + Math.sin(prey.angle) * prey.speed * timeEst; decidedAngle = Math.atan2(iy - this.y, ix - this.x); } else { this.aiWanderAngle += Math.sin(frameCount * 0.01) * 0.2 + (Math.random() - 0.5) * 0.4; decidedAngle = this.aiWanderAngle; }
+                    if (player && player.alive && dP < 3500) { if (dP < 700 && this.score > player.score * 0.38) { this.aiEncircleTarget = player; this.aiEncirclePhase = 1; } let timeEst = dP / Math.max(1, this.speed); let ix = player.x + Math.cos(player.angle) * player.speed * timeEst; let iy = player.y + Math.sin(player.angle) * player.speed * timeEst; decidedAngle = Math.atan2(iy - this.y, ix - this.x); this.isBoosting = dP < 1100 && dP > 100 && this.score > player.score * 0.3 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 9; }
+                    else if (nearestFood) { decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x); } else if (prey && preyDist < 1900) { let timeEst = preyDist / Math.max(1, this.speed); let ix = prey.x + Math.cos(prey.angle) * prey.speed * timeEst; let iy = prey.y + Math.sin(prey.angle) * prey.speed * timeEst; decidedAngle = Math.atan2(iy - this.y, ix - this.x); this.isBoosting = preyDist > 600 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 10; } else { this.aiWanderAngle += Math.sin(frameCount * 0.01) * 0.2 + (Math.random() - 0.5) * 0.4; decidedAngle = this.aiWanderAngle; }
                 } else if (this.aiPersonality === 3) {
-                    let droppedFood = null, bestDropVal = -1; let dFoodIndices = getNearbyFoodIndices(this.x, this.y, 1200); for (let idx of dFoodIndices) { let f = foods[idx]; if (!f || f.dead || !f.isDropped) continue; let d = Math.hypot(f.x - this.x, f.y - this.y); let score = f.value / Math.max(1, d); if (score > bestDropVal) { bestDropVal = score; droppedFood = f; } }
-                    if (droppedFood) { let dd = Math.hypot(droppedFood.x - this.x, droppedFood.y - this.y); decidedAngle = Math.atan2(droppedFood.y - this.y, droppedFood.x - this.x); this.isBoosting = dd > 150 && dd < 900 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 12; }
+                    let droppedFood = null, bestDropVal = -1; let dFoodIndices = getNearbyFoodIndices(this.x, this.y, 1900); for (let idx of dFoodIndices) { let f = foods[idx]; if (!f || f.dead || !f.isDropped) continue; let d = Math.hypot(f.x - this.x, f.y - this.y); let score = f.value / Math.max(1, d); if (score > bestDropVal) { bestDropVal = score; droppedFood = f; } }
+                    if (droppedFood) { let dd = Math.hypot(droppedFood.x - this.x, droppedFood.y - this.y); decidedAngle = Math.atan2(droppedFood.y - this.y, droppedFood.x - this.x); this.isBoosting = dd > 100 && dd < 1300 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 8; }
                     else if (threat && threatDist < 1000) { decidedAngle = Math.atan2(this.y - threat.y, this.x - threat.x); this.isBoosting = threatDist < 600 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 25; }
                     else if (prey && preyDist < 500 && prey.score < 50) { let timeEst = preyDist / Math.max(1, this.speed); let ix = prey.x + Math.cos(prey.angle) * prey.speed * timeEst; let iy = prey.y + Math.sin(prey.angle) * prey.speed * timeEst; decidedAngle = Math.atan2(iy - this.y, ix - this.x); }
                     else if (nearestFood) { decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x); } else if (nearestButterfly && bDist < 700) { decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x); this.isBoosting = bDist < 400 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 15; } else { this.aiWanderAngle += (Math.random() - 0.5) * 0.5; decidedAngle = this.aiWanderAngle; }
                 } else if (this.aiPersonality === 4) {
                     let dHome = Math.hypot(this.x - this.aiHomeX, this.y - this.aiHomeY); let inTerrit = dHome < this.aiTerritoryRadius; let invader = null, invaderDist = 9999;
                     if (inTerrit) { for (let s of snakes) { if (s === this || !s.alive) continue; let dInv = Math.hypot(s.x - this.aiHomeX, s.y - this.aiHomeY); let dToMe = Math.hypot(s.x - this.x, s.y - this.y); if (dInv < this.aiTerritoryRadius && dToMe < invaderDist) { invader = s; invaderDist = dToMe; } } }
-                    if (invader && invaderDist < 1200 && this.score > invader.score * 0.8 && this.aiTrauma < 0.4) { let timeEst = invaderDist / Math.max(1, this.speed); let ix = invader.x + Math.cos(invader.angle) * invader.speed * timeEst; let iy = invader.y + Math.sin(invader.angle) * invader.speed * timeEst; decidedAngle = Math.atan2(iy - this.y, ix - this.x); this.isBoosting = invaderDist < 600 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 12; }
+                    if (invader && invaderDist < 1700 && this.score > invader.score * 0.7 && this.aiTrauma < 0.45) { let timeEst = invaderDist / Math.max(1, this.speed); let ix = invader.x + Math.cos(invader.angle) * invader.speed * timeEst; let iy = invader.y + Math.sin(invader.angle) * invader.speed * timeEst; decidedAngle = Math.atan2(iy - this.y, ix - this.x); this.isBoosting = invaderDist < 850 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 8; }
                     else if (!inTerrit) { decidedAngle = Math.atan2(this.aiHomeY - this.y, this.aiHomeX - this.x) + (Math.random() - 0.5) * 0.2; this.isBoosting = dHome > this.aiTerritoryRadius * 1.5 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 15; }
                     else if (nearestFood && Math.hypot(nearestFood.x - this.aiHomeX, nearestFood.y - this.aiHomeY) < this.aiTerritoryRadius) { decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x); }
                     else { let patrolAngle = Math.atan2(this.y - this.aiHomeY, this.x - this.aiHomeX); let patrolR = this.aiTerritoryRadius * 0.6; let tX = this.aiHomeX + Math.cos(patrolAngle + 0.08) * patrolR; let tY = this.aiHomeY + Math.sin(patrolAngle + 0.08) * patrolR; decidedAngle = Math.atan2(tY - this.y, tX - this.x); }
@@ -2469,16 +2651,23 @@
 
                 if (this.trails.length > 0 && APP_SETTINGS.highGfx) {
                     for (let idx = 0; idx < this.trails.length; idx++) {
-                        let t = this.trails[idx]; ctx.globalAlpha = t.life * 0.4;
-                        let color = isRainbow ? `hsl(${(frameCount * 4 - idx * 15) % 360}, 100%, 50%)` : this.mainColor; ctx.fillStyle = color;
-                        if (this.isBoosting) {
-                            let lightR = this.radius * (2 + t.life * 3); let lightGrad = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, lightR);
-                            let stopColor = isRainbow ? color.replace('hsl', 'hsla').replace(')', ', 0.3)') : this.mainColor + '44';
-                            lightGrad.addColorStop(0, stopColor); lightGrad.addColorStop(1, 'transparent');
-                            ctx.save(); ctx.globalAlpha = t.life * 0.3; ctx.fillStyle = lightGrad; ctx.beginPath(); ctx.arc(t.x, t.y, lightR, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-                        }
-                        ctx.beginPath(); ctx.arc(t.x, t.y, this.radius * (0.8 + t.life * 0.4), 0, Math.PI * 2); ctx.fill();
-                    } ctx.globalAlpha = 1.0;
+                        let t = this.trails[idx];
+                        let color = isRainbow ? `hsl(${(frameCount * 4 - idx * 15) % 360}, 100%, 50%)` : this.mainColor;
+                        let trailR = this.radius * (0.65 + t.life * 0.55);
+                        // Halo externo do rastro
+                        let lightR = this.radius * (1.8 + t.life * 2.5);
+                        let lightGrad = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, lightR);
+                        let alphaHex = isRainbow ? color : hexAlpha(color, 0.35 * t.life);
+                        lightGrad.addColorStop(0, hexAlpha(color, 0.30 * t.life));
+                        lightGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.save(); ctx.globalAlpha = t.life * 0.5; ctx.fillStyle = lightGrad;
+                        ctx.beginPath(); ctx.arc(t.x, t.y, lightR, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+                        // Núcleo do rastro
+                        ctx.globalAlpha = t.life * t.life * 0.55;
+                        ctx.fillStyle = color;
+                        ctx.beginPath(); ctx.arc(t.x, t.y, trailR, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.globalAlpha = 1.0;
                 }
 
                 const totalSegs = this.segments.length; let headR = this.radius;
@@ -2619,16 +2808,123 @@
         function rgbToHex(r, g, b) { return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1); }
         function hexToRgb(hex) { let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 }; }
 
+        function applyColorToSegment(color) {
+            if (!/^#[0-9a-fA-F]{6}$/.test(color)) return;
+            edSkin.segments[activeSegIndex] = color;
+            document.getElementById('editor-color-picker').value = color;
+            document.getElementById('s-hex-input').value = color.toUpperCase();
+            document.getElementById('s-swatch-box').style.background = color;
+            renderRibbon();
+        }
+
         function renderRibbon() {
             const ribbon = document.getElementById('segment-ribbon');
             ribbon.innerHTML = '';
             edSkin.segments.forEach((color, i) => {
-                let box = document.createElement('div');
-                box.className = 'segment-box' + (i === activeSegIndex ? ' active' : '');
-                box.style.backgroundColor = color;
-                box.onclick = () => { activeSegIndex = i; document.getElementById('editor-color-picker').value = color; renderRibbon(); };
-                ribbon.appendChild(box);
+                let seg = document.createElement('div');
+                seg.className = 's-seg' + (i === activeSegIndex ? ' active' : '');
+                seg.style.background = color;
+                seg.title = 'Gomo ' + (i + 1);
+                seg.onclick = () => { activeSegIndex = i; applyColorToSegment(color); };
+                ribbon.appendChild(seg);
             });
+            const active = ribbon.querySelector('.s-seg.active');
+            if (active) active.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+        }
+
+        const STUDIO_PALETTE = [
+            '#ff2d55','#ff6b35','#ffcc00','#c8f72f','#00ff88','#00d9ff',
+            '#5e5cf7','#bf5af2','#ff375f','#ff9f0a','#ffd60a','#30d158',
+            '#64d2ff','#0a84ff','#7c5cf7','#df5af2','#ffffff','#c7c7cc',
+            '#8e8e93','#48484a','#1c1c1e','#000000','#ff453a','#32d74b'
+        ];
+
+        function buildStudioPalette() {
+            const grid = document.getElementById('s-palette');
+            grid.innerHTML = '';
+            STUDIO_PALETTE.forEach(c => {
+                let el = document.createElement('div');
+                el.className = 's-pal';
+                el.style.background = c;
+                el.title = c;
+                el.onclick = () => {
+                    applyColorToSegment(c);
+                    document.querySelectorAll('.s-pal').forEach(p => p.classList.remove('sel'));
+                    el.classList.add('sel');
+                };
+                grid.appendChild(el);
+            });
+        }
+
+        const STUDIO_PRESETS = [
+            { id: 'rainbow',   label: 'ARCO-ÍRIS', gradient: 'linear-gradient(90deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff)' },
+            { id: 'gradient',  label: 'DEGRADÊ',   gradient: 'linear-gradient(90deg,#ff0000,#ff00ff,#0000ff)' },
+            { id: 'stripes',   label: 'LISTRAS',   gradient: 'repeating-linear-gradient(90deg,#ffffff 0px,#ffffff 10px,#000 10px,#000 20px)' },
+            { id: 'checkered', label: 'XADREZ',    gradient: 'repeating-linear-gradient(45deg,#ff4444 0px,#ff4444 12px,#fff 12px,#fff 24px)' },
+            { id: 'radial',    label: 'RADIAL',    gradient: 'linear-gradient(90deg,#ffdf00,#ff8800,#ff2200)' },
+            { id: 'ocean',     label: 'OCEANO',    gradient: 'linear-gradient(90deg,#00d9ff,#0057ff,#6b00ff)' },
+        ];
+
+        function buildStudioPresets() {
+            const grid = document.getElementById('s-preset-grid');
+            grid.innerHTML = '';
+            STUDIO_PRESETS.forEach(p => {
+                let card = document.createElement('div');
+                card.className = 's-preset-card';
+                card.innerHTML = `<div class="s-preset-strip" style="background:${p.gradient}"></div><div class="s-preset-label">${p.label}</div>`;
+                card.onclick = () => applyPreset(p.id);
+                grid.appendChild(card);
+            });
+        }
+
+        function applyPreset(type) {
+            if (type === 'rainbow') {
+                edSkin.segments = [];
+                for (let i = 0; i < 15; i++) {
+                    let h = (i / 15) * 360;
+                    edCtx.fillStyle = `hsl(${h}, 100%, 50%)`;
+                    edCtx.fillRect(0, 0, 1, 1);
+                    let data = edCtx.getImageData(0, 0, 1, 1).data;
+                    edSkin.segments.push(rgbToHex(data[0], data[1], data[2]));
+                }
+            } else if (type === 'stripes') {
+                if (edSkin.segments.length < 2) edSkin.segments.push('#ffffff');
+                let c1 = edSkin.segments[0], c2 = edSkin.segments[1];
+                let len = Math.max(10, edSkin.segments.length);
+                edSkin.segments = [];
+                for (let i = 0; i < len; i++) edSkin.segments.push(i % 2 === 0 ? c1 : c2);
+            } else if (type === 'gradient') {
+                if (edSkin.segments.length < 2) edSkin.segments.push('#ffffff');
+                let c1 = hexToRgb(edSkin.segments[0]), c2 = hexToRgb(edSkin.segments[edSkin.segments.length - 1]);
+                let len = Math.max(10, edSkin.segments.length);
+                edSkin.segments = [];
+                for (let i = 0; i < len; i++) {
+                    let t = i / (len - 1);
+                    edSkin.segments.push(rgbToHex(Math.round(c1.r+(c2.r-c1.r)*t), Math.round(c1.g+(c2.g-c1.g)*t), Math.round(c1.b+(c2.b-c1.b)*t)));
+                }
+            } else if (type === 'checkered') {
+                if (edSkin.segments.length < 2) { edSkin.segments.push('#000000'); edSkin.segments.push('#ffffff'); }
+                let c1 = edSkin.segments[0], c2 = edSkin.segments[1];
+                let len = Math.max(12, edSkin.segments.length);
+                edSkin.segments = [];
+                for (let i = 0; i < len; i++) { let row = Math.floor(i/4), col = i%4; edSkin.segments.push(((row+col)%2===0)?c1:c2); }
+            } else if (type === 'radial') {
+                let baseColor = edSkin.segments[0] || '#ffdf00';
+                let len = Math.max(12, edSkin.segments.length);
+                edSkin.segments = [];
+                for (let i = 0; i < len; i++) {
+                    let br = 1 - (i / len) * 0.6, c = hexToRgb(baseColor);
+                    edSkin.segments.push(rgbToHex(Math.round(c.r*br), Math.round(c.g*br), Math.round(c.b*br)));
+                }
+            } else if (type === 'ocean') {
+                const oc = ['#00d9ff','#00aaff','#0077ff','#0055ff','#4400ff','#6b00ff'];
+                let len = Math.max(12, edSkin.segments.length);
+                edSkin.segments = [];
+                for (let i = 0; i < len; i++) edSkin.segments.push(oc[i % oc.length]);
+            }
+            activeSegIndex = 0;
+            renderRibbon();
+            applyColorToSegment(edSkin.segments[0]);
         }
 
         document.getElementById('btn-add-seg').onclick = () => {
@@ -2636,6 +2932,7 @@
                 edSkin.segments.push(edSkin.segments[edSkin.segments.length - 1]);
                 activeSegIndex = edSkin.segments.length - 1;
                 renderRibbon();
+                applyColorToSegment(edSkin.segments[activeSegIndex]);
             }
         };
         document.getElementById('btn-rem-seg').onclick = () => {
@@ -2643,91 +2940,35 @@
                 edSkin.segments.pop();
                 if (activeSegIndex >= edSkin.segments.length) activeSegIndex = edSkin.segments.length - 1;
                 renderRibbon();
+                applyColorToSegment(edSkin.segments[activeSegIndex]);
             }
         };
 
         document.getElementById('editor-color-picker').oninput = (e) => {
             edSkin.segments[activeSegIndex] = e.target.value;
+            document.getElementById('s-hex-input').value = e.target.value.toUpperCase();
+            document.getElementById('s-swatch-box').style.background = e.target.value;
             renderRibbon();
         };
 
+        document.getElementById('s-hex-input').oninput = (e) => {
+            let val = e.target.value.trim();
+            if (!val.startsWith('#')) val = '#' + val;
+            if (/^#[0-9a-fA-F]{6}$/.test(val)) applyColorToSegment(val);
+        };
+
         document.getElementById('btn-fill-all').onclick = () => {
-            let c = edSkin.segments[activeSegIndex];
-            edSkin.segments.fill(c);
+            edSkin.segments.fill(edSkin.segments[activeSegIndex]);
             renderRibbon();
         };
 
         document.getElementById('btn-random').onclick = () => {
-            edSkin.segments[activeSegIndex] = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-            document.getElementById('editor-color-picker').value = edSkin.segments[activeSegIndex];
-            renderRibbon();
+            let c = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+            applyColorToSegment(c);
         };
 
-        document.querySelectorAll('.quick-color-btn').forEach(btn => {
-            btn.onclick = () => {
-                let color = btn.getAttribute('data-color');
-                document.getElementById('editor-color-picker').value = color;
-                edSkin.segments[activeSegIndex] = color;
-                renderRibbon();
-            };
-        });
-
-        document.querySelectorAll('.preset-btn').forEach(btn => {
-            btn.onclick = () => {
-                const type = btn.getAttribute('data-preset');
-                if (type === 'rainbow') {
-                    edSkin.segments = [];
-                    for (let i = 0; i < 15; i++) {
-                        let h = (i / 15) * 360;
-                        edCtx.fillStyle = `hsl(${h}, 100%, 50%)`;
-                        edCtx.fillRect(0, 0, 1, 1);
-                        let data = edCtx.getImageData(0, 0, 1, 1).data;
-                        edSkin.segments.push(rgbToHex(data[0], data[1], data[2]));
-                    }
-                } else if (type === 'stripes') {
-                    if (edSkin.segments.length < 2) edSkin.segments.push('#ffffff');
-                    let c1 = edSkin.segments[0], c2 = edSkin.segments[1];
-                    let len = Math.max(10, edSkin.segments.length);
-                    edSkin.segments = [];
-                    for (let i = 0; i < len; i++) edSkin.segments.push(i % 2 === 0 ? c1 : c2);
-                } else if (type === 'gradient') {
-                    if (edSkin.segments.length < 2) edSkin.segments.push('#ffffff');
-                    let c1 = hexToRgb(edSkin.segments[0]), c2 = hexToRgb(edSkin.segments[edSkin.segments.length - 1]);
-                    let len = Math.max(10, edSkin.segments.length);
-                    edSkin.segments = [];
-                    for (let i = 0; i < len; i++) {
-                        let r = Math.round(c1.r + (c2.r - c1.r) * (i / (len - 1)));
-                        let g = Math.round(c1.g + (c2.g - c1.g) * (i / (len - 1)));
-                        let b = Math.round(c1.b + (c2.b - c1.b) * (i / (len - 1)));
-                        edSkin.segments.push(rgbToHex(r, g, b));
-                    }
-                } else if (type === 'checkered') {
-                    if (edSkin.segments.length < 2) { edSkin.segments.push('#000000'); edSkin.segments.push('#ffffff'); }
-                    let c1 = edSkin.segments[0], c2 = edSkin.segments[1];
-                    let len = Math.max(12, edSkin.segments.length);
-                    edSkin.segments = [];
-                    for (let i = 0; i < len; i++) {
-                        let row = Math.floor(i / 4);
-                        let col = i % 4;
-                        edSkin.segments.push(((row + col) % 2 === 0) ? c1 : c2);
-                    }
-                } else if (type === 'radial') {
-                    let baseColor = edSkin.segments[0] || '#ffdf00';
-                    let len = Math.max(12, edSkin.segments.length);
-                    edSkin.segments = [];
-                    for (let i = 0; i < len; i++) {
-                        let brightness = 1 - (i / len) * 0.6;
-                        let c = hexToRgb(baseColor);
-                        let r = Math.round(c.r * brightness);
-                        let g = Math.round(c.g * brightness);
-                        let b = Math.round(c.b * brightness);
-                        edSkin.segments.push(rgbToHex(r, g, b));
-                    }
-                }
-                activeSegIndex = 0;
-                renderRibbon();
-            };
-        });
+        document.getElementById('btn-effect-glow').onclick = function() { this.classList.toggle('on'); };
+        document.getElementById('btn-effect-pulse').onclick = function() { this.classList.toggle('on'); };
 
         function drawEditorPreview() {
             if (gameState !== 'skin-editor') return;
@@ -2736,8 +2977,8 @@
             let headX = 200 + ((len * spc) / 2), centerY = 200, segs = [];
             for (let i = 0; i < len; i++) segs.push({ x: headX - (i * spc), y: centerY + Math.sin(edTime * 0.005 - i * 0.18) * (rad * 1.5) });
 
-            let hasPulse = document.getElementById('chk-pulse').checked;
-            let hasGlow = document.getElementById('chk-glow').checked;
+            let hasPulse = document.getElementById('btn-effect-pulse').classList.contains('on');
+            let hasGlow = document.getElementById('btn-effect-glow').classList.contains('on');
             let mainColor = edSkin.segments[0];
 
             if (hasGlow) {
@@ -2769,7 +3010,10 @@
             document.getElementById('skin-preview-ui').classList.add('hidden');
             document.getElementById('skin-editor-ui').classList.remove('hidden');
             activeSegIndex = 0;
+            buildStudioPalette();
+            buildStudioPresets();
             renderRibbon();
+            applyColorToSegment(edSkin.segments[0]);
             drawEditorPreview();
         };
 
@@ -2782,8 +3026,8 @@
         document.getElementById('btn-save-editor').onclick = () => {
             let finalSkinColors = [...edSkin.segments];
             finalSkinColors.effects = [];
-            if (document.getElementById('chk-glow').checked) finalSkinColors.effects.push('glow');
-            if (document.getElementById('chk-pulse').checked) finalSkinColors.effects.push('pulse');
+            if (document.getElementById('btn-effect-glow').classList.contains('on')) finalSkinColors.effects.push('glow');
+            if (document.getElementById('btn-effect-pulse').classList.contains('on')) finalSkinColors.effects.push('pulse');
             let customName = document.getElementById('editor-skin-name').value.trim();
             finalSkinColors.name = customName || ("CUSTOM " + (savedCustomSkins.length + 1));
 

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const fs=require\\('fs'\\);const html=fs.readFileSync\\('index.html','utf8'\\);const m=html.match\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\);let ok=true;m&&m.forEach\\(\\(s,i\\)=>{try{new Function\\(s.replace\\(/<\\\\/?script>/g,''\\)\\);}catch\\(e\\){ok=false;console.error\\('Script block '+i+':',e.message\\);}}\\);console.log\\(ok?'JS syntax OK':'ERRORS FOUND'\\);\")"
+    ]
+  }
+}
