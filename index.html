@@ -2460,7 +2460,7 @@
             let act = snakes.filter(s => s.alive); let sorted = [...act].sort((a, b) => b.score - a.score);
             UI.rank.innerText = sorted.findIndex(s => s === player) + 1; UI.total.innerText = sorted.length;
             let html = ''; for (let i = 0; i < Math.min(10, sorted.length); i++) { let s = sorted[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`; }
-            if (UI.lb && (UI.lb.classList.contains('expanded') || !IS_MOBILE_CLIENT)) {
+            if (UI.lb && UI.lbList) {
                 UI.lbList.innerHTML = html;
             }
             mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill(); mCtxElement.strokeStyle = 'rgba(255,255,255,0.15)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
