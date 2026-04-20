@@ -913,59 +913,77 @@
         /* EDITOR DE SKINS CUSTOMIZADAS */
         #skin-editor-ui {
             position: absolute;
-            inset: 5%;
-            max-height: 90vh;
+            inset: 0;
             z-index: 300;
             display: flex;
             flex-direction: column;
-            background: rgba(20, 27, 47, 0.85);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
+            background: rgba(20, 27, 47, 0.95);
+            border: none;
+            border-radius: 0;
             padding: 0;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: none;
             backdrop-filter: blur(15px);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
         }
 
         @media (max-width: 768px) {
             #skin-editor-ui {
-                inset: 2%;
+                inset: 0;
+                padding: 0;
+                height: 100vh;
+                width: 100vw;
             }
         }
 
         .editor-body {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             flex: 1;
-            gap: 15px;
+            gap: 8px;
             overflow: hidden;
-            padding: 15px;
+            padding: 12px;
+            height: 100%;
         }
 
         @media (max-width: 900px) {
             .editor-body {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+                padding: 10px;
+                gap: 6px;
             }
         }
 
         .preview-container {
             background: linear-gradient(135deg, rgba(15, 20, 35, 0.6) 0%, rgba(10, 15, 30, 0.8) 100%);
-            border-radius: 12px;
+            border-radius: 8px;
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
             border: 1px solid var(--border-color);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(0, 217, 255, 0.05);
-            min-height: 350px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            flex: 0 0 auto;
+            width: 100%;
+            height: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .preview-container {
+                height: 160px;
+                border-radius: 6px;
+            }
         }
 
         .controls-container {
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            padding-right: 5px;
-            max-height: 500px;
+            gap: 8px;
+            padding-right: 3px;
+            flex: 1;
+            min-height: 0;
         }
 
         .controls-container::-webkit-scrollbar {
@@ -980,31 +998,39 @@
         #segment-ribbon {
             display: flex;
             overflow-x: auto;
-            gap: 5px;
-            padding: 8px;
+            gap: 4px;
+            padding: 6px;
             background: rgba(15, 20, 35, 0.4);
-            border-radius: 8px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
 
         #segment-ribbon::-webkit-scrollbar {
-            height: 6px;
+            height: 4px;
         }
 
         #segment-ribbon::-webkit-scrollbar-thumb {
-            background: rgba(0, 217, 255, 0.4);
-            border-radius: 3px;
+            background: rgba(0, 217, 255, 0.3);
+            border-radius: 2px;
         }
 
         .segment-box {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
             border: 1px solid rgba(0, 217, 255, 0.2);
             cursor: pointer;
             flex-shrink: 0;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .segment-box {
+                width: 32px;
+                height: 32px;
+            }
         }
 
         .segment-box:hover {
@@ -1023,15 +1049,27 @@
             background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(0, 217, 255, 0.05) 100%);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            padding: 10px 14px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             flex: 1;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            letter-spacing: 0.5px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.3px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .preset-btn {
+                padding: 6px 10px;
+                font-size: 9px;
+                min-height: 28px;
+            }
         }
 
         .preset-btn:hover {
@@ -1518,14 +1556,13 @@
 
         <!-- SKIN EDITOR (NOVO) -->
         <div id="skin-editor-ui" class="hidden glass-panel"
-            style="max-width: 1000px; max-height: 90vh; display: flex; flex-direction: column;">
+            style="max-width: 100vw; max-height: 100vh; display: flex; flex-direction: column;">
             <div
-                style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--border-color);">
-                <h2
-                    style="color: var(--primary); margin: 15px 0; font-weight: 800; font-size: 22px; letter-spacing: 1px;">
+                style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;">
+                <h2 style="color: var(--primary); margin: 0; font-weight: 800; font-size: 16px; letter-spacing: 0.5px;">
                     ✨ SKIN STUDIO</h2>
                 <button id="btn-close-editor" class="btn-aaa"
-                    style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border-color: var(--border-color); width: auto; padding: 8px 16px; font-size: 11px; margin:0; box-shadow: none;">✕
+                    style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border-color: var(--border-color); width: auto; padding: 6px 12px; font-size: 10px; margin:0; box-shadow: none;">✗
                     FECHAR</button>
             </div>
             <div class="editor-body">
@@ -1534,14 +1571,14 @@
                         style="width: 100%; height: 100%; object-fit: contain;"></canvas>
                 </div>
                 <div class="controls-container">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="color: #fff; font-size: 12px; font-weight: 700;">GOMOS DA COBRA:</span>
-                        <div style="display: flex; gap: 5px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+                        <span style="color: #fff; font-size: 11px; font-weight: 700; flex-shrink: 0;">GOMOS:</span>
+                        <div style="display: flex; gap: 3px;">
                             <button id="btn-add-seg" class="btn-aaa"
-                                style="padding: 4px 8px; font-size: 11px; width: auto; min-width:0; margin:0;">+
+                                style="padding: 3px 6px; font-size: 9px; width: auto; min-width:0; margin:0;">+
                                 ADD</button>
                             <button id="btn-rem-seg" class="btn-aaa"
-                                style="padding: 4px 8px; font-size: 11px; width: auto; min-width:0; margin:0; background: #ff4444;">-
+                                style="padding: 3px 6px; font-size: 9px; width: auto; min-width:0; margin:0; background: #ff4444;">-
                                 REM</button>
                         </div>
                     </div>
@@ -1549,36 +1586,35 @@
                     <div id="segment-ribbon"></div>
 
                     <div
-                        style="display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
+                        style="display: flex; gap: 6px; align-items: stretch; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
                         <input type="color" id="editor-color-picker"
-                            style="flex: 1; height: 40px; border: none; cursor: pointer; background: transparent; padding: 0;">
-                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            style="flex: 0 0 36px; height: 36px; border: none; cursor: pointer; background: transparent; padding: 0; border-radius: 4px;">
+                        <div style="display: flex; flex-direction: column; gap: 3px; flex: 1;">
                             <button id="btn-fill-all" class="btn-aaa"
-                                style="padding: 5px; font-size: 10px; margin:0; width: 100%;">PREENCHER TUDO</button>
+                                style="padding: 3px; font-size: 9px; margin:0; width: 100%; flex: 1;">PREENCHER</button>
                             <button id="btn-random" class="btn-aaa"
-                                style="padding: 5px; font-size: 10px; background: #00ff88; margin:0; width: 100%;">COR
-                                ALEATÓRIA</button>
+                                style="padding: 3px; font-size: 9px; background: #00ff88; margin:0; width: 100%; flex: 1;">ALEATÓRIA</button>
                         </div>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 12px; margin: 5px 0 0 0;">PALETA RÁPIDA</h3>
-                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                    <h3 style="color: #ccc; font-size: 10px; margin: 4px 0 3px 0; font-weight: 600;">PALETA RÁPIDA</h3>
+                    <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                         <button class="quick-color-btn" data-color="#ff0000" title="Vermelho"
-                            style="background: #ff0000; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #ff0000; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#00ff00" title="Verde"
-                            style="background: #00ff00; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #00ff00; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#0000ff" title="Azul"
-                            style="background: #0000ff; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #0000ff; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#ffff00" title="Amarelo"
-                            style="background: #ffff00; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #ffff00; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#ff00ff" title="Magenta"
-                            style="background: #ff00ff; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #ff00ff; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#00ffff" title="Ciano"
-                            style="background: #00ffff; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #00ffff; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 12px; margin: 10px 0 5px 0;">PADRÕES AUTOMÁTICOS</h3>
-                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                    <h3 style="color: #ccc; font-size: 10px; margin: 6px 0 3px 0; font-weight: 600;">PADRÕES</h3>
+                    <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                         <button class="preset-btn" data-preset="rainbow">ARCO-ÍRIS</button>
                         <button class="preset-btn" data-preset="stripes">LISTRAS</button>
                         <button class="preset-btn" data-preset="gradient">DEGRADÊ</button>
@@ -1586,32 +1622,29 @@
                         <button class="preset-btn" data-preset="radial">RADIAL</button>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 12px; margin: 5px 0 0 0;">EFEITOS (VFX)</h3>
+                    <h3 style="color: #ccc; font-size: 10px; margin: 4px 0 3px 0; font-weight: 600;">EFEITOS</h3>
                     <div
-                        style="display: flex; gap: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+                        style="display: flex; gap: 8px; background: rgba(255,255,255,0.05); padding: 6px; border-radius: 6px;">
                         <label
-                            style="color: white; font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                            <input type="checkbox" id="chk-glow"> AURA NEON
+                            style="color: white; font-size: 10px; display: flex; align-items: center; gap: 3px; cursor: pointer;">
+                            <input type="checkbox" id="chk-glow"> AURA
                         </label>
                         <label
-                            style="color: white; font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                            <input type="checkbox" id="chk-pulse"> PULSO LUZ
+                            style="color: white; font-size: 10px; display: flex; align-items: center; gap: 3px; cursor: pointer;">
+                            <input type="checkbox" id="chk-pulse"> PULSO
                         </label>
                     </div>
-                    <div style="margin-top: 10px; padding: 0 15px;">
-                        <label
-                            style="color: #ccc; font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
-                            <input type="text" id="editor-skin-name" placeholder="Nome da Skin (opcional)"
-                                style="flex: 1; padding: 8px; border: 1px solid rgba(255, 223, 0, 0.2); border-radius: 6px; background: rgba(0,0,0,0.3); color: #fff; font-size: 11px; transition: border-color 0.3s;">
-                        </label>
+                    <div style="margin-top: 6px; padding: 0 8px;">
+                        <input type="text" id="editor-skin-name" placeholder="Nome da Skin"
+                            style="flex: 1; padding: 6px; border: 1px solid rgba(255, 223, 0, 0.2); border-radius: 4px; background: rgba(0,0,0,0.3); color: #fff; font-size: 10px; transition: border-color 0.3s; width: 100%; box-sizing: border-box;">
                     </div>
                 </div>
             </div>
             <div
-                style="display: flex; gap: 12px; padding: 15px; border-top: 1px solid var(--border-color); justify-content: flex-end;">
+                style="display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border-color); justify-content: flex-end; flex-shrink: 0;">
                 <button id="btn-save-editor" class="btn-aaa"
-                    style="padding: 12px 24px; background: var(--success); color: var(--bg-dark); font-weight: 700; width: auto; box-shadow: 0 4px 12px rgba(6, 255, 165, 0.3);">✓
-                    SALVAR SKIN</button>
+                    style="padding: 8px 16px; background: var(--success); color: var(--bg-dark); font-weight: 700; width: auto; font-size: 12px; box-shadow: 0 2px 8px rgba(6, 255, 165, 0.2);">✓
+                    SALVAR</button>
             </div>
         </div>
 
