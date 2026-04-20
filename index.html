@@ -2525,7 +2525,29 @@
                 if (frameCount % 30 === 0) { this.aiConfidence = Math.min(1.0, this.score / 2000); if (this.aiTrauma > 0) this.aiTrauma = Math.max(0, this.aiTrauma - (0.03 + this.aiConfidence * 0.04)); this.aiReactionDelay = Math.max(0, Math.floor(3 - this.aiConfidence * 3)); this.aiMicroError = Math.max(0.005, 0.03 - this.aiConfidence * 0.025); }
 
                 let danger = false, evadeAngle = 0, dangerUrgency = 0, dangerSnake = null; let scanRadius = this.radius * (10 + this.aiConfidence * 6 + this.aiTrauma * 4);
-                for (let other of snakes) {
+
+                // === AUTO-COLISÃO: verifica a própria cauda ===
+                {
+                    let spc = this.conf.espessuraInicial * CONFIG.cobra.distanciaGomos;
+                    let skipSegs = Math.max(10, Math.ceil(this.radius * 3.5 / Math.max(0.1, spc)));
+                    let selfR = this.isBoosting ? this.radius * 22 : this.radius * 11;
+                    for (let k = skipSegs; k < this.segments.length; k += 2) {
+                        let seg = this.segments[k];
+                        let ds = Math.hypot(seg.x - this.x, seg.y - this.y);
+                        if (ds > selfR) break;
+                        let ats = Math.atan2(seg.y - this.y, seg.x - this.x);
+                        let ad = ats - this.angle; while (ad > Math.PI) ad -= Math.PI * 2; while (ad < -Math.PI) ad += Math.PI * 2;
+                        if (Math.abs(ad) < 1.6) {
+                            danger = true;
+                            dangerUrgency = Math.min(1.0, 0.75 + 0.25 * (1 - ds / selfR));
+                            evadeAngle = ad < 0 ? this.angle + Math.PI * 0.55 : this.angle - Math.PI * 0.55;
+                            this.isBoosting = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (!danger) for (let other of snakes) {
                     if (other === this || !other.alive) continue;
                     let dHead = Math.hypot(other.x - this.x, other.y - this.y); if (dHead > scanRadius + other.segments.length * 0.3) continue;
                     let step = dHead < this.radius * 8 ? 2 : 5;
