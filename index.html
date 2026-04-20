@@ -354,16 +354,16 @@
             #leaderboard {
                 top: calc(12px + env(safe-area-inset-top));
                 right: calc(12px + env(safe-area-inset-right));
-                width: 150px;
-                padding: 8px 10px;
-                font-size: 9px;
+                width: clamp(140px, 35vw, 200px);
+                padding: clamp(6px, 1.5vw, 10px);
+                font-size: clamp(8px, 1.8vw, 10px);
                 gap: 2px;
-                background: rgba(20, 27, 47, 0.8);
+                background: rgba(20, 27, 47, 0.85);
                 border-color: var(--border-color);
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
                 height: auto;
-                max-height: 280px;
+                max-height: clamp(200px, 50vh, 350px);
                 overflow-y: auto;
             }
 
@@ -397,30 +397,38 @@
             justify-content: space-between;
             align-items: center;
             color: var(--text-secondary);
-            padding: 4px 2px;
-            font-size: 9px;
-            gap: 4px;
+            padding: clamp(4px, 1vw, 6px) clamp(2px, 0.5vw, 4px);
+            font-size: clamp(8px, 2vw, 10px);
+            gap: clamp(3px, 0.5vw, 6px);
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            overflow: visible;
+            text-overflow: clip;
+            min-height: 20px;
         }
 
         .lb-entry>span:first-child {
             flex-shrink: 0;
-            min-width: 20px;
+            min-width: clamp(16px, 3vw, 24px);
+            font-weight: 700;
+            color: var(--primary);
         }
 
         .lb-entry>span:nth-child(2) {
             flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-width: 0;
+            overflow: visible;
+            text-overflow: clip;
+            min-width: auto;
+            white-space: normal;
+            word-break: break-word;
+            display: block;
         }
 
         .lb-entry>span:last-child {
             flex-shrink: 0;
-            min-width: 30px;
+            min-width: clamp(24px, 4vw, 40px);
             text-align: right;
+            font-weight: 600;
+            color: var(--success);
         }
 
         .lb-entry.is-me {
