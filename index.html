@@ -352,23 +352,24 @@
 
         @media (max-width: 1024px) {
             #leaderboard {
-                top: calc(10px + env(safe-area-inset-top));
-                right: calc(10px + env(safe-area-inset-right));
-                width: 130px;
-                padding: 6px 8px;
-                font-size: 8.5px;
-                gap: 1px;
-                background: rgba(0, 0, 0, 0.08);
-                border-color: rgba(255, 255, 255, 0.04);
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
-                width: 80px;
+                top: calc(12px + env(safe-area-inset-top));
+                right: calc(12px + env(safe-area-inset-right));
+                width: 150px;
+                padding: 8px 10px;
+                font-size: 9px;
+                gap: 2px;
+                background: rgba(20, 27, 47, 0.8);
+                border-color: var(--border-color);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
                 height: auto;
-                padding: 5px;
+                max-height: 280px;
+                overflow-y: auto;
             }
 
             #lb-toggle-btn {
                 display: block;
+                margin-bottom: 6px;
             }
 
             #leaderboard #lb-list {
@@ -380,8 +381,8 @@
             }
 
             #leaderboard.expanded {
-                width: 130px;
-                padding: 6px 8px;
+                width: 160px;
+                padding: 10px 12px;
             }
         }
 
@@ -394,9 +395,32 @@
         .lb-entry {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             color: var(--text-secondary);
-            padding: 4px 0;
-            font-size: 10px;
+            padding: 4px 2px;
+            font-size: 9px;
+            gap: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lb-entry>span:first-child {
+            flex-shrink: 0;
+            min-width: 20px;
+        }
+
+        .lb-entry>span:nth-child(2) {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        .lb-entry>span:last-child {
+            flex-shrink: 0;
+            min-width: 30px;
+            text-align: right;
         }
 
         .lb-entry.is-me {
@@ -519,12 +543,10 @@
             justify-content: center;
             pointer-events: auto;
             z-index: 100;
-            gap: clamp(6px, 2vh, 24px);
-            padding: clamp(10px, 3vw, 40px);
-            padding-bottom: max(clamp(10px, 3vw, 40px), env(safe-area-inset-bottom));
-            padding-top: max(clamp(10px, 3vw, 40px), env(safe-area-inset-top));
+            gap: clamp(15px, 3vh, 30px);
+            padding: clamp(20px, 5vw, 40px);
             box-sizing: border-box;
-            overflow: hidden;
+            overflow-y: auto;
         }
 
         #death-screen h2 {
@@ -746,15 +768,15 @@
 
         @media (max-width: 768px) {
             #minimap-wrapper {
-                bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+                bottom: 130px;
                 top: auto;
-                right: calc(16px + env(safe-area-inset-right, 0px));
+                right: 20px;
                 left: auto;
             }
 
             #minimap-container {
-                width: 80px;
-                height: 80px;
+                width: 85px;
+                height: 85px;
             }
         }
 
@@ -829,10 +851,10 @@
         }
 
         #btn-turbo {
-            bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-            right: calc(16px + env(safe-area-inset-right, 0px));
-            width: 64px;
-            height: 64px;
+            bottom: 50px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
             color: var(--accent);
             border-color: rgba(255, 223, 0, 0.2);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -858,12 +880,21 @@
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             #btn-turbo {
-                bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-                right: calc(16px + env(safe-area-inset-right, 0px));
-                width: 62px;
-                height: 62px;
+                bottom: 130px;
+                right: 20px;
+                width: 55px;
+                height: 55px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #btn-turbo {
+                bottom: 120px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
             }
         }
 
@@ -914,77 +945,97 @@
 
         /* EDITOR DE SKINS CUSTOMIZADAS */
         #skin-editor-ui {
-            position: absolute;
+            position: fixed;
             inset: 0;
             z-index: 300;
             display: flex;
             flex-direction: column;
             background: rgba(20, 27, 47, 0.95);
-            border: none;
-            border-radius: 0;
-            padding: 0;
-            box-shadow: none;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: clamp(12px, 3vw, 20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(15px);
             height: 100vh;
             width: 100vw;
             overflow: hidden;
+            max-width: 100vw;
+            max-height: 100vh;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             #skin-editor-ui {
                 inset: 0;
-                padding: 0;
+                padding: clamp(10px, 2.5vw, 16px);
                 height: 100vh;
                 width: 100vw;
+                border-radius: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #skin-editor-ui {
+                padding: 8px;
+                border-radius: 6px;
             }
         }
 
         .editor-body {
             display: flex;
             flex-direction: column;
-            flex: 1;
-            gap: 8px;
-            overflow: hidden;
+            gap: 10px;
             padding: 12px;
-            height: 100%;
+            flex: 1;
+            overflow-y: auto;
         }
 
         @media (max-width: 900px) {
             .editor-body {
                 flex-direction: column;
-                padding: 10px;
-                gap: 6px;
+                padding: 8px;
+                gap: 8px;
             }
         }
 
         .preview-container {
-            background: linear-gradient(135deg, rgba(15, 20, 35, 0.6) 0%, rgba(10, 15, 30, 0.8) 100%);
-            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(15, 20, 35, 0.8) 0%, rgba(10, 15, 30, 0.95) 100%);
+            border-radius: 10px;
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.2), inset 0 0 10px rgba(0, 217, 255, 0.05);
             flex: 0 0 auto;
             width: 100%;
-            height: 200px;
+            height: clamp(100px, 25vw, 150px);
+            backdrop-filter: blur(5px);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .preview-container {
-                height: 160px;
+                height: clamp(90px, 20vw, 130px);
+                border-radius: 8px;
+                border-width: 1.5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .preview-container {
+                height: clamp(80px, 18vw, 110px);
                 border-radius: 6px;
+                border-width: 1px;
             }
         }
 
         .controls-container {
-            overflow-y: auto;
+            overflow-y: visible;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding-right: 3px;
+            gap: clamp(6px, 1.5vw, 10px);
+            padding: clamp(6px, 1.5vw, 10px);
             flex: 1;
+            justify-content: flex-start;
             min-height: 0;
         }
 
@@ -1048,41 +1099,40 @@
         }
 
         .preset-btn {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(0, 217, 255, 0.05) 100%);
-            border: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(0, 217, 255, 0.06) 100%);
+            border: 1px solid rgba(0, 217, 255, 0.3);
             color: var(--text-primary);
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 7px 11px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: 600;
             flex: 1;
-            transition: all 0.3s ease;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-            letter-spacing: 0.3px;
-            min-height: 32px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 217, 255, 0.1);
+            letter-spacing: 0.2px;
+            min-height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
+        .preset-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.18) 0%, rgba(0, 217, 255, 0.1) 100%);
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0, 217, 255, 0.2);
+        }
+
         @media (max-width: 768px) {
             .preset-btn {
-                padding: 6px 10px;
-                font-size: 9px;
+                padding: 6px 9px;
+                font-size: 8.5px;
                 min-height: 28px;
             }
         }
 
-        .preset-btn:hover {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.2) 0%, rgba(0, 217, 255, 0.1) 100%);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
-        }
-
         .preset-btn:active {
-            transform: translateY(0);
+            transform: scale(0.98);
         }
 
         .m-rainbow-text {
@@ -1142,13 +1192,13 @@
             #minimap-wrapper {
                 top: auto;
                 left: auto;
-                bottom: calc(90px + env(safe-area-inset-bottom, 0px));
-                right: calc(16px + env(safe-area-inset-right, 0px));
+                bottom: 120px;
+                right: 20px;
             }
 
             #minimap-container {
-                width: 85px;
-                height: 85px;
+                width: 90px;
+                height: 90px;
             }
         }
 
@@ -1177,45 +1227,14 @@
         }
 
         #nickname {
-            margin-bottom: 0 !important;
-            padding: clamp(8px, 1.5vh, 10px) 20px !important;
-            font-size: clamp(11px, 2vh, 14px) !important;
+            margin-bottom: 15px !important;
+            padding: 10px 20px !important;
+            font-size: 11px !important;
         }
 
         .btn-aaa {
-            padding: clamp(10px, 1.8vh, 12px) 30px !important;
-            font-size: clamp(12px, 2vh, 14px) !important;
-        }
-
-        /* Missões compactas em portrait pequeno */
-        @media (max-height: 700px) and (orientation: portrait) {
-            #missions-panel {
-                padding: 8px 12px !important;
-                gap: 5px !important;
-                margin-bottom: 0 !important;
-            }
-
-            #missions-panel>div:first-child {
-                font-size: 10px !important;
-                margin-bottom: 2px !important;
-            }
-
-            .m-desc {
-                font-size: 9px !important;
-            }
-
-            .m-bar {
-                height: 3px !important;
-            }
-
-            #mission-reward {
-                font-size: 9px !important;
-                margin-top: 3px !important;
-            }
-
-            .logo-container {
-                font-size: clamp(24px, 8vw, 40px) !important;
-            }
+            padding: 12px 30px !important;
+            font-size: 14px !important;
         }
 
         /* POPUP DE NÍVEL */
@@ -1384,10 +1403,10 @@
             }
 
             #btn-turbo {
-                right: calc(16px + env(safe-area-inset-right, 0px));
-                bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-                width: 64px;
-                height: 64px;
+                right: calc(22px + env(safe-area-inset-right));
+                bottom: calc(22px + env(safe-area-inset-bottom));
+                width: 74px;
+                height: 74px;
             }
 
             #options-btn {
@@ -1411,261 +1430,6 @@
             #options-popup-ui {
                 padding-top: max(20px, env(safe-area-inset-top));
                 padding-bottom: max(20px, env(safe-area-inset-bottom));
-            }
-        }
-
-        /* ===================================================
-           MOBILE LANDSCAPE — sem barra de rolagem
-           =================================================== */
-        @media (max-height: 500px) and (orientation: landscape) {
-
-            /* Fundo do menu vira flex-row ocupando 100% */
-            #start-menu {
-                flex-direction: row !important;
-                align-items: stretch !important;
-                justify-content: center !important;
-                gap: 10px !important;
-                padding: 10px 14px !important;
-                background: linear-gradient(135deg, #080C1E 0%, #0A0E27 50%, #0D1230 100%) !important;
-            }
-
-            /* ── COLUNA ESQUERDA: Missões ── */
-            #missions-panel {
-                flex: 0 0 170px !important;
-                width: 170px !important;
-                max-width: 170px !important;
-                align-self: center !important;
-                padding: 10px 12px !important;
-                margin-bottom: 0 !important;
-                border-radius: 12px !important;
-                background: rgba(20, 27, 47, 0.75) !important;
-                border: 1px solid rgba(0, 217, 255, 0.15) !important;
-                overflow: hidden !important;
-                gap: 6px !important;
-            }
-
-            #missions-panel>div:first-child {
-                font-size: 9px !important;
-                margin-bottom: 5px !important;
-                letter-spacing: 0.5px !important;
-            }
-
-            .mission-item {
-                margin-bottom: 4px !important;
-            }
-
-            .m-desc {
-                font-size: 7.5px !important;
-                margin-bottom: 2px !important;
-            }
-
-            .m-bar {
-                height: 3px !important;
-                border-radius: 2px !important;
-            }
-
-            #mission-reward {
-                font-size: 8px !important;
-                margin-top: 4px !important;
-            }
-
-            /* ── COLUNA CENTRAL: Card principal ── */
-            #lnd-center-card {
-                flex: 1 1 auto !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 8px !important;
-                min-width: 0 !important;
-                padding: 10px 14px !important;
-                background: rgba(15, 20, 40, 0.6) !important;
-                border: 1px solid rgba(0, 217, 255, 0.12) !important;
-                border-radius: 14px !important;
-                align-self: center !important;
-                max-width: 360px !important;
-            }
-
-            /* Logo compacto */
-            .logo-container {
-                font-size: 26px !important;
-                gap: 6px !important;
-                margin: 0 !important;
-                line-height: 1 !important;
-            }
-
-            .subtitle {
-                font-size: 7px !important;
-                letter-spacing: 3px !important;
-                margin: 0 !important;
-                opacity: 0.7 !important;
-            }
-
-            /* Linha: input + botão lado a lado */
-            #lnd-input-row {
-                display: flex !important;
-                gap: 8px !important;
-                width: 100% !important;
-                align-items: center !important;
-            }
-
-            #nickname {
-                flex: 1 1 auto !important;
-                margin: 0 !important;
-                padding: 8px 12px !important;
-                font-size: 12px !important;
-                width: auto !important;
-                max-width: none !important;
-                border-radius: 10px !important;
-            }
-
-            #play-btn {
-                flex: 0 0 auto !important;
-                padding: 9px 18px !important;
-                font-size: 12px !important;
-                width: auto !important;
-                max-width: none !important;
-                white-space: nowrap !important;
-                border-radius: 10px !important;
-            }
-
-            /* ── COLUNA DIREITA: Botões de menu ── */
-            #menu-side-btns {
-                flex: 0 0 80px !important;
-                width: 80px !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 4px !important;
-                align-self: center !important;
-                padding: 8px 4px !important;
-                background: rgba(20, 27, 47, 0.6) !important;
-                border: 1px solid rgba(0, 217, 255, 0.1) !important;
-                border-radius: 12px !important;
-            }
-
-            #skins-btn,
-            #acc-btn,
-            #options-btn {
-                position: static !important;
-                bottom: auto !important;
-                right: auto !important;
-                left: auto !important;
-                top: auto !important;
-                transform: none !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                gap: 3px !important;
-                padding: 6px 8px !important;
-                border-radius: 8px !important;
-                width: 100% !important;
-                background: rgba(255, 255, 255, 0.04) !important;
-                transition: background 0.2s !important;
-            }
-
-            #skins-btn:hover,
-            #acc-btn:hover,
-            #options-btn:hover {
-                background: rgba(0, 217, 255, 0.1) !important;
-                transform: none !important;
-            }
-
-            #skins-btn svg,
-            #acc-btn svg,
-            #options-btn svg {
-                width: 22px !important;
-                height: 22px !important;
-            }
-
-            #skins-btn span,
-            #acc-btn span,
-            #options-btn span {
-                font-size: 6.5px !important;
-                letter-spacing: 0.3px !important;
-            }
-
-            /* ── HUD de jogo compacto ── */
-            #hud-status {
-                bottom: 4px !important;
-                padding: 4px 10px !important;
-                gap: 10px !important;
-            }
-
-            .hud-stat {
-                font-size: 8px !important;
-            }
-
-            .hud-stat span {
-                font-size: 12px !important;
-            }
-
-            #minimap-wrapper {
-                bottom: 74px !important;
-                right: 10px !important;
-                top: auto !important;
-                left: auto !important;
-            }
-
-            #minimap-container {
-                width: 68px !important;
-                height: 68px !important;
-            }
-
-            #btn-turbo {
-                bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
-                right: calc(14px + env(safe-area-inset-right, 0px)) !important;
-                width: 54px !important;
-                height: 54px !important;
-            }
-
-            #powerup-hud {
-                left: 5px !important;
-                gap: 4px !important;
-            }
-
-            .powerup-slot {
-                width: 30px !important;
-                height: 30px !important;
-                font-size: 15px !important;
-                border-radius: 8px !important;
-            }
-
-            /* ── Tela de morte landscape ── */
-            #death-screen {
-                flex-direction: row !important;
-                align-items: center !important;
-                gap: 14px !important;
-                padding: 8px 20px !important;
-            }
-
-            #death-screen h2 {
-                font-size: clamp(20px, 4vw, 30px) !important;
-                margin: 0 !important;
-            }
-
-            #death-msg {
-                font-size: 10px !important;
-            }
-
-            .death-stats-box {
-                padding: 10px 14px !important;
-                max-width: 240px !important;
-            }
-
-            #death-length {
-                font-size: clamp(24px, 5vw, 36px) !important;
-                margin: 3px 0 !important;
-            }
-
-            .btn-row {
-                max-width: 200px !important;
-            }
-
-            .btn-half {
-                padding: 8px 0 !important;
-                font-size: 11px !important;
             }
         }
 
@@ -1753,71 +1517,71 @@
                 spellcheck="false">
             <button id="play-btn" class="btn-aaa anim-slide-up delay-4">INICIAR JORNADA</button>
 
-            <!-- COLUNA DIREITA: botões de menu (landscape) -->
-            <div id="menu-side-btns" style="display:none;">
-                <div id="skins-btn" class="anim-fade-in delay-4">
-                    <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
-                        <path d="M10 36 C10 28 18 28 18 21 C18 14 10 14 10 7" stroke="#00ff88" stroke-width="6"
-                            stroke-linecap="round" />
-                        <path d="M10 36 C10 43 20 43 26 38 C32 33 38 33 38 27" stroke="#00ff88" stroke-width="6"
-                            stroke-linecap="round" />
-                        <circle cx="14" cy="14" r="2" fill="#00cc66" opacity="0.7" />
-                        <circle cx="14" cy="21" r="2" fill="#00cc66" opacity="0.7" />
-                        <circle cx="14" cy="29" r="2" fill="#00cc66" opacity="0.7" />
-                        <circle cx="20" cy="36" r="2" fill="#00cc66" opacity="0.7" />
-                        <circle cx="28" cy="36" r="2" fill="#00cc66" opacity="0.7" />
-                        <circle cx="10" cy="6" r="2.5" fill="white" />
-                        <circle cx="10.8" cy="5.5" r="1.2" fill="#111" />
-                        <path d="M10 3.5 L10 1 M10 1 L8.5 0 M10 1 L11.5 0" stroke="#ff4455" stroke-width="1"
-                            stroke-linecap="round" />
-                        <circle cx="38" cy="27" r="4" fill="#ffdf00" />
-                        <circle cx="38" cy="27" r="2" fill="#cc9900" />
-                    </svg>
-                    <span>MUDAR ESCAMAS</span>
-                </div>
-                <div id="acc-btn" class="anim-fade-in delay-4">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-                        <path d="M2 17H22" stroke="#00ff88" stroke-width="2" stroke-linecap="round" />
-                        <path d="M4 17C4 10 12 10 20 17" stroke="#00ff88" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                        <path d="M12 10V6C12 6 12 3 10 3" stroke="#00ff88" stroke-width="2" stroke-linecap="round" />
-                    </svg>
-                    <span>ADEREÇOS</span>
-                </div>
-                <div id="options-btn" class="anim-fade-in delay-4">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cccccc" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path
-                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                        </path>
-                    </svg>
-                    <span>AJUSTES</span>
-                </div>
-            </div><!-- /#menu-side-btns -->
-        </div><!-- /#start-menu -->
+            <!-- BOTOES INFERIORES -->
+            <div id="skins-btn" class="anim-fade-in delay-4">
+                <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+                    <path d="M10 36 C10 28 18 28 18 21 C18 14 10 14 10 7" stroke="#00ff88" stroke-width="6"
+                        stroke-linecap="round" />
+                    <path d="M10 36 C10 43 20 43 26 38 C32 33 38 33 38 27" stroke="#00ff88" stroke-width="6"
+                        stroke-linecap="round" />
+                    <circle cx="14" cy="14" r="2" fill="#00cc66" opacity="0.7" />
+                    <circle cx="14" cy="21" r="2" fill="#00cc66" opacity="0.7" />
+                    <circle cx="14" cy="29" r="2" fill="#00cc66" opacity="0.7" />
+                    <circle cx="20" cy="36" r="2" fill="#00cc66" opacity="0.7" />
+                    <circle cx="28" cy="36" r="2" fill="#00cc66" opacity="0.7" />
+                    <circle cx="10" cy="6" r="2.5" fill="white" />
+                    <circle cx="10.8" cy="5.5" r="1.2" fill="#111" />
+                    <path d="M10 3.5 L10 1 M10 1 L8.5 0 M10 1 L11.5 0" stroke="#ff4455" stroke-width="1"
+                        stroke-linecap="round" />
+                    <circle cx="38" cy="27" r="4" fill="#ffdf00" />
+                    <circle cx="38" cy="27" r="2" fill="#cc9900" />
+                </svg>
+                <span>MUDAR ESCAMAS</span>
+            </div>
+            <div id="acc-btn" class="anim-fade-in delay-4">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                    <path d="M2 17H22" stroke="#00ff88" stroke-width="2" stroke-linecap="round" />
+                    <path d="M4 17C4 10 12 10 20 17" stroke="#00ff88" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M12 10V6C12 6 12 3 10 3" stroke="#00ff88" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span>ADEREÇOS</span>
+            </div>
+            <div id="options-btn" class="anim-fade-in delay-4">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cccccc" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+                <span>AJUSTES</span>
+            </div>
+        </div>
 
         <!-- SETTINGS POPUP -->
         <div id="options-ui" class="hidden glass-panel"
-            style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); padding: 32px; border-radius: 16px; z-index: 200; display:flex; flex-direction:column; gap: 24px; min-width: 300px; background: rgba(20, 27, 47, 0.9); border: 1px solid var(--border-color); box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+            style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); padding: clamp(20px, 5vw, 32px); border-radius: 16px; z-index: 200; display:flex; flex-direction:column; gap: clamp(16px, 4vw, 24px); min-width: 280px; max-width: 90vw; background: rgba(20, 27, 47, 0.95); border: 1px solid var(--border-color); box-shadow: 0 20px 60px rgba(0,0,0,0.5); backdrop-filter: blur(10px);">
             <h2
-                style="margin:0 0 8px 0; color: var(--primary); text-align:center; font-weight:800; letter-spacing:2px; font-size:22px; text-transform: uppercase;">
-                AJUSTES</h2>
+                style="margin:0 0 12px 0; color: var(--primary); text-align:center; font-weight:800; letter-spacing:2px; font-size: clamp(18px, 5vw, 24px); text-transform: uppercase;">
+                ⚙️ AJUSTES</h2>
             <div
-                style="display:flex; justify-content:space-between; align-items:center; width: 100%; max-width: 300px;">
-                <span style="color: var(--text-secondary); font-weight:600; font-size:13px; letter-spacing:1px;">ÁUDIO /
-                    SFX</span><button id="toggle-audio-btn" class="btn-aaa"
-                    style="width: 100px; padding: 10px; font-size: 12px; margin:0;">LIGADO</button>
+                style="display:flex; justify-content:space-between; align-items:center; width: 100%; gap: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                <span
+                    style="color: var(--text-secondary); font-weight:600; font-size: clamp(12px, 3vw, 14px); letter-spacing:0.5px; flex-shrink: 0;">🔊
+                    ÁUDIO</span><button id="toggle-audio-btn" class="btn-aaa"
+                    style="width: auto; min-width: 80px; padding: 8px 16px; font-size: clamp(11px, 2.5vw, 13px); margin:0;">LIGADO</button>
             </div>
             <div
-                style="display:flex; justify-content:space-between; align-items:center; width: 100%; max-width: 300px;">
+                style="display:flex; justify-content:space-between; align-items:center; width: 100%; gap: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
                 <span
-                    style="color: var(--text-secondary); font-weight:600; font-size:13px; letter-spacing:1px;">QUALIDADE</span><button
-                    id="toggle-gfx-btn" class="btn-aaa"
-                    style="width: 100px; padding: 10px; font-size: 12px; margin:0;">ALTA</button>
+                    style="color: var(--text-secondary); font-weight:600; font-size: clamp(12px, 3vw, 14px); letter-spacing:0.5px; flex-shrink: 0;">🎨
+                    GRÁFICOS</span><button id="toggle-gfx-btn" class="btn-aaa"
+                    style="width: auto; min-width: 80px; padding: 8px 16px; font-size: clamp(11px, 2.5vw, 13px); margin:0;">ALTA</button>
             </div>
             <button id="close-options-btn" class="btn-aaa"
-                style="margin-top: 20px; background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: none;">VOLTAR</button>
+                style="margin-top: 12px; background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: none; padding: 12px; font-size: clamp(12px, 3vw, 14px);">←
+                VOLTAR</button>
         </div>
 
         <!-- SKIN MENU -->
@@ -1889,23 +1653,27 @@
                         </div>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 10px; margin: 4px 0 3px 0; font-weight: 600;">PALETA RÁPIDA</h3>
-                    <div style="display: flex; gap: 3px; flex-wrap: wrap;">
+                    <h3
+                        style="color: #ccc; font-size: 8px; margin: 2px 0 2px 0; font-weight: 600; letter-spacing: 0.5px;">
+                        PALETA</h3>
+                    <div style="display: flex; gap: 2px; flex-wrap: wrap;">
                         <button class="quick-color-btn" data-color="#ff0000" title="Vermelho"
-                            style="background: #ff0000; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #ff0000; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#00ff00" title="Verde"
-                            style="background: #00ff00; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #00ff00; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#0000ff" title="Azul"
-                            style="background: #0000ff; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #0000ff; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#ffff00" title="Amarelo"
-                            style="background: #ffff00; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #ffff00; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#ff00ff" title="Magenta"
-                            style="background: #ff00ff; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #ff00ff; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#00ffff" title="Ciano"
-                            style="background: #00ffff; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #00ffff; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 10px; margin: 6px 0 3px 0; font-weight: 600;">PADRÕES</h3>
+                    <h3
+                        style="color: #ccc; font-size: 8px; margin: 2px 0 2px 0; font-weight: 600; letter-spacing: 0.5px;">
+                        PADRÕES</h3>
                     <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                         <button class="preset-btn" data-preset="rainbow">ARCO-ÍRIS</button>
                         <button class="preset-btn" data-preset="stripes">LISTRAS</button>
@@ -1914,7 +1682,9 @@
                         <button class="preset-btn" data-preset="radial">RADIAL</button>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 10px; margin: 4px 0 3px 0; font-weight: 600;">EFEITOS</h3>
+                    <h3
+                        style="color: #ccc; font-size: 8px; margin: 2px 0 2px 0; font-weight: 600; letter-spacing: 0.5px;">
+                        EFEITOS</h3>
                     <div
                         style="display: flex; gap: 8px; background: rgba(255,255,255,0.05); padding: 6px; border-radius: 6px;">
                         <label
@@ -2843,17 +2613,9 @@
         function drawEditorPreview() {
             if (gameState !== 'skin-editor') return;
             edCtx.clearRect(0, 0, 400, 400);
-            edTime += 1;
-            let cx = 200, cy = 200, rad = IS_MOBILE_CLIENT ? 20 : 25;
-            let len = Math.max(15, edSkin.segments.length);
-            let spc = rad * 0.45;
-
-            let segs = [];
-            for (let i = 0; i < len; i++) {
-                let ang = i * 0.25 - edTime * 0.05;
-                let dist = 10 + i * 2.8;
-                segs.push({ x: cx + Math.cos(ang) * dist, y: cy + Math.sin(ang) * dist, ang: ang + Math.PI / 2 });
-            }
+            let rad = IS_MOBILE_CLIENT ? 16 : 20, len = 32, spc = rad * 0.45;
+            let headX = 200 + ((len * spc) / 2), centerY = 200, segs = [];
+            for (let i = 0; i < len; i++) segs.push({ x: headX - (i * spc), y: centerY + Math.sin(edTime * 0.005 - i * 0.18) * (rad * 1.5) });
 
             let hasPulse = document.getElementById('chk-pulse').checked;
             let hasGlow = document.getElementById('chk-glow').checked;
@@ -2873,16 +2635,13 @@
                 let c = edSkin.segments[i % edSkin.segments.length];
                 let r = rad;
                 if (hasPulse) r += Math.sin(edTime * 0.1 - i * 0.2) * (rad * 0.2);
-                edCtx.save(); edCtx.translate(segs[i].x, segs[i].y); edCtx.rotate(segs[i].ang);
-                edCtx.drawImage(TextureManager.getSegment(c), -r, -r, r * 2, r * 2);
-                edCtx.restore();
+                edCtx.drawImage(TextureManager.getSegment(c), segs[i].x - r, segs[i].y - r, r * 2, r * 2);
             }
 
-            edCtx.save(); edCtx.translate(segs[0].x, segs[0].y); edCtx.rotate(segs[0].ang);
-            edCtx.drawImage(TextureManager.getSegment(edSkin.segments[0], true), -rad * 1.15, -rad, rad * 2.3, rad * 2);
-            drawPremiumEyes(edCtx, 0, 0, rad, 0, Math.sin(edTime * 0.05) * 0.5, 0, false, false);
-            edCtx.restore();
+            edCtx.drawImage(TextureManager.getSegment(edSkin.segments[0]), segs[0].x - rad, segs[0].y - rad, rad * 2, rad * 2);
+            drawPremiumEyes(edCtx, segs[0].x, segs[0].y, rad, 0, 0, 0, false, false);
 
+            edTime += 1;
             requestAnimationFrame(drawEditorPreview);
         }
 
@@ -3180,89 +2939,6 @@
         });
 
         resize(); updateMissionsUI();
-
-        // Landscape mobile: reorganizar layout do menu
-        (function () {
-            const sideBtns = document.getElementById('menu-side-btns');
-            const skinsBtn = document.getElementById('skins-btn');
-            const accBtn = document.getElementById('acc-btn');
-            const optsBtn = document.getElementById('options-btn');
-            const startMenu = document.getElementById('start-menu');
-            const logo = document.querySelector('.logo-container');
-            const subtitle = document.querySelector('.subtitle');
-            const nick = document.getElementById('nickname');
-            const playBtn = document.getElementById('play-btn');
-            const missions = document.getElementById('missions-panel');
-            if (!sideBtns || !startMenu || !logo) return;
-
-            let centerCard = null;
-            let inputRow = null;
-            let applied = false;
-
-            function buildLandscape() {
-                if (applied) return;
-                applied = true;
-
-                // Criar card central
-                centerCard = document.createElement('div');
-                centerCard.id = 'lnd-center-card';
-
-                // Criar linha input+botão
-                inputRow = document.createElement('div');
-                inputRow.id = 'lnd-input-row';
-                inputRow.appendChild(nick);
-                inputRow.appendChild(playBtn);
-
-                centerCard.appendChild(logo);
-                centerCard.appendChild(subtitle);
-                centerCard.appendChild(inputRow);
-
-                // Inserir card depois das missões
-                missions.insertAdjacentElement('afterend', centerCard);
-
-                // Mover botões para coluna lateral
-                sideBtns.style.display = '';
-                sideBtns.appendChild(skinsBtn);
-                sideBtns.appendChild(accBtn);
-                sideBtns.appendChild(optsBtn);
-                startMenu.appendChild(sideBtns);
-            }
-
-            function destroyLandscape() {
-                if (!applied) return;
-                applied = false;
-
-                // Devolver elementos ao fluxo original do start-menu
-                if (centerCard) {
-                    startMenu.insertBefore(logo, sideBtns);
-                    startMenu.insertBefore(subtitle, sideBtns);
-                    startMenu.insertBefore(nick, sideBtns);
-                    startMenu.insertBefore(playBtn, sideBtns);
-                    centerCard.remove();
-                    centerCard = null;
-                    inputRow = null;
-                }
-
-                // Devolver botões para dentro do menu-side-btns (inativo)
-                sideBtns.style.display = 'none';
-                sideBtns.appendChild(skinsBtn);
-                sideBtns.appendChild(accBtn);
-                sideBtns.appendChild(optsBtn);
-
-                // Restaurar posição absoluta original via reflow
-                startMenu.appendChild(sideBtns);
-            }
-
-            function applyOrientation() {
-                const isLandMobile = window.innerHeight < 500 && window.innerWidth > window.innerHeight;
-                if (isLandMobile) buildLandscape();
-                else destroyLandscape();
-            }
-
-            applyOrientation();
-            window.addEventListener('resize', applyOrientation);
-            if (screen.orientation) screen.orientation.addEventListener('change', () => setTimeout(applyOrientation, 100));
-        })();
         UI.nick.value = localStorage.getItem('serpente_nick') || '';
         UI.nick.addEventListener('input', () => {
             const now = performance.now();
