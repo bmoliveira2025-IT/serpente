@@ -252,7 +252,7 @@
             z-index: 50;
             background: rgba(10, 14, 39, 0.82);
             border: 1px solid rgba(0, 217, 255, 0.18);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(12px);
         }
 
@@ -285,7 +285,7 @@
                 white-space: nowrap;
                 background: rgba(10, 14, 39, 0.88) !important;
                 border: 1px solid rgba(0, 217, 255, 0.22) !important;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,217,255,0.05) !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 217, 255, 0.05) !important;
             }
 
             .hud-stat {
@@ -316,7 +316,7 @@
             border: 1px solid rgba(0, 217, 255, 0.15);
             backdrop-filter: blur(12px);
             transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
 
         #lb-toggle-btn {
@@ -806,9 +806,9 @@
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            background: radial-gradient(circle at 40% 38%, rgba(255,255,255,0.14) 0%, rgba(0,217,255,0.05) 55%, rgba(0,0,0,0.1) 100%);
+            background: radial-gradient(circle at 40% 38%, rgba(255, 255, 255, 0.14) 0%, rgba(0, 217, 255, 0.05) 55%, rgba(0, 0, 0, 0.1) 100%);
             border: 1.5px solid rgba(0, 217, 255, 0.28);
-            box-shadow: 0 0 20px rgba(0,217,255,0.12), inset 0 0 12px rgba(0,0,0,0.2);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.12), inset 0 0 12px rgba(0, 0, 0, 0.2);
             pointer-events: none;
             touch-action: none;
             opacity: 0;
@@ -829,9 +829,9 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: radial-gradient(circle at 38% 35%, rgba(255,255,255,0.85) 0%, rgba(0,217,255,0.55) 45%, rgba(0,150,200,0.3) 100%);
+            background: radial-gradient(circle at 38% 35%, rgba(255, 255, 255, 0.85) 0%, rgba(0, 217, 255, 0.55) 45%, rgba(0, 150, 200, 0.3) 100%);
             border: 1.5px solid rgba(0, 217, 255, 0.5);
-            box-shadow: 0 4px 18px rgba(0,0,0,0.35), 0 0 12px rgba(0,217,255,0.25);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35), 0 0 12px rgba(0, 217, 255, 0.25);
             transform: translate(-50%, -50%);
             pointer-events: none;
             transition: width 0.1s, height 0.1s;
@@ -883,7 +883,7 @@
             font-size: 7px;
             font-weight: 800;
             letter-spacing: 1px;
-            color: rgba(255,183,0,0.6);
+            color: rgba(255, 183, 0, 0.6);
             margin-top: 2px;
         }
 
@@ -891,14 +891,19 @@
             transform: scale(1.15);
             background: rgba(255, 183, 0, 0.22);
             border-color: var(--accent);
-            box-shadow: 0 0 28px rgba(255, 183, 0, 0.5), 0 0 10px rgba(255,100,0,0.3);
+            box-shadow: 0 0 28px rgba(255, 183, 0, 0.5), 0 0 10px rgba(255, 100, 0, 0.3);
             color: #fff;
             animation: pulse-turbo 0.7s infinite alternate;
         }
 
         @keyframes pulse-turbo {
-            from { box-shadow: 0 0 16px rgba(255, 183, 0, 0.4); }
-            to   { box-shadow: 0 0 32px rgba(255, 183, 0, 0.7), 0 0 12px rgba(255,80,0,0.4); }
+            from {
+                box-shadow: 0 0 16px rgba(255, 183, 0, 0.4);
+            }
+
+            to {
+                box-shadow: 0 0 32px rgba(255, 183, 0, 0.7), 0 0 12px rgba(255, 80, 0, 0.4);
+            }
         }
 
         @media (max-width: 1024px) {
@@ -940,8 +945,13 @@
             z-index: 105;
         }
 
-        #acc-left-arrow { left: 8%; }
-        #acc-right-arrow { right: 8%; }
+        #acc-left-arrow {
+            left: 8%;
+        }
+
+        #acc-right-arrow {
+            right: 8%;
+        }
 
         /* ---- SKIN GALLERY ---- */
         #skin-preview-ui {
@@ -952,6 +962,7 @@
             flex-direction: column;
             pointer-events: auto;
         }
+
         .skingal-overlay {
             background: rgba(7, 9, 26, 0.92);
             backdrop-filter: blur(6px);
@@ -960,20 +971,23 @@
             flex: 0 0 65%;
             overflow: hidden;
         }
+
         .skingal-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 11px 16px 9px;
-            border-bottom: 1px solid rgba(0,217,255,0.10);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.10);
             flex-shrink: 0;
         }
+
         .skingal-title {
             font-size: 13px;
             font-weight: 800;
             color: var(--primary);
             letter-spacing: 2px;
         }
+
         .skingal-cur-name {
             font-size: 12px;
             font-weight: 700;
@@ -985,6 +999,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         .skingal-grid {
             flex: 1;
             overflow-y: auto;
@@ -995,8 +1010,9 @@
             align-content: flex-start;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
-            scrollbar-color: rgba(0,217,255,0.25) transparent;
+            scrollbar-color: rgba(0, 217, 255, 0.25) transparent;
         }
+
         .skingal-orb {
             width: 62px;
             height: 62px;
@@ -1008,23 +1024,24 @@
             position: relative;
             overflow: visible;
         }
-        .skingal-orb canvas { width: 100%; height: 100%; border-radius: 50%; display: block; }
+
+        .skingal-orb canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: block;
+        }
+
         .skingal-orb.selected {
             border-color: var(--primary);
-            box-shadow: 0 0 14px rgba(0,217,255,0.65);
+            box-shadow: 0 0 14px rgba(0, 217, 255, 0.65);
             transform: scale(1.13);
         }
-        .skingal-orb.locked { opacity: 0.42; }
-        .skingal-orb.new-skin {
-            border: 2px dashed rgba(0,217,255,0.35);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            color: rgba(0,217,255,0.55);
-            background: rgba(0,217,255,0.04);
+
+        .skingal-orb.locked {
+            opacity: 0.42;
         }
-        .skingal-orb.new-skin:hover { border-color: rgba(0,217,255,0.7); color: var(--primary); background: rgba(0,217,255,0.10); transform: scale(1.08); }
+
         .skingal-bottom {
             flex: 1;
             display: flex;
@@ -1034,7 +1051,13 @@
             padding-bottom: 22px;
             pointer-events: auto;
         }
-        .skingal-btn-row { display: flex; gap: 14px; align-items: center; }
+
+        .skingal-btn-row {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
         .skingal-btn {
             padding: 10px 32px;
             border-radius: 50px;
@@ -1046,368 +1069,26 @@
             font-family: 'Inter', sans-serif;
             transition: all 0.18s;
         }
-        .skingal-btn.ok { background: #4CAF50; color: white; box-shadow: 0 4px 14px rgba(76,175,80,0.4); }
-        .skingal-btn.ok:hover { background: #45a049; }
-        .skingal-btn.danger { background: rgba(255,71,87,0.12); color: #ff4757; border: 1px solid rgba(255,71,87,0.35); }
-        .skingal-btn.danger:hover { background: rgba(255,71,87,0.22); }
+
+        .skingal-btn.ok {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 14px rgba(76, 175, 80, 0.4);
+        }
+
+        .skingal-btn.ok:hover {
+            background: #45a049;
+        }
+
         @media (max-width: 480px) {
-            .skingal-overlay { flex: 0 0 62%; }
-            .skingal-orb { width: 54px; height: 54px; }
-        }
+            .skingal-overlay {
+                flex: 0 0 62%;
+            }
 
-        /* ============================================
-           SKIN STUDIO — REDESIGN AAA
-        ============================================ */
-        #skin-editor-ui {
-            position: fixed;
-            inset: 0;
-            z-index: 300;
-            display: flex;
-            flex-direction: column;
-            background: #07091a;
-            overflow: hidden;
-        }
-
-        .studio-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 11px 18px;
-            border-bottom: 1px solid rgba(0,217,255,0.10);
-            background: rgba(0,0,0,0.45);
-            flex-shrink: 0;
-            gap: 10px;
-        }
-        .studio-title {
-            font-size: 14px;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: 2.5px;
-            text-transform: uppercase;
-        }
-        .studio-close {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.10);
-            color: var(--text-secondary);
-            padding: 7px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .studio-close:hover { background: rgba(255,60,60,0.12); border-color: #ff4444; color: #ff6666; }
-
-        .studio-main {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            flex: 1;
-            overflow: hidden;
-            min-height: 0;
-        }
-
-        /* ---- PAINEL ESQUERDO: PREVIEW ---- */
-        .studio-preview {
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid rgba(0,217,255,0.09);
-            overflow: hidden;
-        }
-        .studio-canvas-wrap {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(ellipse at 50% 55%, rgba(0,217,255,0.05) 0%, #07091a 68%);
-            overflow: hidden;
-            position: relative;
-            min-height: 0;
-        }
-        .studio-canvas-wrap::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at 50% 100%, rgba(0,217,255,0.06) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        .studio-canvas-wrap canvas { max-width: 100%; max-height: 100%; display: block; }
-
-        /* ---- STRIP DE SEGMENTOS ---- */
-        .studio-body-strip {
-            flex-shrink: 0;
-            padding: 10px 14px 12px;
-            border-top: 1px solid rgba(0,217,255,0.09);
-            background: rgba(0,0,0,0.30);
-        }
-        .studio-strip-label {
-            font-size: 8px;
-            font-weight: 800;
-            color: rgba(160,174,192,0.5);
-            letter-spacing: 2.5px;
-            text-transform: uppercase;
-            margin-bottom: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .studio-strip-row {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            align-items: center;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0,217,255,0.2) transparent;
-        }
-        .studio-strip-row::-webkit-scrollbar { height: 3px; }
-        .studio-strip-row::-webkit-scrollbar-thumb { background: rgba(0,217,255,0.2); border-radius: 2px; }
-
-        .s-seg {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            cursor: pointer;
-            border: 2.5px solid rgba(255,255,255,0.10);
-            transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1), border-color 0.14s, box-shadow 0.14s;
-            position: relative;
-        }
-        .s-seg:first-child::before {
-            content: 'CAB';
-            position: absolute;
-            bottom: -13px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 6px;
-            color: rgba(0,217,255,0.5);
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-        .s-seg.active {
-            border-color: var(--primary);
-            transform: scale(1.25);
-            box-shadow: 0 0 0 3px rgba(0,217,255,0.15), 0 0 16px rgba(0,217,255,0.40);
-            z-index: 2;
-        }
-        .s-seg:hover:not(.active) { border-color: rgba(255,255,255,0.38); transform: scale(1.12); }
-        .strip-btn-group { display: flex; gap: 4px; flex-shrink: 0; }
-        .strip-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.65);
-            font-size: 17px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: all 0.14s;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .strip-btn:hover { background: rgba(0,217,255,0.14); border-color: var(--primary); color: var(--primary); }
-        .strip-btn.danger:hover { background: rgba(255,60,60,0.14); border-color: #ff4444; color: #ff5555; }
-
-        /* ---- PAINEL DIREITO: CONTROLOS ---- */
-        .studio-controls {
-            overflow-y: auto;
-            padding: 14px 14px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0,217,255,0.15) transparent;
-        }
-        .studio-controls::-webkit-scrollbar { width: 4px; }
-        .studio-controls::-webkit-scrollbar-thumb { background: rgba(0,217,255,0.18); border-radius: 2px; }
-
-        .s-label {
-            font-size: 8px;
-            font-weight: 800;
-            color: rgba(160,174,192,0.48);
-            letter-spacing: 2.5px;
-            text-transform: uppercase;
-            margin-bottom: 7px;
-        }
-
-        /* COR */
-        .s-color-row { display: flex; gap: 9px; align-items: stretch; }
-        .s-swatch {
-            width: 54px;
-            min-height: 54px;
-            border-radius: 12px;
-            border: 2px solid rgba(255,255,255,0.15);
-            cursor: pointer;
-            flex-shrink: 0;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.14s, border-color 0.14s;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
-        }
-        .s-swatch:hover { transform: scale(1.06); border-color: var(--primary); }
-        .s-swatch input[type=color] {
-            position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: none; padding: 0;
-        }
-        .s-hex-col { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-        .s-hex-input {
-            background: rgba(0,0,0,0.42);
-            border: 1px solid rgba(255,255,255,0.09);
-            border-radius: 9px;
-            color: #fff;
-            font-family: 'Space Mono', monospace;
-            font-size: 13px;
-            font-weight: 700;
-            padding: 9px 11px;
-            letter-spacing: 1.5px;
-            width: 100%;
-            box-sizing: border-box;
-            text-transform: uppercase;
-            transition: border-color 0.2s;
-        }
-        .s-hex-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 10px rgba(0,217,255,0.10); }
-        .s-actions { display: flex; gap: 5px; }
-        .s-action-btn {
-            flex: 1;
-            padding: 7px 4px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.09);
-            background: rgba(255,255,255,0.04);
-            color: rgba(255,255,255,0.60);
-            font-size: 9px;
-            font-weight: 800;
-            cursor: pointer;
-            letter-spacing: 0.5px;
-            transition: all 0.14s;
-            text-align: center;
-        }
-        .s-action-btn:hover { background: rgba(0,217,255,0.11); border-color: var(--primary); color: var(--primary); }
-        .s-action-btn.green { border-color: rgba(0,255,136,0.20); color: var(--success); background: rgba(0,255,136,0.05); }
-        .s-action-btn.green:hover { background: rgba(0,255,136,0.14); }
-
-        /* PALETA */
-        .s-palette {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 5px;
-        }
-        .s-pal {
-            aspect-ratio: 1;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.10);
-            cursor: pointer;
-            transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.12s;
-        }
-        .s-pal:hover { transform: scale(1.28); box-shadow: 0 0 10px rgba(255,255,255,0.35); border-color: #fff; }
-        .s-pal.sel { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,217,255,0.28); transform: scale(1.18); }
-
-        /* PADRÕES */
-        .s-preset-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 7px;
-        }
-        .s-preset-card {
-            border-radius: 10px;
-            border: 1.5px solid rgba(255,255,255,0.07);
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1), border-color 0.14s, box-shadow 0.14s;
-            background: rgba(255,255,255,0.03);
-        }
-        .s-preset-card:hover { transform: scale(1.05); border-color: rgba(255,255,255,0.28); box-shadow: 0 4px 18px rgba(0,0,0,0.45); }
-        .s-preset-card:active { transform: scale(0.97); }
-        .s-preset-strip { height: 24px; width: 100%; display: block; }
-        .s-preset-label {
-            font-size: 8px;
-            font-weight: 800;
-            letter-spacing: 0.8px;
-            color: rgba(255,255,255,0.55);
-            text-align: center;
-            padding: 5px 2px 5px;
-            text-transform: uppercase;
-        }
-
-        /* EFEITOS */
-        .s-effects-row { display: flex; gap: 7px; }
-        .s-eff-btn {
-            flex: 1;
-            padding: 11px 6px 10px;
-            border-radius: 11px;
-            border: 1.5px solid rgba(255,255,255,0.08);
-            background: rgba(255,255,255,0.03);
-            color: rgba(255,255,255,0.40);
-            font-size: 9px;
-            font-weight: 800;
-            cursor: pointer;
-            letter-spacing: 1px;
-            text-align: center;
-            transition: all 0.18s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        .s-eff-icon { font-size: 20px; line-height: 1; }
-        .s-eff-btn:hover { border-color: rgba(255,255,255,0.25); color: #fff; background: rgba(255,255,255,0.06); }
-        .s-eff-btn.on { border-color: var(--primary); background: rgba(0,217,255,0.09); color: var(--primary); }
-        .s-eff-btn.on.pulse-eff { border-color: #ff6bd6; background: rgba(255,107,214,0.09); color: #ff6bd6; }
-
-        /* NOME + SALVAR */
-        .s-name-inp {
-            width: 100%;
-            box-sizing: border-box;
-            background: rgba(0,0,0,0.40);
-            border: 1.5px solid rgba(255,223,0,0.12);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 10px 14px;
-            letter-spacing: 0.5px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .s-name-inp:focus { outline: none; border-color: rgba(255,223,0,0.45); box-shadow: 0 0 12px rgba(255,223,0,0.07); }
-        .s-name-inp::placeholder { color: rgba(160,174,192,0.35); font-weight: 400; }
-        .s-save-btn {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
-            color: #001a10;
-            font-size: 14px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
-            box-shadow: 0 4px 22px rgba(0,255,136,0.22);
-            text-transform: uppercase;
-        }
-        .s-save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,255,136,0.38); }
-        .s-save-btn:active { transform: scale(0.98); }
-
-        /* MOBILE */
-        @media (max-width: 768px) {
-            .studio-main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-            .studio-preview { border-right: none; border-bottom: 1px solid rgba(0,217,255,0.09); }
-            .studio-canvas-wrap { height: clamp(100px, 25vw, 150px); min-height: unset; flex: unset; }
-            .studio-controls { gap: 12px; padding: 12px; }
-            .s-palette { grid-template-columns: repeat(8, 1fr); gap: 4px; }
-            .s-preset-grid { grid-template-columns: repeat(3, 1fr); }
-            .s-seg { width: 32px; height: 32px; }
-            .s-swatch { width: 48px; min-height: 48px; }
-            .s-preset-strip { height: 20px; }
-        }
-        @media (max-width: 480px) {
-            .studio-canvas-wrap { height: clamp(88px, 22vw, 130px); }
-            .s-palette { grid-template-columns: repeat(6, 1fr); }
-            .s-seg { width: 30px; height: 30px; }
+            .skingal-orb {
+                width: 54px;
+                height: 54px;
+            }
         }
 
         .m-rainbow-text {
@@ -1522,10 +1203,10 @@
             z-index: 80;
             text-align: center;
             pointer-events: none;
-            background: rgba(0,0,0,0.55);
-            padding: clamp(10px,3vw,18px) clamp(18px,5vw,36px);
+            background: rgba(0, 0, 0, 0.55);
+            padding: clamp(10px, 3vw, 18px) clamp(18px, 5vw, 36px);
             border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.12);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(8px);
         }
 
@@ -1535,8 +1216,8 @@
 
         #level-popup h3 {
             margin: 0;
-            font-size: clamp(9px,2vw,13px);
-            color: rgba(255,255,255,0.65);
+            font-size: clamp(9px, 2vw, 13px);
+            color: rgba(255, 255, 255, 0.65);
             letter-spacing: 3px;
             text-transform: uppercase;
         }
@@ -1640,27 +1321,6 @@
             color: #ffe14a;
         }
 
-        @media (max-width: 1024px) {
-            #powerup-hud {
-                left: 8px;
-                gap: 6px;
-            }
-
-            .powerup-slot {
-                width: 38px;
-                height: 38px;
-                font-size: 19px;
-                border-radius: 10px;
-            }
-        }
-
-        /* BANNER DE EVENTO REMOVIDO */
-
-        :focus-visible {
-            outline: 3px solid rgba(255, 223, 0, 0.95);
-            outline-offset: 3px;
-        }
-
         @media (prefers-reduced-motion: reduce) {
 
             *,
@@ -1712,7 +1372,6 @@
 
             #start-menu,
             #death-screen,
-            #skin-editor-ui,
             #options-popup-ui {
                 padding-top: max(20px, env(safe-area-inset-top));
                 padding-bottom: max(20px, env(safe-area-inset-bottom));
@@ -1751,8 +1410,6 @@
 
         <!-- HUD POWER-UPS ATIVOS -->
         <div id="powerup-hud"></div>
-
-        <!-- BANNER DE EVENTO REMOVIDO -->
 
         <!-- CONTROLES MOBILE -->
         <div id="mobile-controls">
@@ -1881,76 +1538,7 @@
             </div>
             <div class="skingal-bottom">
                 <div class="skingal-btn-row">
-                    <button id="btn-apagar-skin" class="skingal-btn danger hidden">Apagar</button>
                     <button id="skin-ok-btn" class="skingal-btn ok">OK</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- SKIN EDITOR (NOVO) -->
-        <div id="skin-editor-ui" class="hidden">
-            <div class="studio-header">
-                <span class="studio-title">✦ SKIN STUDIO</span>
-                <button id="btn-close-editor" class="studio-close">✕ FECHAR</button>
-            </div>
-            <div class="studio-main">
-                <!-- LEFT: PREVIEW -->
-                <div class="studio-preview">
-                    <div class="studio-canvas-wrap">
-                        <canvas id="editor-canvas" width="400" height="400"></canvas>
-                    </div>
-                    <div class="studio-body-strip">
-                        <div class="studio-strip-label">
-                            <span>GOMOS</span>
-                            <div class="strip-btn-group">
-                                <button id="btn-add-seg" class="strip-btn" title="Adicionar gomo">+</button>
-                                <button id="btn-rem-seg" class="strip-btn danger" title="Remover gomo">−</button>
-                            </div>
-                        </div>
-                        <div class="studio-strip-row" id="segment-ribbon"></div>
-                    </div>
-                </div>
-                <!-- RIGHT: CONTROLS -->
-                <div class="studio-controls">
-                    <div>
-                        <div class="s-label">COR DO GOMO</div>
-                        <div class="s-color-row">
-                            <div class="s-swatch" id="s-swatch-box">
-                                <input type="color" id="editor-color-picker">
-                            </div>
-                            <div class="s-hex-col">
-                                <input type="text" id="s-hex-input" class="s-hex-input" maxlength="7" placeholder="#FF0000">
-                                <div class="s-actions">
-                                    <button id="btn-fill-all" class="s-action-btn">PREENCHER TUDO</button>
-                                    <button id="btn-random" class="s-action-btn green">ALEATÓRIA</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="s-label">PALETA</div>
-                        <div class="s-palette" id="s-palette"></div>
-                    </div>
-                    <div>
-                        <div class="s-label">PADRÕES</div>
-                        <div class="s-preset-grid" id="s-preset-grid"></div>
-                    </div>
-                    <div>
-                        <div class="s-label">EFEITOS</div>
-                        <div class="s-effects-row">
-                            <button id="btn-effect-glow" class="s-eff-btn" data-effect="glow">
-                                <span class="s-eff-icon">✦</span>AURA
-                            </button>
-                            <button id="btn-effect-pulse" class="s-eff-btn pulse-eff" data-effect="pulse">
-                                <span class="s-eff-icon">◎</span>PULSO
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="s-label">NOME DA SKIN</div>
-                        <input type="text" id="editor-skin-name" class="s-name-inp" placeholder="Ex: Dragão Estelar" maxlength="24">
-                    </div>
-                    <button id="btn-save-editor" class="s-save-btn">✓ SALVAR SKIN</button>
                 </div>
             </div>
         </div>
@@ -2043,15 +1631,6 @@
             ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#009c3b', '#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222'], ['#000000', '#ffdf00'], ['#ff8c00', '#000000', '#ffffff'], ['#1a1a2e', '#16213e', '#0f3460', '#e94560'], ['#00ffcc', '#ff00ff', '#111111'], ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'], ['#8a2be2', '#4b0082', '#000000'], ['#00ffff', '#00cccc', '#009999', '#006666'], ['#ff0000', '#8b0000', '#000000'], ['#39ff14', '#000000', '#111111'], ['#ffffff', '#000000']
         ];
         let SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados", "Ouro Negro", "Tigre", "Galáxia", "Ciborgue", "Algodão Doce", "Vazio", "Abissal", "Vampiro", "Matriz", "Zebra", "👑 LENDÁRIO", "💎 CRISTAL", "🔥 INFERNO", "❄️ GELO", "⚡ RELÂMPAGO", "🌙 LUNAR", "☀️ SOLAR", "🌊 OCEANO", "🍃 FLORESTA", "💀 CAVEIRA"];
-
-        // Carregar Skins Customizadas
-        let savedCustomSkins = JSON.parse(localStorage.getItem('serpente_custom_skins') || '[]');
-        savedCustomSkins.forEach(sk => {
-            let colors = sk.segments;
-            colors.effects = sk.effects || [];
-            SKINS.push(colors);
-            SKIN_NAMES.push(sk.name || "CUSTOM SKIN");
-        });
 
         const ACCESSORIES = [{ id: 0, name: "Nenhum" }, { id: 1, name: "Coroa Real" }, { id: 2, name: "Viking Helmet" }, { id: 3, name: "Cartola VIP" }, { id: 4, name: "Cyborg Vizor" }, { id: 5, name: "Óculos Aviador" }, { id: 6, name: "Chapéu de Mago" }, { id: 7, name: "Máscara Ninja" }, { id: 8, name: "Bigode Imperial" }];
         let accIndex = parseInt(localStorage.getItem('serpente_accIndex') || '0');
@@ -2226,7 +1805,7 @@
         function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2)); for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2)); }
         function shadeColor(color, amount) { try { let col = color.trim(); if (col.startsWith('#')) { let num = parseInt(col.slice(1), 16); let r = Math.min(255, Math.max(0, (num >> 16) + amount)); let g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amount)); let b = Math.min(255, Math.max(0, (num & 0xff) + amount)); return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0'); } return col; } catch (e) { return color; } }
         function lightenColor(color, amount) { return shadeColor(color, amount); }
-        function hexAlpha(hex, alpha) { try { let h = hex.trim().replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); let n = parseInt(h, 16); return `rgba(${(n >> 16) & 0xff},${(n >> 8) & 0xff},${n & 0xff},${alpha})`; } catch(e) { return `rgba(255,255,255,${alpha})`; } }
+        function hexAlpha(hex, alpha) { try { let h = hex.trim().replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); let n = parseInt(h, 16); return `rgba(${(n >> 16) & 0xff},${(n >> 8) & 0xff},${n & 0xff},${alpha})`; } catch (e) { return `rgba(255,255,255,${alpha})`; } }
 
         const TextureManager = {
             cache: {},
@@ -2904,7 +2483,6 @@
             const grid = document.getElementById('skin-gallery-grid');
             if (!grid) return;
             grid.innerHTML = '';
-            const baseCount = SKINS.length - savedCustomSkins.length;
             SKINS.forEach((colors, i) => {
                 let req = SKIN_REQUIREMENTS[i]; let isLocked = false;
                 if (req) { if (req.type === 'score' && PLAYER_STATS.highScore < req.val) isLocked = true; if (req.type === 'kills' && PLAYER_STATS.totalKills < req.val) isLocked = true; }
@@ -2916,299 +2494,21 @@
                 let ctx2 = c.getContext('2d');
                 let primaryColor = (colors[0] || '#ff0000').replace(/-\w+$/, '');
                 if (!/^#[0-9a-fA-F]{6}$/.test(primaryColor)) primaryColor = '#ff0000';
-                try { ctx2.drawImage(TextureManager.getSegment(primaryColor), 0, 0, 62, 62); } catch(e) {}
+                try { ctx2.drawImage(TextureManager.getSegment(primaryColor), 0, 0, 62, 62); } catch (e) { }
                 wrap.appendChild(c);
                 wrap.onclick = () => {
                     if (isLocked) return;
                     skinIndex = i;
                     grid.querySelectorAll('.skingal-orb').forEach((o, j) => o.classList.toggle('selected', j === i));
                     if (UI.skinName) UI.skinName.innerText = SKIN_NAMES[i] || '';
-                    let apagarBtn = document.getElementById('btn-apagar-skin');
-                    if (apagarBtn) apagarBtn.classList.toggle('hidden', i < baseCount);
                     updateSkinUI();
                 };
                 grid.appendChild(wrap);
             });
-            let newBtn = document.createElement('div');
-            newBtn.className = 'skingal-orb new-skin';
-            newBtn.title = 'Criar nova skin';
-            newBtn.textContent = '+';
-            newBtn.onclick = () => {
-                gameState = 'skin-editor';
-                document.getElementById('skin-preview-ui').classList.add('hidden');
-                document.getElementById('skin-editor-ui').classList.remove('hidden');
-                activeSegIndex = 0;
-                buildStudioPalette(); buildStudioPresets(); renderRibbon();
-                applyColorToSegment(edSkin.segments[0]);
-                drawEditorPreview();
-            };
-            grid.appendChild(newBtn);
+
             let sel = grid.querySelector('.skingal-orb.selected');
             if (sel) sel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            let apagarBtn = document.getElementById('btn-apagar-skin');
-            if (apagarBtn) apagarBtn.classList.toggle('hidden', skinIndex < baseCount);
         }
-
-        // ==========================================
-        // SKIN EDITOR LOGIC
-        // ==========================================
-        let edSkin = { segments: ['#ff0000', '#00ff00', '#0000ff'], effects: [] };
-        let activeSegIndex = 0;
-        let edTime = 0;
-        const edCtx = document.getElementById('editor-canvas').getContext('2d');
-        const MAX_CUSTOM_SEGS = 40;
-
-        function rgbToHex(r, g, b) { return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1); }
-        function hexToRgb(hex) { let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 }; }
-
-        function applyColorToSegment(color) {
-            if (!/^#[0-9a-fA-F]{6}$/.test(color)) return;
-            edSkin.segments[activeSegIndex] = color;
-            document.getElementById('editor-color-picker').value = color;
-            document.getElementById('s-hex-input').value = color.toUpperCase();
-            document.getElementById('s-swatch-box').style.background = color;
-            renderRibbon();
-        }
-
-        function renderRibbon() {
-            const ribbon = document.getElementById('segment-ribbon');
-            ribbon.innerHTML = '';
-            edSkin.segments.forEach((color, i) => {
-                let seg = document.createElement('div');
-                seg.className = 's-seg' + (i === activeSegIndex ? ' active' : '');
-                seg.style.background = color;
-                seg.title = 'Gomo ' + (i + 1);
-                seg.onclick = () => { activeSegIndex = i; applyColorToSegment(color); };
-                ribbon.appendChild(seg);
-            });
-            const active = ribbon.querySelector('.s-seg.active');
-            if (active) active.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
-        }
-
-        const STUDIO_PALETTE = [
-            '#ff2d55','#ff6b35','#ffcc00','#c8f72f','#00ff88','#00d9ff',
-            '#5e5cf7','#bf5af2','#ff375f','#ff9f0a','#ffd60a','#30d158',
-            '#64d2ff','#0a84ff','#7c5cf7','#df5af2','#ffffff','#c7c7cc',
-            '#8e8e93','#48484a','#1c1c1e','#000000','#ff453a','#32d74b'
-        ];
-
-        function buildStudioPalette() {
-            const grid = document.getElementById('s-palette');
-            grid.innerHTML = '';
-            STUDIO_PALETTE.forEach(c => {
-                let el = document.createElement('div');
-                el.className = 's-pal';
-                el.style.background = c;
-                el.title = c;
-                el.onclick = () => {
-                    applyColorToSegment(c);
-                    document.querySelectorAll('.s-pal').forEach(p => p.classList.remove('sel'));
-                    el.classList.add('sel');
-                };
-                grid.appendChild(el);
-            });
-        }
-
-        const STUDIO_PRESETS = [
-            { id: 'rainbow',   label: 'ARCO-ÍRIS', gradient: 'linear-gradient(90deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff)' },
-            { id: 'gradient',  label: 'DEGRADÊ',   gradient: 'linear-gradient(90deg,#ff0000,#ff00ff,#0000ff)' },
-            { id: 'stripes',   label: 'LISTRAS',   gradient: 'repeating-linear-gradient(90deg,#ffffff 0px,#ffffff 10px,#000 10px,#000 20px)' },
-            { id: 'checkered', label: 'XADREZ',    gradient: 'repeating-linear-gradient(45deg,#ff4444 0px,#ff4444 12px,#fff 12px,#fff 24px)' },
-            { id: 'radial',    label: 'RADIAL',    gradient: 'linear-gradient(90deg,#ffdf00,#ff8800,#ff2200)' },
-            { id: 'ocean',     label: 'OCEANO',    gradient: 'linear-gradient(90deg,#00d9ff,#0057ff,#6b00ff)' },
-        ];
-
-        function buildStudioPresets() {
-            const grid = document.getElementById('s-preset-grid');
-            grid.innerHTML = '';
-            STUDIO_PRESETS.forEach(p => {
-                let card = document.createElement('div');
-                card.className = 's-preset-card';
-                card.innerHTML = `<div class="s-preset-strip" style="background:${p.gradient}"></div><div class="s-preset-label">${p.label}</div>`;
-                card.onclick = () => applyPreset(p.id);
-                grid.appendChild(card);
-            });
-        }
-
-        function applyPreset(type) {
-            if (type === 'rainbow') {
-                edSkin.segments = [];
-                for (let i = 0; i < 15; i++) {
-                    let h = (i / 15) * 360;
-                    edCtx.fillStyle = `hsl(${h}, 100%, 50%)`;
-                    edCtx.fillRect(0, 0, 1, 1);
-                    let data = edCtx.getImageData(0, 0, 1, 1).data;
-                    edSkin.segments.push(rgbToHex(data[0], data[1], data[2]));
-                }
-            } else if (type === 'stripes') {
-                if (edSkin.segments.length < 2) edSkin.segments.push('#ffffff');
-                let c1 = edSkin.segments[0], c2 = edSkin.segments[1];
-                let len = Math.max(10, edSkin.segments.length);
-                edSkin.segments = [];
-                for (let i = 0; i < len; i++) edSkin.segments.push(i % 2 === 0 ? c1 : c2);
-            } else if (type === 'gradient') {
-                if (edSkin.segments.length < 2) edSkin.segments.push('#ffffff');
-                let c1 = hexToRgb(edSkin.segments[0]), c2 = hexToRgb(edSkin.segments[edSkin.segments.length - 1]);
-                let len = Math.max(10, edSkin.segments.length);
-                edSkin.segments = [];
-                for (let i = 0; i < len; i++) {
-                    let t = i / (len - 1);
-                    edSkin.segments.push(rgbToHex(Math.round(c1.r+(c2.r-c1.r)*t), Math.round(c1.g+(c2.g-c1.g)*t), Math.round(c1.b+(c2.b-c1.b)*t)));
-                }
-            } else if (type === 'checkered') {
-                if (edSkin.segments.length < 2) { edSkin.segments.push('#000000'); edSkin.segments.push('#ffffff'); }
-                let c1 = edSkin.segments[0], c2 = edSkin.segments[1];
-                let len = Math.max(12, edSkin.segments.length);
-                edSkin.segments = [];
-                for (let i = 0; i < len; i++) { let row = Math.floor(i/4), col = i%4; edSkin.segments.push(((row+col)%2===0)?c1:c2); }
-            } else if (type === 'radial') {
-                let baseColor = edSkin.segments[0] || '#ffdf00';
-                let len = Math.max(12, edSkin.segments.length);
-                edSkin.segments = [];
-                for (let i = 0; i < len; i++) {
-                    let br = 1 - (i / len) * 0.6, c = hexToRgb(baseColor);
-                    edSkin.segments.push(rgbToHex(Math.round(c.r*br), Math.round(c.g*br), Math.round(c.b*br)));
-                }
-            } else if (type === 'ocean') {
-                const oc = ['#00d9ff','#00aaff','#0077ff','#0055ff','#4400ff','#6b00ff'];
-                let len = Math.max(12, edSkin.segments.length);
-                edSkin.segments = [];
-                for (let i = 0; i < len; i++) edSkin.segments.push(oc[i % oc.length]);
-            }
-            activeSegIndex = 0;
-            renderRibbon();
-            applyColorToSegment(edSkin.segments[0]);
-        }
-
-        document.getElementById('btn-add-seg').onclick = () => {
-            if (edSkin.segments.length < MAX_CUSTOM_SEGS) {
-                edSkin.segments.push(edSkin.segments[edSkin.segments.length - 1]);
-                activeSegIndex = edSkin.segments.length - 1;
-                renderRibbon();
-                applyColorToSegment(edSkin.segments[activeSegIndex]);
-            }
-        };
-        document.getElementById('btn-rem-seg').onclick = () => {
-            if (edSkin.segments.length > 1) {
-                edSkin.segments.pop();
-                if (activeSegIndex >= edSkin.segments.length) activeSegIndex = edSkin.segments.length - 1;
-                renderRibbon();
-                applyColorToSegment(edSkin.segments[activeSegIndex]);
-            }
-        };
-
-        document.getElementById('editor-color-picker').oninput = (e) => {
-            edSkin.segments[activeSegIndex] = e.target.value;
-            document.getElementById('s-hex-input').value = e.target.value.toUpperCase();
-            document.getElementById('s-swatch-box').style.background = e.target.value;
-            renderRibbon();
-        };
-
-        document.getElementById('s-hex-input').oninput = (e) => {
-            let val = e.target.value.trim();
-            if (!val.startsWith('#')) val = '#' + val;
-            if (/^#[0-9a-fA-F]{6}$/.test(val)) applyColorToSegment(val);
-        };
-
-        document.getElementById('btn-fill-all').onclick = () => {
-            edSkin.segments.fill(edSkin.segments[activeSegIndex]);
-            renderRibbon();
-        };
-
-        document.getElementById('btn-random').onclick = () => {
-            let c = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-            applyColorToSegment(c);
-        };
-
-        document.getElementById('btn-effect-glow').onclick = function() { this.classList.toggle('on'); };
-        document.getElementById('btn-effect-pulse').onclick = function() { this.classList.toggle('on'); };
-
-        function drawEditorPreview() {
-            if (gameState !== 'skin-editor') return;
-            edCtx.clearRect(0, 0, 400, 400);
-            let rad = IS_MOBILE_CLIENT ? 16 : 20, len = 32, spc = rad * 0.45;
-            let headX = 200 + ((len * spc) / 2), centerY = 200, segs = [];
-            for (let i = 0; i < len; i++) segs.push({ x: headX - (i * spc), y: centerY + Math.sin(edTime * 0.005 - i * 0.18) * (rad * 1.5) });
-
-            let hasPulse = document.getElementById('btn-effect-pulse').classList.contains('on');
-            let hasGlow = document.getElementById('btn-effect-glow').classList.contains('on');
-            let mainColor = edSkin.segments[0];
-
-            if (hasGlow) {
-                edCtx.beginPath();
-                for (let i = len - 1; i >= 0; i--) {
-                    edCtx.moveTo(segs[i].x + rad + 2, segs[i].y);
-                    edCtx.arc(segs[i].x, segs[i].y, rad + 2, 0, Math.PI * 2);
-                }
-                edCtx.fillStyle = mainColor + '88';
-                edCtx.fill();
-            }
-
-            for (let i = len - 1; i >= 0; i--) {
-                let c = edSkin.segments[i % edSkin.segments.length];
-                let r = rad;
-                if (hasPulse) r += Math.sin(edTime * 0.1 - i * 0.2) * (rad * 0.2);
-                edCtx.drawImage(TextureManager.getSegment(c), segs[i].x - r, segs[i].y - r, r * 2, r * 2);
-            }
-
-            edCtx.drawImage(TextureManager.getSegment(edSkin.segments[0]), segs[0].x - rad, segs[0].y - rad, rad * 2, rad * 2);
-            drawPremiumEyes(edCtx, segs[0].x, segs[0].y, rad, 0, 0, 0, false, false);
-
-            edTime += 1;
-            requestAnimationFrame(drawEditorPreview);
-        }
-
-        (function() { let _b = document.getElementById('btn-open-editor'); if (!_b) return;
-        _b.onclick = () => {
-            gameState = 'skin-editor';
-            document.getElementById('skin-preview-ui').classList.add('hidden');
-            document.getElementById('skin-editor-ui').classList.remove('hidden');
-            activeSegIndex = 0;
-            buildStudioPalette();
-            buildStudioPresets();
-            renderRibbon();
-            applyColorToSegment(edSkin.segments[0]);
-            drawEditorPreview();
-        }; })();
-
-        document.getElementById('btn-close-editor').onclick = () => {
-            gameState = 'skin-menu';
-            document.getElementById('skin-editor-ui').classList.add('hidden');
-            document.getElementById('skin-preview-ui').classList.remove('hidden');
-            buildSkinGallery(); updateSkinUI();
-        };
-
-        document.getElementById('btn-save-editor').onclick = () => {
-            let finalSkinColors = [...edSkin.segments];
-            finalSkinColors.effects = [];
-            if (document.getElementById('btn-effect-glow').classList.contains('on')) finalSkinColors.effects.push('glow');
-            if (document.getElementById('btn-effect-pulse').classList.contains('on')) finalSkinColors.effects.push('pulse');
-            let customName = document.getElementById('editor-skin-name').value.trim();
-            finalSkinColors.name = customName || ("CUSTOM " + (savedCustomSkins.length + 1));
-
-            SKINS.push(finalSkinColors);
-            SKIN_NAMES.push(finalSkinColors.name);
-
-            let exportData = {
-                name: finalSkinColors.name,
-                segments: [...edSkin.segments],
-                effects: finalSkinColors.effects,
-                pattern: 'custom',
-                timestamp: Date.now()
-            };
-            savedCustomSkins.push(exportData);
-            localStorage.setItem('serpente_custom_skins', JSON.stringify(savedCustomSkins));
-
-            skinIndex = SKINS.length - 1;
-            gameState = 'skin-menu';
-            document.getElementById('skin-editor-ui').classList.add('hidden');
-            document.getElementById('skin-preview-ui').classList.remove('hidden');
-            buildSkinGallery(); updateSkinUI();
-        };
-
-        // ==========================================
-        // FIM DA LÓGICA DO EDITOR
-        // ==========================================
 
 
         function gameLoop(time) {
@@ -3411,18 +2711,6 @@
 
         UI.skins.addEventListener('click', () => { gameState = 'skin-menu'; UI.start.style.display = 'none'; UI.preview.classList.remove('hidden'); buildSkinGallery(); updateSkinUI(); });
         UI.ok.addEventListener('click', () => { UI.preview.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
-        document.getElementById('btn-apagar-skin').addEventListener('click', () => {
-            const baseCount = SKINS.length - savedCustomSkins.length;
-            if (skinIndex >= baseCount) {
-                let ci = skinIndex - baseCount;
-                savedCustomSkins.splice(ci, 1);
-                localStorage.setItem('serpente_custom_skins', JSON.stringify(savedCustomSkins));
-                SKINS.splice(skinIndex, 1);
-                SKIN_NAMES.splice(skinIndex, 1);
-                skinIndex = Math.max(0, skinIndex - 1);
-                buildSkinGallery(); updateSkinUI();
-            }
-        });
 
         function updateOptionsUI() { if (!UI.optAudio) return; UI.optAudio.innerText = APP_SETTINGS.audio ? "LIGADO" : "DESL."; UI.optAudio.style.background = APP_SETTINGS.audio ? "#00ff88" : "#ff4444"; UI.optAudio.style.color = APP_SETTINGS.audio ? "#000" : "#fff"; UI.optGfx.innerText = APP_SETTINGS.highGfx ? "ALTA" : "BAIXA"; UI.optGfx.style.background = APP_SETTINGS.highGfx ? "#ffdf00" : "#ff4444"; UI.optGfx.style.color = APP_SETTINGS.highGfx ? "#000" : "#fff"; }
         UI.optionsBtn.addEventListener('click', () => { updateOptionsUI(); UI.start.style.display = 'none'; UI.optionsUi.classList.remove('hidden'); });
