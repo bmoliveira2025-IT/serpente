@@ -43,6 +43,98 @@
         }
 
         /* Animações de UI */
+        @keyframes neonBorder {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(255, 223, 0, 0.25), 0 0 40px rgba(255, 223, 0, 0.08), inset 0 0 20px rgba(255, 223, 0, 0.05);
+                border-color: rgba(255, 223, 0, 0.45);
+            }
+
+            50% {
+                box-shadow: 0 0 35px rgba(255, 223, 0, 0.5), 0 0 70px rgba(255, 100, 0, 0.18), inset 0 0 28px rgba(255, 223, 0, 0.12);
+                border-color: rgba(255, 200, 0, 0.85);
+            }
+        }
+
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-3deg);
+            }
+
+            50% {
+                transform: translateY(-6px) rotate(3deg);
+            }
+        }
+
+        @keyframes scanline {
+            0% {
+                transform: translateY(-100%);
+            }
+
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% center;
+            }
+
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+        @keyframes powerupPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+                filter: brightness(1.4);
+            }
+        }
+
+        @keyframes eventBanner {
+            0% {
+                transform: translate(-50%, -120%);
+                opacity: 0;
+            }
+
+            12% {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+
+            88% {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -120%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
         @keyframes slideUp {
             from {
                 transform: translateY(40px);
@@ -356,12 +448,25 @@
             padding: clamp(15px, 4vh, 40px) clamp(20px, 6vw, 80px);
             border-radius: clamp(15px, 4vw, 30px);
             text-align: center;
-            border: 1px solid rgba(255, 223, 0, 0.3);
-            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 223, 0, 0.35);
+            background: linear-gradient(145deg, rgba(20, 18, 8, 0.92), rgba(0, 0, 0, 0.92));
             width: 95%;
             max-width: 450px;
             box-sizing: border-box;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(14px);
+            animation: neonBorder 3.5s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .death-stats-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 223, 0, 0.8), transparent);
         }
 
         #death-length {
@@ -388,29 +493,33 @@
             border: none;
             font-weight: 800;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: auto;
+            letter-spacing: 1px;
         }
 
         .btn-share {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
         }
 
         .btn-share:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-2px);
         }
 
         .btn-restart {
-            background: linear-gradient(145deg, #ffdf00 0%, #ccaa00 100%);
-            color: black;
-            box-shadow: 0 5px 20px rgba(255, 223, 0, 0.25);
+            background: linear-gradient(145deg, #ffe946 0%, #ffdf00 50%, #cc9900 100%);
+            color: #0a0a0a;
+            box-shadow: 0 6px 22px rgba(255, 223, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
         }
 
         .btn-restart:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 10px 30px rgba(255, 223, 0, 0.55);
         }
 
         .logo-container {
@@ -423,9 +532,21 @@
         }
 
         .slither-text {
-            color: #ffdf00;
+            background: linear-gradient(90deg, #ffdf00, #fff3a0, #ff9500, #ffdf00);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             text-shadow: 0 0 25px rgba(255, 223, 0, 0.6);
             letter-spacing: -2px;
+            animation: shimmer 4s linear infinite;
+        }
+
+        .logo-container>div:first-child {
+            display: inline-block;
+            transform-origin: center;
+            animation: logoFloat 3.2s ease-in-out infinite;
+            filter: drop-shadow(0 0 12px rgba(255, 223, 0, 0.5));
         }
 
         .btn-aaa {
@@ -433,21 +554,44 @@
             font-size: clamp(15px, 4vw, 18px);
             font-weight: 800;
             border-radius: 50px;
-            border: none;
-            background: #ffdf00;
-            color: #000;
+            border: 1px solid rgba(255, 223, 0, 0.6);
+            background: linear-gradient(145deg, #ffe946 0%, #ffdf00 50%, #c89800 100%);
+            color: #0a0a0a;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: auto;
             width: 85%;
             max-width: 320px;
             box-sizing: border-box;
-            box-shadow: 0 5px 20px rgba(255, 223, 0, 0.25);
+            box-shadow: 0 6px 24px rgba(255, 223, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-aaa::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            transition: left 0.6s;
         }
 
         .btn-aaa:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(255, 223, 0, 0.4);
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 10px 32px rgba(255, 223, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-aaa:hover::before {
+            left: 100%;
+        }
+
+        .btn-aaa:active {
+            transform: translateY(0) scale(0.98);
         }
 
         #nickname {
@@ -909,6 +1053,149 @@
             text-align: center;
         }
 
+        /* HUD POWER-UPS */
+        #powerup-hud {
+            position: absolute;
+            top: 50%;
+            left: 18px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 55;
+            pointer-events: none;
+        }
+
+        .powerup-slot {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(145deg, rgba(20, 20, 28, 0.85), rgba(0, 0, 0, 0.85));
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            position: relative;
+            backdrop-filter: blur(8px);
+            animation: powerupPulse 1.6s ease-in-out infinite;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .powerup-slot.shield {
+            border-color: #4dd2ff;
+            box-shadow: 0 0 18px rgba(77, 210, 255, 0.45);
+        }
+
+        .powerup-slot.magnet {
+            border-color: #ff6bd6;
+            box-shadow: 0 0 18px rgba(255, 107, 214, 0.45);
+        }
+
+        .powerup-slot.ghost {
+            border-color: #b9a4ff;
+            box-shadow: 0 0 18px rgba(185, 164, 255, 0.45);
+        }
+
+        .powerup-slot.mega {
+            border-color: #ffe14a;
+            box-shadow: 0 0 18px rgba(255, 225, 74, 0.55);
+        }
+
+        .powerup-slot .pu-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: currentColor;
+            color: #fff;
+            transition: width 0.1s linear;
+        }
+
+        .powerup-slot.shield .pu-bar {
+            color: #4dd2ff;
+        }
+
+        .powerup-slot.magnet .pu-bar {
+            color: #ff6bd6;
+        }
+
+        .powerup-slot.ghost .pu-bar {
+            color: #b9a4ff;
+        }
+
+        .powerup-slot.mega .pu-bar {
+            color: #ffe14a;
+        }
+
+        @media (max-width: 1024px) {
+            #powerup-hud {
+                left: 8px;
+                gap: 6px;
+            }
+
+            .powerup-slot {
+                width: 38px;
+                height: 38px;
+                font-size: 19px;
+                border-radius: 10px;
+            }
+        }
+
+        /* BANNER DE EVENTO */
+        #event-banner {
+            position: absolute;
+            top: 90px;
+            left: 50%;
+            transform: translate(-50%, -120%);
+            padding: 14px 36px;
+            border-radius: 50px;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.85), rgba(20, 14, 40, 0.85), rgba(0, 0, 0, 0.85));
+            border: 1px solid rgba(255, 223, 0, 0.5);
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: 3px;
+            font-size: 15px;
+            z-index: 70;
+            pointer-events: none;
+            box-shadow: 0 8px 40px rgba(255, 223, 0, 0.3);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        #event-banner.show {
+            animation: eventBanner 5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        #event-banner .ev-emoji {
+            font-size: 22px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        #event-banner .ev-title {
+            background: linear-gradient(90deg, #ffdf00, #ff9500, #ffdf00);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 2s linear infinite;
+        }
+
+        @media (max-width: 1024px) {
+            #event-banner {
+                font-size: 11px;
+                padding: 10px 22px;
+                letter-spacing: 2px;
+                top: 70px;
+            }
+
+            #event-banner .ev-emoji {
+                font-size: 16px;
+            }
+        }
+
         .hidden {
             display: none !important;
         }
@@ -937,6 +1224,12 @@
         <div id="minimap-wrapper">
             <div id="minimap-container" class="glass-panel"><canvas id="minimap"></canvas></div>
         </div>
+
+        <!-- HUD POWER-UPS ATIVOS -->
+        <div id="powerup-hud"></div>
+
+        <!-- BANNER DE EVENTO -->
+        <div id="event-banner"><span class="ev-emoji">✨</span><span class="ev-title">CHUVA DE ESTRELAS</span></div>
 
         <!-- CONTROLES MOBILE -->
         <div id="mobile-controls">
@@ -1260,7 +1553,112 @@
 
         const Haptic = { vibrate: function (ms) { if (IS_MOBILE_CLIENT && navigator.vibrate) navigator.vibrate(ms); }, soft: function () { this.vibrate(10); }, medium: function () { this.vibrate(35); }, strong: function () { this.vibrate(70); } };
 
-        let snakes = [], foods = [], fireflies = [], particles = [], butterflies = [], player = null;
+        let snakes = [], foods = [], fireflies = [], particles = [], butterflies = [], powerUps = [], player = null;
+        // ---- POWER-UPS & EVENTOS ----
+        const POWERUP_TYPES = {
+            shield: { emoji: '🛡', color: '#4dd2ff', glow: 'rgba(77,210,255,', duration: 600, name: 'ESCUDO', desc: 'Próxima colisão é absorvida' },
+            magnet: { emoji: '🧲', color: '#ff6bd6', glow: 'rgba(255,107,214,', duration: 540, name: 'ÍMAN', desc: 'Atrai orbes próximos' },
+            ghost: { emoji: '👻', color: '#b9a4ff', glow: 'rgba(185,164,255,', duration: 360, name: 'FANTASMA', desc: 'Atravessa cobras' },
+            mega: { emoji: '⚡', color: '#ffe14a', glow: 'rgba(255,225,74,', duration: 300, name: 'MEGA-BOOST', desc: 'Velocidade + sem custo' }
+        };
+        const POWERUP_KEYS = Object.keys(POWERUP_TYPES);
+        let powerUpSpawnTimer = 600 + Math.floor(Math.random() * 600);
+        let starShowerActive = false, starShowerTimer = 0, starShowerCooldown = 60 * 75; // ~75s
+
+        class PowerUp {
+            constructor(x, y, type) {
+                this.x = x; this.y = y; this.type = type; this.cfg = POWERUP_TYPES[type];
+                this.radius = 18; this.dead = false; this.bornAt = performance.now();
+                this.life = 60 * 35; // 35s na arena
+                this.wO = Math.random() * Math.PI * 2;
+            }
+            update() { this.life--; if (this.life <= 0) this.dead = true; }
+            draw(ctx, time, zoom) {
+                let invZoom = Math.pow(1 / zoom, 0.7);
+                let scaleMult = Math.max(0.85, Math.min(invZoom, 2.6));
+                let pulse = 1.0 + Math.sin(time * 0.005 + this.wO) * 0.18;
+                let r = this.radius * scaleMult * pulse;
+                let alpha = this.life < 180 ? (Math.sin(this.life * 0.3) * 0.5 + 0.5) : 1;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                // Halo grande
+                let halo = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r * 3.2);
+                halo.addColorStop(0, this.cfg.glow + '0.55)');
+                halo.addColorStop(0.5, this.cfg.glow + '0.15)');
+                halo.addColorStop(1, this.cfg.glow + '0)');
+                ctx.fillStyle = halo;
+                ctx.beginPath(); ctx.arc(this.x, this.y, r * 3.2, 0, Math.PI * 2); ctx.fill();
+                // Anel rotativo
+                let ringRot = time * 0.002;
+                ctx.strokeStyle = this.cfg.color;
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([r * 0.5, r * 0.3]);
+                ctx.lineDashOffset = -ringRot * 50;
+                ctx.beginPath(); ctx.arc(this.x, this.y, r * 1.4, 0, Math.PI * 2); ctx.stroke();
+                ctx.setLineDash([]);
+                // Núcleo
+                let core = ctx.createRadialGradient(this.x - r * 0.3, this.y - r * 0.3, 0, this.x, this.y, r);
+                core.addColorStop(0, '#fff');
+                core.addColorStop(0.4, this.cfg.color);
+                core.addColorStop(1, this.cfg.glow + '0.2)');
+                ctx.fillStyle = core;
+                ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.fill();
+                // Emoji
+                ctx.font = `${Math.floor(r * 1.25)}px serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.cfg.emoji, this.x, this.y + r * 0.05);
+                ctx.restore();
+            }
+        }
+
+        function spawnPowerUp() {
+            if (powerUps.length >= 4) return;
+            let pos = getRandomPosInCircle(200);
+            let type = POWERUP_KEYS[Math.floor(Math.random() * POWERUP_KEYS.length)];
+            powerUps.push(new PowerUp(pos.x, pos.y, type));
+        }
+
+        function startStarShower() {
+            starShowerActive = true; starShowerTimer = 60 * 15; // 15s
+            const banner = document.getElementById('event-banner');
+            if (banner) { banner.classList.remove('show'); void banner.offsetWidth; banner.classList.add('show'); }
+            AudioSys.play('dash');
+            // Spawn de orbes dourados em sequência
+            for (let i = 0; i < 80; i++) {
+                let pos = getRandomPosInCircle(80);
+                let f = new Food(pos.x, pos.y, 4 + Math.random() * 2.5, '#ffdf00', 1, 8 + Math.random() * 6);
+                f.isStar = true;
+                foods.push(f);
+            }
+        }
+
+        function applyPowerUp(snake, type) {
+            if (!snake || !snake.alive) return;
+            const cfg = POWERUP_TYPES[type];
+            snake.activePowers = snake.activePowers || {};
+            snake.activePowers[type] = cfg.duration;
+            if (snake.isPlayer) {
+                createExplosion(snake.x, snake.y, cfg.color, 20);
+                AudioSys.play('eat'); Haptic.medium();
+            }
+        }
+
+        function updatePowerupHUD() {
+            const hud = document.getElementById('powerup-hud');
+            if (!hud || !player || !player.alive || !player.activePowers) { if (hud) hud.innerHTML = ''; return; }
+            let html = '';
+            for (let key of POWERUP_KEYS) {
+                let t = player.activePowers[key];
+                if (t && t > 0) {
+                    let cfg = POWERUP_TYPES[key];
+                    let pct = (t / cfg.duration) * 100;
+                    html += `<div class="powerup-slot ${key}" title="${cfg.name}">${cfg.emoji}<div class="pu-bar" style="width:${pct}%"></div></div>`;
+                }
+            }
+            hud.innerHTML = html;
+        }
+
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
         let joystickActive = false, joystickAngle = 0, skinIndex = 0;
@@ -1598,10 +1996,21 @@
                 this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 if (this.segments.length < this.targetLength) this.segments.push({ x: this.segments[this.segments.length - 1].x, y: this.segments[this.segments.length - 1].y });
 
-                if (this.isBoosting && this.score > 30) {
-                    this.speed = this.conf.velocidadeTurbo;
+                // === POWER-UPS — decrementar timers ===
+                if (this.activePowers) {
+                    for (let key in this.activePowers) {
+                        if (this.activePowers[key] > 0) this.activePowers[key]--;
+                    }
+                }
+                let hasMega = this.activePowers && this.activePowers.mega > 0;
+                let hasMagnet = this.activePowers && this.activePowers.magnet > 0;
+                let hasShield = this.activePowers && this.activePowers.shield > 0;
+                let hasGhost = this.activePowers && this.activePowers.ghost > 0;
+
+                if (hasMega || (this.isBoosting && this.score > 30)) {
+                    this.speed = hasMega ? this.conf.velocidadeTurbo * 1.18 : this.conf.velocidadeTurbo;
                     if (frameCount % 2 === 0 && APP_SETTINGS.highGfx) this.trails.push({ x: this.segments[0].x, y: this.segments[0].y, life: 1.0 });
-                    if (Math.random() < CONFIG.cobra.chanceOrbeTurbo) {
+                    if (!hasMega && Math.random() < CONFIG.cobra.chanceOrbeTurbo) {
                         this.score -= CONFIG.cobra.custoDoTurbo; let t = this.segments[this.segments.length - 1];
                         for (let q = 0; q < CONFIG.cobra.quantidadeOrbeTurbo; q++) foods.push(new Food(t.x + (Math.random() * 14 - 7), t.y + (Math.random() * 14 - 7), CONFIG.cobra.tamanhoOrbeTurbo, this.skin[this.segments.length % this.skin.length], 2, CONFIG.cobra.custoDoTurbo));
                     }
@@ -1627,7 +2036,7 @@
                 let diff = this.targetAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2;
                 let tS = Math.max(0.03, this.conf.velocidadeGiro - (this.radius * 0.00015));
                 if (IS_MOBILE_CLIENT && joystickActive) { let turnBoost = 1.0 + Math.min(1.2, Math.abs(diff) / Math.PI * 1.5); tS *= turnBoost; }
-                if (this.isBoosting) tS *= 1.35;
+                if (this.isBoosting || hasMega) tS *= 1.35;
                 if (Math.abs(diff) < tS) this.angle = this.targetAngle; else this.angle += Math.sign(diff) * tS;
                 this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed;
 
@@ -1637,7 +2046,9 @@
                 let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
 
-                let eatRadius = Math.max(CONFIG.mundo.forcaAtracao, this.radius + 15); let eatRadiusSq = eatRadius * eatRadius;
+                let eatRadius = Math.max(CONFIG.mundo.forcaAtracao, this.radius + 15);
+                if (hasMagnet) eatRadius = Math.max(eatRadius, 220); // ÍMAN
+                let eatRadiusSq = eatRadius * eatRadius;
                 let nearFoodIdx = getNearbyFoodIndices(this.x, this.y, eatRadius);
                 for (let i of nearFoodIdx) {
                     let f = foods[i]; if (!f || f.dead) continue;
@@ -1670,6 +2081,27 @@
                 let isRainbow = this.isPlayer && isRainbowUnlocked;
                 let hasGlow = this.skin.effects && this.skin.effects.includes('glow');
                 let hasPulse = this.skin.effects && this.skin.effects.includes('pulse');
+
+                // === AURA DE POWER-UP ATIVO ===
+                if (this.activePowers && APP_SETTINGS.highGfx) {
+                    let auraColor = null;
+                    if (this.activePowers.shield > 0) auraColor = 'rgba(77,210,255,';
+                    else if (this.activePowers.mega > 0) auraColor = 'rgba(255,225,74,';
+                    else if (this.activePowers.ghost > 0) auraColor = 'rgba(185,164,255,';
+                    else if (this.activePowers.magnet > 0) auraColor = 'rgba(255,107,214,';
+                    if (auraColor) {
+                        let pulseA = 0.35 + Math.sin(frameCount * 0.12) * 0.15;
+                        let auraR = this.radius * 4.2;
+                        let g = ctx.createRadialGradient(this.x, this.y, this.radius, this.x, this.y, auraR);
+                        g.addColorStop(0, auraColor + (pulseA + 0.15) + ')');
+                        g.addColorStop(0.6, auraColor + (pulseA * 0.4) + ')');
+                        g.addColorStop(1, auraColor + '0)');
+                        ctx.fillStyle = g;
+                        ctx.beginPath(); ctx.arc(this.x, this.y, auraR, 0, Math.PI * 2); ctx.fill();
+                    }
+                    // Render fantasma: corpo translúcido
+                    if (this.activePowers.ghost > 0) ctx.globalAlpha = 0.55;
+                }
 
                 if (this.trails.length > 0 && APP_SETTINGS.highGfx) {
                     for (let idx = 0; idx < this.trails.length; idx++) {
@@ -1725,6 +2157,7 @@
                 drawPremiumEyes(ctx, this.x, this.y, headR, this.angle, look, this.skinId, this.isBoosting, this.eatTimer > 0);
                 drawAccessory(ctx, this.x, this.y, headR, this.angle, this.accId);
 
+                ctx.globalAlpha = 1;
                 ctx.save(); ctx.fillStyle = this.isPlayer ? 'rgba(255, 223, 0, 0.6)' : 'rgba(255, 255, 255, 0.25)'; ctx.font = '800 7px Poppins'; ctx.textAlign = 'center'; ctx.fillText(this.name, this.x, this.y - headR - 11);
                 if (this.isKing) {
                     let now = performance.now(); ctx.globalAlpha = 0.5; let bob = Math.sin(now * 0.004) * 1.5; let cx = this.x, cy = this.y - headR - 28 + bob; let cr = 5;
@@ -1995,21 +2428,68 @@
             if (activeFoodCount < CONFIG.mundo.quantidadeComida) spawnFood(IS_MOBILE_CLIENT ? 8 : 15);
             if (butterflies.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
+            // === EVENTOS & POWER-UPS ===
+            if (gameState === 'playing') {
+                powerUpSpawnTimer--;
+                if (powerUpSpawnTimer <= 0) { spawnPowerUp(); powerUpSpawnTimer = 600 + Math.floor(Math.random() * 900); }
+                if (starShowerActive) {
+                    starShowerTimer--;
+                    if (frameCount % 4 === 0 && foods.filter(f => f.isStar).length < 200) {
+                        let pos = getRandomPosInCircle(80);
+                        let f = new Food(pos.x, pos.y, 4 + Math.random() * 2.5, '#ffdf00', 1, 8 + Math.random() * 6);
+                        f.isStar = true; foods.push(f);
+                    }
+                    if (starShowerTimer <= 0) { starShowerActive = false; starShowerCooldown = 60 * (60 + Math.floor(Math.random() * 60)); }
+                } else {
+                    starShowerCooldown--;
+                    if (starShowerCooldown <= 0) startStarShower();
+                }
+            }
+            // Update + cull power-ups
+            for (let i = powerUps.length - 1; i >= 0; i--) {
+                let pu = powerUps[i]; pu.update(); if (pu.dead) { powerUps.splice(i, 1); continue; }
+                // Colisão com cobras
+                for (let s of snakes) {
+                    if (!s.alive) continue;
+                    let dx = s.x - pu.x, dy = s.y - pu.y; let hit = s.radius + pu.radius;
+                    if (dx * dx + dy * dy < hit * hit) { applyPowerUp(s, pu.type); powerUps.splice(i, 1); break; }
+                }
+            }
+
             rebuildFoodGrid(); rebuildSegmentGrid();
             for (let s of snakes) s.update(); for (let b of butterflies) b.update();
 
             let segStep = IS_MOBILE_CLIENT ? 8 : 4;
             for (let i = 0; i < snakes.length; i++) {
                 let s1 = snakes[i]; if (!s1.alive) continue;
+                let s1Ghost = s1.activePowers && s1.activePowers.ghost > 0;
                 let searchRadius = s1.radius + 150; let nearSnakesIdx = getNearbySnakesIndices(s1.x, s1.y, searchRadius);
                 for (let j of nearSnakesIdx) {
                     let s2 = snakes[j]; if (i === j || !s2.alive) continue;
+                    if (s1Ghost) continue; // Fantasma não colide com corpos
                     let hitDist = (s1.radius * 0.85) + (s2.radius * 0.85); let dx = s1.x - s2.x; let dy = s1.y - s2.y;
-                    if (Math.abs(dx) < 300 && Math.abs(dy) < 300) { if (dx * dx + dy * dy < hitDist * hitDist) { if (s1.score > s2.score) s2.die(true); else s1.die(true); } }
-                    for (let k = 0; k < s2.segments.length; k += segStep) { let seg = s2.segments[k]; let sdx = s1.x - seg.x; let sdy = s1.y - seg.y; if (Math.abs(sdx) < hitDist && Math.abs(sdy) < hitDist) { if (sdx * sdx + sdy * sdy < hitDist * hitDist) { if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; } s1.die(true); break; } } }
+                    if (Math.abs(dx) < 300 && Math.abs(dy) < 300) {
+                        if (dx * dx + dy * dy < hitDist * hitDist) {
+                            // Head-to-head: maior vence; escudo absorve uma morte
+                            let loser = s1.score > s2.score ? s2 : s1;
+                            if (loser.activePowers && loser.activePowers.shield > 0) { loser.activePowers.shield = 0; createExplosion(loser.x, loser.y, '#4dd2ff', 30); if (loser.isPlayer) Haptic.medium(); }
+                            else loser.die(true);
+                        }
+                    }
+                    for (let k = 0; k < s2.segments.length; k += segStep) {
+                        let seg = s2.segments[k]; let sdx = s1.x - seg.x; let sdy = s1.y - seg.y;
+                        if (Math.abs(sdx) < hitDist && Math.abs(sdy) < hitDist) {
+                            if (sdx * sdx + sdy * sdy < hitDist * hitDist) {
+                                if (s1.activePowers && s1.activePowers.shield > 0) { s1.activePowers.shield = 0; createExplosion(s1.x, s1.y, '#4dd2ff', 30); if (s1.isPlayer) Haptic.medium(); break; }
+                                if (s2 === player && s1 !== player) { playerKills++; camera.shake = 15; }
+                                s1.die(true); break;
+                            }
+                        }
+                    }
                     if (!s1.alive) break;
                 }
             }
+
 
             snakes = snakes.filter(s => s.alive || s.isPlayer);
             let maxParticles = IS_MOBILE_CLIENT ? 40 : 250; for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].dead) { ParticlePool.recycle(particles[i]); particles.splice(i, 1); } }
@@ -2038,6 +2518,11 @@
                 }
             }
 
+            // POWER-UPS no mundo
+            for (let pu of powerUps) {
+                if (pu.x > camMinX && pu.x < camMaxX && pu.y > camMinY && pu.y < camMaxY) pu.draw(mainCtx, time, camera.zoom);
+            }
+
             for (let ff of fireflies) { if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
             for (let b of butterflies) { if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
             for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
@@ -2045,6 +2530,10 @@
             let dL = snakes.slice().sort((a, b) => a.score - b.score);
             for (let s of dL) { let pixelLength = s.segments.length * (s.radius * CONFIG.cobra.distanciaGomos); let bboxHalf = (pixelLength + s.radius * 2); if (s.x + bboxHalf < camMinX || s.x - bboxHalf > camMaxX || s.y + bboxHalf < camMinY || s.y - bboxHalf > camMaxY) continue; s.draw(mainCtx); }
             mainCtx.restore();
+
+            // HUD power-ups (throttled)
+            if (gameState === 'playing' && frameCount % 6 === 0) updatePowerupHUD();
+
 
             if (gameState === 'skin-menu') {
                 mainCtx.fillStyle = 'rgba(5,5,5,0.95)'; mainCtx.fillRect(0, 0, vpWidth, vpHeight);
@@ -2091,8 +2580,11 @@
             AudioSys.init(); await enterFullscreen();
             if (player) { let idx = snakes.indexOf(player); if (idx > -1) snakes.splice(idx, 1); }
             playerKills = 0; currentEvo = -1;
+            powerUps = []; starShowerActive = false; starShowerTimer = 0; starShowerCooldown = 60 * 60; powerUpSpawnTimer = 60 * 25;
+            const puHud = document.getElementById('powerup-hud'); if (puHud) puHud.innerHTML = '';
             const spawn = getSafeSpawnPos(1200);
             player = new Snake(spawn.x, spawn.y, UI.nick.value.trim() || "LENDA", skinIndex, true, CONFIG.cobra.pontosIniciais, accIndex);
+            player.activePowers = {};
             let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc']; camera.zoom = zV.inicial; camera.x = player.x; camera.y = player.y; isMouseDown = false; smoothedJoystickAngle = player.angle; snakes.push(player);
             gameState = 'playing'; UI.start.style.display = 'none'; UI.death.classList.add('hidden'); UI.lb.style.display = 'block'; UI.status.style.display = 'flex'; UI.mini.style.display = 'block'; if (IS_MOBILE_CLIENT) { UI.ctrls.style.display = 'block'; UI.ctrls.style.opacity = '1'; }
         });
