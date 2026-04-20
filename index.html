@@ -1988,30 +1988,73 @@
         }
         function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2)); for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2)); }
         function shadeColor(color, amount) { try { let col = color.trim(); if (col.startsWith('#')) { let num = parseInt(col.slice(1), 16); let r = Math.min(255, Math.max(0, (num >> 16) + amount)); let g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amount)); let b = Math.min(255, Math.max(0, (num & 0xff) + amount)); return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0'); } return col; } catch (e) { return color; } }
+        function lightenColor(color, amount) { return shadeColor(color, amount); }
+        function hexAlpha(hex, alpha) { try { let h = hex.trim().replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); let n = parseInt(h, 16); return `rgba(${(n >> 16) & 0xff},${(n >> 8) & 0xff},${n & 0xff},${alpha})`; } catch(e) { return `rgba(255,255,255,${alpha})`; } }
 
         const TextureManager = {
             cache: {},
             getSegment: function (color, isHead = false) {
                 const key = color + (isHead ? "_head" : ""); if (this.cache[key]) return this.cache[key];
-                const c = document.createElement('canvas'); c.width = 128; c.height = 128; const cx = c.getContext('2d'); const r = 62;
-                let baseColor = color; let pattern = null;
-                if (color.includes('-stars')) { baseColor = color.split('-')[0]; pattern = 'stars'; }
+                const sz = IS_MOBILE_CLIENT ? 96 : 128;
+                const c = document.createElement('canvas'); c.width = sz; c.height = sz;
+                const cx = c.getContext('2d'); const half = sz / 2, r = half - 2;
+                let baseColor = color, hasStars = false;
+                if (color.includes('-stars')) { baseColor = color.split('-')[0]; hasStars = true; }
 
-                cx.beginPath(); cx.arc(64, 64, r, 0, Math.PI * 2); cx.clip();
-                cx.beginPath(); cx.arc(64, 64, r, 0, Math.PI * 2); cx.fillStyle = baseColor; cx.fill();
+                cx.save();
+                cx.beginPath(); cx.arc(half, half, r, 0, Math.PI * 2); cx.clip();
+                cx.fillStyle = baseColor; cx.beginPath(); cx.arc(half, half, r, 0, Math.PI * 2); cx.fill();
 
-                if (pattern === 'stars') {
-                    cx.fillStyle = '#ffffff';
-                    const drawStar = (sx, sy, outer, inner) => { cx.beginPath(); let rot = Math.PI / 2 * 3; let x, y; let step = Math.PI / 5; cx.moveTo(sx, sy - outer); for (let k = 0; k < 5; k++) { x = sx + Math.cos(rot) * outer; y = sy + Math.sin(rot) * outer; cx.lineTo(x, y); rot += step; x = sx + Math.cos(rot) * inner; y = sy + Math.sin(rot) * inner; cx.lineTo(x, y); rot += step; } cx.lineTo(sx, sy - outer); cx.closePath(); cx.fill(); };
-                    for (let i = 0; i < 9; i++) { let sx = 64 + (Math.random() - 0.5) * r * 1.35; let sy = 64 + (Math.random() - 0.5) * r * 1.35; drawStar(sx, sy, 5.5, 2.5); }
+                // Padrão de escamas (apenas PC, corpo)
+                if (!IS_MOBILE_CLIENT && !isHead) {
+                    const sW = sz * 0.19, sH = sz * 0.155;
+                    cx.strokeStyle = 'rgba(0,0,0,0.20)'; cx.lineWidth = 0.8;
+                    for (let row = -1; row < sz / sH + 2; row++) {
+                        for (let col = -1; col < sz / sW + 2; col++) {
+                            const ox = (row % 2 === 0) ? 0 : sW * 0.5;
+                            cx.beginPath(); cx.ellipse(col * sW + ox, row * sH * 0.8, sW * 0.46, sH * 0.40, 0, 0, Math.PI * 2); cx.stroke();
+                        }
+                    }
+                    cx.strokeStyle = 'rgba(255,255,255,0.07)'; cx.lineWidth = 0.5;
+                    for (let row = -1; row < sz / sH + 2; row++) {
+                        for (let col = -1; col < sz / sW + 2; col++) {
+                            const ox = (row % 2 === 0) ? 0 : sW * 0.5;
+                            cx.beginPath(); cx.ellipse(col * sW + ox - sW * 0.06, row * sH * 0.8 - sH * 0.06, sW * 0.34, sH * 0.29, 0, 0, Math.PI * 2); cx.stroke();
+                        }
+                    }
                 }
 
-                let sideGrad = cx.createLinearGradient(0, 64 - r, 0, 64 + r);
-                sideGrad.addColorStop(0.00, 'rgba(255,255,255,0.45)'); sideGrad.addColorStop(0.18, 'rgba(255,255,255,0.35)'); sideGrad.addColorStop(0.35, 'rgba(255,255,255,0.08)'); sideGrad.addColorStop(0.50, 'rgba(0,0,0,0.0)'); sideGrad.addColorStop(0.65, 'rgba(0,0,0,0.08)'); sideGrad.addColorStop(0.80, 'rgba(0,0,0,0.25)'); sideGrad.addColorStop(0.92, 'rgba(0,0,0,0.50)'); sideGrad.addColorStop(1.00, 'rgba(0,0,0,0.65)');
-                cx.fillStyle = sideGrad; cx.fill();
+                if (hasStars) {
+                    cx.fillStyle = '#ffffff';
+                    for (let i = 0; i < 9; i++) {
+                        const sx = half + Math.sin(i * 1.3 + 0.5) * r * 0.62, sy = half + Math.cos(i * 1.7 + 0.7) * r * 0.62;
+                        cx.save(); cx.translate(sx, sy); cx.beginPath();
+                        for (let k = 0; k < 5; k++) { const a = k * Math.PI * 2 / 5 - Math.PI / 2, ia = a + Math.PI / 5; k === 0 ? cx.moveTo(Math.cos(a) * 5.5, Math.sin(a) * 5.5) : cx.lineTo(Math.cos(a) * 5.5, Math.sin(a) * 5.5); cx.lineTo(Math.cos(ia) * 2.2, Math.sin(ia) * 2.2); }
+                        cx.closePath(); cx.fill(); cx.restore();
+                    }
+                }
 
-                if (!isHead) { let backGrad = cx.createLinearGradient(64 - r, 0, 64 - r + r * 0.30, 0); backGrad.addColorStop(0, 'rgba(0,0,0,0.18)'); backGrad.addColorStop(1, 'rgba(0,0,0,0)'); cx.fillStyle = backGrad; cx.fill(); }
-                this.cache[key] = c; return c;
+                // Gradiente de iluminação principal
+                const lg = cx.createLinearGradient(half, half - r, half, half + r);
+                lg.addColorStop(0.00, 'rgba(255,255,255,0.60)'); lg.addColorStop(0.12, 'rgba(255,255,255,0.44)');
+                lg.addColorStop(0.28, 'rgba(255,255,255,0.10)'); lg.addColorStop(0.48, 'rgba(0,0,0,0)');
+                lg.addColorStop(0.65, 'rgba(0,0,0,0.10)'); lg.addColorStop(0.82, 'rgba(0,0,0,0.33)');
+                lg.addColorStop(1.00, 'rgba(0,0,0,0.72)');
+                cx.fillStyle = lg; cx.beginPath(); cx.arc(half, half, r, 0, Math.PI * 2); cx.fill();
+
+                // Sombra traseira (corpo)
+                if (!isHead) { const sg = cx.createLinearGradient(half - r, half, half - r + r * 0.3, half); sg.addColorStop(0, 'rgba(0,0,0,0.22)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); cx.fillStyle = sg; cx.beginPath(); cx.arc(half, half, r, 0, Math.PI * 2); cx.fill(); }
+
+                // Luz de borda (rim light)
+                if (!IS_MOBILE_CLIENT) { const rg = cx.createRadialGradient(half, half, r * 0.68, half, half, r); rg.addColorStop(0, 'rgba(255,255,255,0)'); rg.addColorStop(1, 'rgba(255,255,255,0.11)'); cx.fillStyle = rg; cx.beginPath(); cx.arc(half, half, r, 0, Math.PI * 2); cx.fill(); }
+
+                // Reflexo especular
+                const sr = r * 0.30, specX = half - r * 0.24, specY = half - r * 0.26;
+                const spec = cx.createRadialGradient(specX, specY, 0, specX, specY, sr);
+                spec.addColorStop(0, 'rgba(255,255,255,0.48)'); spec.addColorStop(0.6, 'rgba(255,255,255,0.16)'); spec.addColorStop(1, 'rgba(255,255,255,0)');
+                cx.fillStyle = spec; cx.beginPath(); cx.arc(specX, specY, sr, 0, Math.PI * 2); cx.fill();
+
+                cx.restore(); this.cache[key] = c; return c;
             },
             getGridPattern: function (size, color, isLite = false) {
                 const key = 'grid_' + size + '_' + color + (isLite ? '_lite' : ''); if (this.cache[key]) return this.cache[key];
@@ -2034,17 +2077,40 @@
             },
             getMapOrb: function (color) {
                 let key = 'mapOrb_' + color; if (this.cache[key]) return this.cache[key]; let baseColor = color.split('-')[0];
-                const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const cx0 = 32, cy0 = 32, r = 22;
-                cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, Math.PI * 2); cx.clip(); cx.globalAlpha = 0.3; cx.fillStyle = baseColor; cx.beginPath(); cx.arc(cx0, cy0, r * 1.45, 0, Math.PI * 2); cx.fill(); cx.globalAlpha = 1;
-                const body = cx.createRadialGradient(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.05, cx0, cy0, r); body.addColorStop(0, 'rgba(255,255,255,0.95)'); body.addColorStop(0.3, baseColor); body.addColorStop(1, shadeColor(baseColor, -40)); cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill(); cx.beginPath(); cx.arc(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.22, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.9)'; cx.fill();
-                this.cache[key] = c; return c;
+                const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const cx0 = 32, cy0 = 32, r = 20;
+                cx.save(); cx.beginPath(); cx.arc(cx0, cy0, r * 2.0, 0, Math.PI * 2); cx.clip();
+                // Halo externo
+                let g1 = cx.createRadialGradient(cx0, cy0, r * 0.7, cx0, cy0, r * 2.0);
+                g1.addColorStop(0, hexAlpha(baseColor, 0.0)); g1.addColorStop(0.4, hexAlpha(baseColor, 0.30)); g1.addColorStop(1.0, 'rgba(0,0,0,0)');
+                cx.fillStyle = g1; cx.beginPath(); cx.arc(cx0, cy0, r * 2.0, 0, Math.PI * 2); cx.fill();
+                // Corpo do orbe
+                const body = cx.createRadialGradient(cx0 - r * 0.32, cy0 - r * 0.32, r * 0.02, cx0, cy0, r);
+                body.addColorStop(0, 'rgba(255,255,255,1)'); body.addColorStop(0.18, lightenColor(baseColor, 60)); body.addColorStop(0.55, baseColor); body.addColorStop(1, shadeColor(baseColor, -50));
+                cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill();
+                // Especular primário
+                cx.beginPath(); cx.arc(cx0 - r * 0.28, cy0 - r * 0.28, r * 0.22, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.92)'; cx.fill();
+                // Especular secundário
+                cx.beginPath(); cx.arc(cx0 + r * 0.2, cy0 + r * 0.2, r * 0.09, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.40)'; cx.fill();
+                cx.restore(); this.cache[key] = c; return c;
             },
             getDeathOrb: function (color) {
                 let key = 'deathOrb_' + color; if (this.cache[key]) return this.cache[key]; let baseColor = color.split('-')[0];
-                const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const cx0 = 32, cy0 = 32, r = 20;
-                cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, Math.PI * 2); cx.clip(); cx.globalAlpha = 0.45; cx.fillStyle = baseColor; cx.beginPath(); cx.arc(cx0, cy0, r * 1.6, 0, Math.PI * 2); cx.fill(); cx.globalAlpha = 0.2; cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(cx0, cy0, r * 1.2, 0, Math.PI * 2); cx.fill(); cx.globalAlpha = 1;
-                const body = cx.createRadialGradient(cx0 - r * 0.3, cy0 - r * 0.3, r * 0.05, cx0, cy0, r); body.addColorStop(0, 'rgba(255,255,255,1)'); body.addColorStop(0.25, '#fff'); body.addColorStop(0.55, baseColor); body.addColorStop(1, shadeColor(baseColor, -30)); cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill(); cx.beginPath(); cx.arc(cx0 - r * 0.28, cy0 - r * 0.28, r * 0.25, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.95)'; cx.fill(); cx.beginPath(); cx.arc(cx0 + r * 0.2, cy0 + r * 0.2, r * 0.1, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.4)'; cx.fill();
-                this.cache[key] = c; return c;
+                const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const cx0 = 32, cy0 = 32, r = 18;
+                cx.save(); cx.beginPath(); cx.arc(cx0, cy0, r * 2.8, 0, Math.PI * 2); cx.clip();
+                // Halo duplo (orbes de morte têm brilho mais intenso)
+                let g1 = cx.createRadialGradient(cx0, cy0, r * 0.55, cx0, cy0, r * 2.8);
+                g1.addColorStop(0, hexAlpha(baseColor, 0.60)); g1.addColorStop(0.30, hexAlpha(baseColor, 0.25)); g1.addColorStop(0.60, hexAlpha(baseColor, 0.08)); g1.addColorStop(1, 'rgba(0,0,0,0)');
+                cx.fillStyle = g1; cx.beginPath(); cx.arc(cx0, cy0, r * 2.8, 0, Math.PI * 2); cx.fill();
+                // Anel branco interno
+                cx.beginPath(); cx.arc(cx0, cy0, r * 1.22, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.25)'; cx.fill();
+                // Corpo
+                const body = cx.createRadialGradient(cx0 - r * 0.32, cy0 - r * 0.32, r * 0.02, cx0, cy0, r);
+                body.addColorStop(0, '#ffffff'); body.addColorStop(0.18, 'rgba(255,255,255,0.96)'); body.addColorStop(0.45, lightenColor(baseColor, 38)); body.addColorStop(1, baseColor);
+                cx.beginPath(); cx.arc(cx0, cy0, r, 0, Math.PI * 2); cx.fillStyle = body; cx.fill();
+                // Especular brilhante
+                cx.beginPath(); cx.arc(cx0 - r * 0.30, cy0 - r * 0.30, r * 0.25, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.95)'; cx.fill();
+                cx.beginPath(); cx.arc(cx0 + r * 0.18, cy0 + r * 0.18, r * 0.10, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.45)'; cx.fill();
+                cx.restore(); this.cache[key] = c; return c;
             },
             getBoostOrb: function (color) {
                 let key = 'boostOrb_' + color; if (this.cache[key]) return this.cache[key];
@@ -2061,11 +2127,24 @@
 
         function drawPremiumEyes(ctx, x, y, radius, angle, lookAngle, skinId, isBoosting = false, isEating = false) {
             ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
-            let eyX = radius * 0.65; let eyY = radius * 0.45; let eyR = radius * 0.35; let pupR = eyR * 0.35;
+            const eyX = radius * 0.65, eyY = radius * 0.42;
+            const eyR = radius * (isBoosting ? 0.38 : 0.33), irisR = eyR * 0.64, pupR = eyR * 0.40;
             const drawEye = (ex, ey) => {
-                ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(ex, ey, eyR, 0, Math.PI * 2); ctx.fill();
-                ctx.save(); let lx = Math.cos(lookAngle - angle) * (eyR * 0.30); let ly = Math.sin(lookAngle - angle) * (eyR * 0.30);
-                ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ex + lx, ey + ly, pupR, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+                // Esclerótica (branco do olho)
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.arc(ex, ey, eyR, 0, Math.PI * 2); ctx.fill();
+                // Íris com gradiente
+                const lx = Math.cos(lookAngle - angle) * (eyR * 0.28), ly = Math.sin(lookAngle - angle) * (eyR * 0.28);
+                const irisG = ctx.createRadialGradient(ex + lx * 0.4, ey + ly * 0.4, 0, ex + lx, ey + ly, irisR);
+                if (isBoosting) { irisG.addColorStop(0, '#ff6644'); irisG.addColorStop(0.5, '#cc1100'); irisG.addColorStop(1, '#330000'); }
+                else if (isEating) { irisG.addColorStop(0, '#44ff88'); irisG.addColorStop(0.5, '#008833'); irisG.addColorStop(1, '#001100'); }
+                else { irisG.addColorStop(0, '#55aaff'); irisG.addColorStop(0.5, '#1155bb'); irisG.addColorStop(1, '#001033'); }
+                ctx.fillStyle = irisG; ctx.beginPath(); ctx.arc(ex + lx, ey + ly, irisR, 0, Math.PI * 2); ctx.fill();
+                // Pupila
+                ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(ex + lx, ey + ly, pupR, 0, Math.PI * 2); ctx.fill();
+                // Reflexo especular
+                ctx.fillStyle = 'rgba(255,255,255,0.92)';
+                ctx.beginPath(); ctx.arc(ex + lx - irisR * 0.22, ey + ly - irisR * 0.22, pupR * 0.38, 0, Math.PI * 2); ctx.fill();
             };
             if (skinId === 18) drawEye(radius * 0.7, 0); else { drawEye(eyX, -eyY); drawEye(eyX, eyY); }
             ctx.restore();
@@ -2471,13 +2550,45 @@
 
         function drawArenaBoundary(ctx, camX, camY, zoom) {
             const viewportW = vpWidth / zoom, viewportH = vpHeight / zoom; const viewDiag = Math.sqrt(viewportW * viewportW + viewportH * viewportH) / 2; const distFromCenter = Math.hypot(camX - WORLD_CENTER, camY - WORLD_CENTER);
-            if (distFromCenter + viewDiag > currentArenaRadius - 300) { ctx.save(); const glowWidth = 140; const pulse = Math.sin(performance.now() * 0.0025) * 0.06; const baseOpacity = 0.22 + pulse; let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, currentArenaRadius - glowWidth, WORLD_CENTER, WORLD_CENTER, currentArenaRadius + glowWidth); grad.addColorStop(0, 'rgba(255, 0, 0, 0)'); grad.addColorStop(0.5, `rgba(255, 0, 0, ${baseOpacity + 0.15})`); grad.addColorStop(1, 'rgba(255, 0, 10, 0.25)'); ctx.strokeStyle = grad; ctx.lineWidth = glowWidth * 2; ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = 'rgba(20, 0, 0, 0.3)'; ctx.beginPath(); ctx.rect(camX - viewportW / 2, camY - viewportH / 2, viewportW, viewportH); ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius + glowWidth, 0, Math.PI * 2, true); ctx.fill(); ctx.restore(); }
+            if (distFromCenter + viewDiag > currentArenaRadius - 500) {
+                ctx.save();
+                const now = performance.now();
+                const glowWidth = 180, pulse = Math.sin(now * 0.003) * 0.07;
+                const dangerDist = Math.max(0, (distFromCenter + viewDiag - (currentArenaRadius - 500)) / 500);
+                const baseOpacity = 0.18 + pulse + dangerDist * 0.25;
+
+                // Exterior escuro
+                ctx.fillStyle = 'rgba(15, 0, 0, 0.35)';
+                ctx.beginPath(); ctx.rect(camX - viewportW / 2, camY - viewportH / 2, viewportW, viewportH); ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius + glowWidth * 0.5, 0, Math.PI * 2, true); ctx.fill();
+
+                // Borda brilhante com duplo gradiente
+                let grad = ctx.createRadialGradient(WORLD_CENTER, WORLD_CENTER, currentArenaRadius - glowWidth, WORLD_CENTER, WORLD_CENTER, currentArenaRadius + glowWidth * 0.5);
+                grad.addColorStop(0, 'rgba(255,0,0,0)'); grad.addColorStop(0.45, `rgba(255,50,0,${baseOpacity + 0.10})`); grad.addColorStop(0.72, `rgba(255,0,0,${baseOpacity + 0.18})`); grad.addColorStop(1, 'rgba(255,100,0,0.12)');
+                ctx.strokeStyle = grad; ctx.lineWidth = glowWidth * 2;
+                ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius, 0, Math.PI * 2); ctx.stroke();
+
+                // Linha nítida de borda
+                ctx.strokeStyle = `rgba(255,80,0,${0.35 + dangerDist * 0.45})`; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, currentArenaRadius, 0, Math.PI * 2); ctx.stroke();
+
+                ctx.restore();
+            }
         }
 
         function drawGrid(ctx, camX, camY, zoom) {
             const viewportW = vpWidth / zoom, viewportH = vpHeight / zoom; const startX = camX - viewportW / 2, startY = camY - viewportH / 2; const mundoConf = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
             ctx.fillStyle = mundoConf.corFundo; ctx.fillRect(startX, startY, viewportW, viewportH);
-            if (APP_SETTINGS.highGfx) { const nebula = TextureManager.getNebula(); ctx.save(); ctx.translate(startX + viewportW / 2, startY + viewportH / 2); ctx.rotate(camX * 0.00001); let pX = -((camX * 0.06) % 1024); let pY = -((camY * 0.06) % 1024); ctx.globalAlpha = 0.6; ctx.drawImage(nebula, pX, pY, 1536, 1536); ctx.drawImage(nebula, pX + 1024, pY, 1536, 1536); ctx.drawImage(nebula, pX, pY + 1024, 1536, 1536); ctx.drawImage(nebula, pX + 1024, pY + 1024, 1536, 1536); ctx.restore(); }
+            if (APP_SETTINGS.highGfx) {
+                // Campo de estrelas com parallax
+                if (!TextureManager.cache['stars']) {
+                    const sc = document.createElement('canvas'); sc.width = 1024; sc.height = 1024; const sx = sc.getContext('2d');
+                    for (let i = 0; i < 280; i++) { const sr2 = Math.random() * 1.4 + 0.2, alpha = Math.random() * 0.7 + 0.15; sx.beginPath(); sx.arc(Math.random() * 1024, Math.random() * 1024, sr2, 0, Math.PI * 2); sx.fillStyle = `rgba(255,255,255,${alpha})`; sx.fill(); }
+                    TextureManager.cache['stars'] = sc;
+                }
+                ctx.save(); ctx.globalAlpha = 0.55; const starP = ctx.createPattern(TextureManager.cache['stars'], 'repeat'); ctx.fillStyle = starP; const starOX = -(camX * 0.018) % 1024, starOY = -(camY * 0.018) % 1024; ctx.translate(startX + starOX, startY + starOY); ctx.fillRect(-starOX, -starOY, viewportW + 1024, viewportH + 1024); ctx.restore();
+
+                const nebula = TextureManager.getNebula(); ctx.save(); ctx.translate(startX + viewportW / 2, startY + viewportH / 2); let pX = -((camX * 0.06) % 1024); let pY = -((camY * 0.06) % 1024); ctx.globalAlpha = 0.55; ctx.drawImage(nebula, pX, pY, 1536, 1536); ctx.drawImage(nebula, pX + 1024, pY, 1536, 1536); ctx.drawImage(nebula, pX, pY + 1024, 1536, 1536); ctx.drawImage(nebula, pX + 1024, pY + 1024, 1536, 1536); ctx.restore();
+            }
             const size = mundoConf.tamanhoHexagono; const gridPattern = TextureManager.getGridPattern(size, mundoConf.corGrade, false); ctx.fillStyle = gridPattern; ctx.fillRect(startX, startY, viewportW, viewportH);
             if (APP_SETTINGS.highGfx) { const vig = TextureManager.getVignette(vpWidth, vpHeight); ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.drawImage(vig, 0, 0, vpWidth, vpHeight); ctx.restore(); }
             drawArenaBoundary(ctx, camX, camY, zoom);
@@ -2711,7 +2822,10 @@
             if (gameState === 'playing' && player && player.alive) {
                 player.isBoosting = IS_MOBILE_CLIENT ? isMouseDown : isMouseDown;
                 if (frameCount % 60 === 0) PLAYER_STATS.totalTime++;
-                camera.x = player.x; camera.y = player.y;
+                // Câmara suave com lerp (elimina jitter)
+                const camLerp = player.isBoosting ? 0.14 : 0.10;
+                camera.x += (player.x - camera.x) * camLerp;
+                camera.y += (player.y - camera.y) * camLerp;
                 let isBoostingNow = player.isBoosting && player.score > 30; if (isBoostingNow && frameCount % 10 === 0) camera.shake = Math.max(camera.shake, 1.5);
                 let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc']; let sizeZoom = Math.max(zV.minimo, zV.inicial - (player.radius - (IS_MOBILE_CLIENT ? CONFIG.cobra.mobile.espessuraInicial : CONFIG.cobra.pc.espessuraInicial)) * 0.028);
                 let turboZoomMult = isBoostingNow ? 0.82 : 1.0; let targetZoom = sizeZoom * turboZoomMult; camera.zoom += (targetZoom - camera.zoom) * 0.04;
@@ -2734,8 +2848,9 @@
             }
 
             if (frameCount % 60 === 0) foods = foods.filter(f => !f.dead);
-            let activeFoodCount = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) activeFoodCount++; // count only Map Orbs towards limit
-            if (activeFoodCount < CONFIG.mundo.quantidadeComida) spawnFood(IS_MOBILE_CLIENT ? 8 : 15);
+            // Contagem de comida com cache (a cada 45 frames em vez de cada frame)
+            if (frameCount % 45 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) cnt++; window._activeFoodCount = cnt; }
+            if ((window._activeFoodCount || 0) < CONFIG.mundo.quantidadeComida) { spawnFood(IS_MOBILE_CLIENT ? 8 : 15); window._activeFoodCount = (window._activeFoodCount || 0) + (IS_MOBILE_CLIENT ? 8 : 15); }
             if (butterflies.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
             // === EVENTOS & POWER-UPS ===
@@ -2755,7 +2870,7 @@
                 }
             }
 
-            rebuildFoodGrid(); rebuildSegmentGrid();
+            if (frameCount % 2 === 0) rebuildFoodGrid(); rebuildSegmentGrid();
             for (let s of snakes) s.update(); for (let b of butterflies) b.update();
 
             let segStep = IS_MOBILE_CLIENT ? 8 : 4;
