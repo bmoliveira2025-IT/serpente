@@ -352,23 +352,24 @@
 
         @media (max-width: 1024px) {
             #leaderboard {
-                top: calc(10px + env(safe-area-inset-top));
-                right: calc(10px + env(safe-area-inset-right));
-                width: 130px;
-                padding: 6px 8px;
-                font-size: 8.5px;
-                gap: 1px;
-                background: rgba(0, 0, 0, 0.08);
-                border-color: rgba(255, 255, 255, 0.04);
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
-                width: 80px;
+                top: calc(12px + env(safe-area-inset-top));
+                right: calc(12px + env(safe-area-inset-right));
+                width: 150px;
+                padding: 8px 10px;
+                font-size: 9px;
+                gap: 2px;
+                background: rgba(20, 27, 47, 0.8);
+                border-color: var(--border-color);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
                 height: auto;
-                padding: 5px;
+                max-height: 280px;
+                overflow-y: auto;
             }
 
             #lb-toggle-btn {
                 display: block;
+                margin-bottom: 6px;
             }
 
             #leaderboard #lb-list {
@@ -380,8 +381,8 @@
             }
 
             #leaderboard.expanded {
-                width: 130px;
-                padding: 6px 8px;
+                width: 160px;
+                padding: 10px 12px;
             }
         }
 
@@ -394,9 +395,32 @@
         .lb-entry {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             color: var(--text-secondary);
-            padding: 4px 0;
-            font-size: 10px;
+            padding: 4px 2px;
+            font-size: 9px;
+            gap: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lb-entry>span:first-child {
+            flex-shrink: 0;
+            min-width: 20px;
+        }
+
+        .lb-entry>span:nth-child(2) {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        .lb-entry>span:last-child {
+            flex-shrink: 0;
+            min-width: 30px;
+            text-align: right;
         }
 
         .lb-entry.is-me {
@@ -940,49 +964,50 @@
         .editor-body {
             display: flex;
             flex-direction: column;
-            flex: 1;
-            gap: 8px;
-            overflow: hidden;
+            gap: 10px;
             padding: 12px;
-            height: 100%;
+            flex: 1;
+            overflow-y: auto;
         }
 
         @media (max-width: 900px) {
             .editor-body {
                 flex-direction: column;
-                padding: 10px;
-                gap: 6px;
+                padding: 8px;
+                gap: 8px;
             }
         }
 
         .preview-container {
-            background: linear-gradient(135deg, rgba(15, 20, 35, 0.6) 0%, rgba(10, 15, 30, 0.8) 100%);
-            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(15, 20, 35, 0.8) 0%, rgba(10, 15, 30, 0.95) 100%);
+            border-radius: 6px;
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            border: 1.5px solid var(--primary);
+            box-shadow: 0 0 16px rgba(0, 217, 255, 0.15), inset 0 0 8px rgba(0, 217, 255, 0.03);
             flex: 0 0 auto;
             width: 100%;
-            height: 200px;
+            height: 140px;
         }
 
         @media (max-width: 768px) {
             .preview-container {
-                height: 160px;
-                border-radius: 6px;
+                height: 120px;
+                border-radius: 5px;
+                border-width: 1px;
             }
         }
 
         .controls-container {
-            overflow-y: auto;
+            overflow-y: visible;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            padding-right: 3px;
+            padding: 8px;
             flex: 1;
+            justify-content: flex-start;
             min-height: 0;
         }
 
@@ -1046,41 +1071,40 @@
         }
 
         .preset-btn {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(0, 217, 255, 0.05) 100%);
-            border: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(0, 217, 255, 0.06) 100%);
+            border: 1px solid rgba(0, 217, 255, 0.3);
             color: var(--text-primary);
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 7px 11px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: 600;
             flex: 1;
-            transition: all 0.3s ease;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-            letter-spacing: 0.3px;
-            min-height: 32px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 217, 255, 0.1);
+            letter-spacing: 0.2px;
+            min-height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
+        .preset-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.18) 0%, rgba(0, 217, 255, 0.1) 100%);
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0, 217, 255, 0.2);
+        }
+
         @media (max-width: 768px) {
             .preset-btn {
-                padding: 6px 10px;
-                font-size: 9px;
+                padding: 6px 9px;
+                font-size: 8.5px;
                 min-height: 28px;
             }
         }
 
-        .preset-btn:hover {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.2) 0%, rgba(0, 217, 255, 0.1) 100%);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
-        }
-
         .preset-btn:active {
-            transform: translateY(0);
+            transform: scale(0.98);
         }
 
         .m-rainbow-text {
@@ -1597,23 +1621,27 @@
                         </div>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 10px; margin: 4px 0 3px 0; font-weight: 600;">PALETA RÁPIDA</h3>
-                    <div style="display: flex; gap: 3px; flex-wrap: wrap;">
+                    <h3
+                        style="color: #ccc; font-size: 8px; margin: 2px 0 2px 0; font-weight: 600; letter-spacing: 0.5px;">
+                        PALETA</h3>
+                    <div style="display: flex; gap: 2px; flex-wrap: wrap;">
                         <button class="quick-color-btn" data-color="#ff0000" title="Vermelho"
-                            style="background: #ff0000; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #ff0000; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#00ff00" title="Verde"
-                            style="background: #00ff00; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #00ff00; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#0000ff" title="Azul"
-                            style="background: #0000ff; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #0000ff; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#ffff00" title="Amarelo"
-                            style="background: #ffff00; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #ffff00; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#ff00ff" title="Magenta"
-                            style="background: #ff00ff; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #ff00ff; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                         <button class="quick-color-btn" data-color="#00ffff" title="Ciano"
-                            style="background: #00ffff; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
+                            style="background: #00ffff; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></button>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 10px; margin: 6px 0 3px 0; font-weight: 600;">PADRÕES</h3>
+                    <h3
+                        style="color: #ccc; font-size: 8px; margin: 2px 0 2px 0; font-weight: 600; letter-spacing: 0.5px;">
+                        PADRÕES</h3>
                     <div style="display: flex; gap: 3px; flex-wrap: wrap;">
                         <button class="preset-btn" data-preset="rainbow">ARCO-ÍRIS</button>
                         <button class="preset-btn" data-preset="stripes">LISTRAS</button>
@@ -1622,7 +1650,9 @@
                         <button class="preset-btn" data-preset="radial">RADIAL</button>
                     </div>
 
-                    <h3 style="color: #ccc; font-size: 10px; margin: 4px 0 3px 0; font-weight: 600;">EFEITOS</h3>
+                    <h3
+                        style="color: #ccc; font-size: 8px; margin: 2px 0 2px 0; font-weight: 600; letter-spacing: 0.5px;">
+                        EFEITOS</h3>
                     <div
                         style="display: flex; gap: 8px; background: rgba(255,255,255,0.05); padding: 6px; border-radius: 6px;">
                         <label
@@ -1901,7 +1931,7 @@
             ctrls: document.getElementById('mobile-controls'), joyB: document.getElementById('joystick-base'), joyH: document.getElementById('joystick-handle'), boost: document.getElementById('btn-turbo'), mini: document.getElementById('minimap-wrapper'),
             lockOverlay: document.getElementById('skin-locked-overlay'), reqTitle: document.getElementById('skin-req-title'), reqStatus: document.getElementById('skin-req-status'),
             lvlPopup: document.getElementById('level-popup'), lvlTitle: document.getElementById('level-title-text'),
-            optionsBtn: document.getElementById('options-btn'), optionsUi: document.getElementById('options-popup-ui'), optAudio: document.getElementById('toggle-audio-btn'), optGfx: document.getElementById('toggle-gfx-btn'), optClose: document.getElementById('close-options-btn')
+            optionsBtn: document.getElementById('options-btn'), optionsUi: document.getElementById('options-ui'), optAudio: document.getElementById('toggle-audio-btn'), optGfx: document.getElementById('toggle-gfx-btn'), optClose: document.getElementById('close-options-btn')
         };
 
         function getRandomPosInCircle(p = 50, bonusRadius = 0) { let r = Math.sqrt(Math.random()) * (currentArenaRadius + bonusRadius - p), t = Math.random() * 2 * Math.PI; return { x: WORLD_CENTER + r * Math.cos(t), y: WORLD_CENTER + r * Math.sin(t) }; }
@@ -2551,17 +2581,9 @@
         function drawEditorPreview() {
             if (gameState !== 'skin-editor') return;
             edCtx.clearRect(0, 0, 400, 400);
-            edTime += 1;
-            let cx = 200, cy = 200, rad = IS_MOBILE_CLIENT ? 20 : 25;
-            let len = Math.max(15, edSkin.segments.length);
-            let spc = rad * 0.45;
-
-            let segs = [];
-            for (let i = 0; i < len; i++) {
-                let ang = i * 0.25 - edTime * 0.05;
-                let dist = 10 + i * 2.8;
-                segs.push({ x: cx + Math.cos(ang) * dist, y: cy + Math.sin(ang) * dist, ang: ang + Math.PI / 2 });
-            }
+            let rad = IS_MOBILE_CLIENT ? 16 : 20, len = 32, spc = rad * 0.45;
+            let headX = 200 + ((len * spc) / 2), centerY = 200, segs = [];
+            for (let i = 0; i < len; i++) segs.push({ x: headX - (i * spc), y: centerY + Math.sin(edTime * 0.005 - i * 0.18) * (rad * 1.5) });
 
             let hasPulse = document.getElementById('chk-pulse').checked;
             let hasGlow = document.getElementById('chk-glow').checked;
@@ -2581,16 +2603,13 @@
                 let c = edSkin.segments[i % edSkin.segments.length];
                 let r = rad;
                 if (hasPulse) r += Math.sin(edTime * 0.1 - i * 0.2) * (rad * 0.2);
-                edCtx.save(); edCtx.translate(segs[i].x, segs[i].y); edCtx.rotate(segs[i].ang);
-                edCtx.drawImage(TextureManager.getSegment(c), -r, -r, r * 2, r * 2);
-                edCtx.restore();
+                edCtx.drawImage(TextureManager.getSegment(c), segs[i].x - r, segs[i].y - r, r * 2, r * 2);
             }
 
-            edCtx.save(); edCtx.translate(segs[0].x, segs[0].y); edCtx.rotate(segs[0].ang);
-            edCtx.drawImage(TextureManager.getSegment(edSkin.segments[0], true), -rad * 1.15, -rad, rad * 2.3, rad * 2);
-            drawPremiumEyes(edCtx, 0, 0, rad, 0, Math.sin(edTime * 0.05) * 0.5, 0, false, false);
-            edCtx.restore();
+            edCtx.drawImage(TextureManager.getSegment(edSkin.segments[0]), segs[0].x - rad, segs[0].y - rad, rad * 2, rad * 2);
+            drawPremiumEyes(edCtx, segs[0].x, segs[0].y, rad, 0, 0, 0, false, false);
 
+            edTime += 1;
             requestAnimationFrame(drawEditorPreview);
         }
 
