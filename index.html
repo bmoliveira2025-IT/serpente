@@ -655,12 +655,12 @@
         }
 
         .logo-container {
-            font-size: clamp(45px, 12vw, 90px);
+            font-size: clamp(36px, 10vw, 90px);
             font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: -5px;
+            gap: clamp(8px, 2vw, 15px);
+            margin-bottom: clamp(-8px, -1vw, -5px);
         }
 
         .slither-text {
@@ -728,17 +728,17 @@
 
         #nickname {
             background: rgba(20, 27, 47, 0.6);
-            border-radius: 10px;
-            padding: 12px 20px;
+            border-radius: 8px;
+            padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             text-align: center;
             outline: none;
-            margin-bottom: 25px;
+            margin-bottom: clamp(12px, 3vw, 25px);
             font-family: inherit;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             font-weight: 500;
-            width: 80%;
+            width: 85%;
             max-width: 280px;
             box-sizing: border-box;
             letter-spacing: 0.5px;
@@ -1155,21 +1155,21 @@
         /* MISSÕES DIÁRIAS */
         #missions-panel {
             position: relative;
-            padding: 14px;
-            border-radius: 10px;
+            padding: clamp(8px, 2vw, 12px);
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: clamp(6px, 1.5vw, 8px);
             z-index: 10;
             background: rgba(20, 27, 47, 0.5);
             border: 1px solid var(--border-color);
             backdrop-filter: blur(8px);
             pointer-events: auto;
             width: 100%;
-            max-width: 240px;
+            max-width: clamp(200px, 85vw, 240px);
             text-align: left;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            margin-bottom: 10px;
+            margin-bottom: clamp(6px, 1.5vw, 10px);
         }
 
         .m-desc {
@@ -1228,10 +1228,10 @@
         }
 
         .subtitle {
-            font-size: 7px !important;
-            letter-spacing: 2px !important;
-            margin-top: 5px !important;
-            margin-bottom: 10px !important;
+            font-size: clamp(6px, 1.5vw, 8px) !important;
+            letter-spacing: 1px !important;
+            margin-top: 2px !important;
+            margin-bottom: clamp(6px, 1.5vw, 10px) !important;
         }
 
         #nickname {
