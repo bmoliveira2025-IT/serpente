@@ -827,14 +827,20 @@
                 bottom: clamp(120px, 20vh, 160px);
                 right: clamp(20px, 5vw, 40px);
                 width: clamp(70px, 14vmin, 95px);
-                /* Significativamente Maior em Mobile */
                 height: clamp(70px, 14vmin, 95px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            #btn-turbo {
+                bottom: clamp(16px, 3vh, 40px);
+                right: max(16px, env(safe-area-inset-right, 0px) + 16px);
             }
         }
 
         @media (max-width: 480px) {
             #btn-turbo {
-                bottom: clamp(100px, 18vh, 140px);
+                bottom: max(16px, env(safe-area-inset-bottom, 0px) + 16px);
                 right: max(16px, env(safe-area-inset-right, 0px) + 16px);
                 width: clamp(65px, 16vmin, 85px);
                 height: clamp(65px, 16vmin, 85px);
@@ -914,11 +920,22 @@
 
         .skingal-bottom {
             flex-shrink: 0;
-            padding: 16px 20px;
+            padding: 12px 20px 16px;
             border-top: 1px solid rgba(0, 217, 255, 0.15);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
             background: rgba(0, 0, 0, 0.3);
+        }
+
+        #skingal-snake-canvas {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            height: 70px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.18);
         }
 
         .skingal-btn.ok {
@@ -1433,6 +1450,7 @@
                 </div>
                 <div class="skingal-grid" id="skin-gallery-grid"></div>
                 <div class="skingal-bottom">
+                    <canvas id="skingal-snake-canvas" width="300" height="70"></canvas>
                     <button id="skin-ok-btn" class="skingal-btn ok">CONCLUIR</button>
                 </div>
             </div>
@@ -2321,14 +2339,47 @@
                     grid.querySelectorAll('.skingal-orb').forEach((o, j) => o.classList.toggle('selected', j === i));
                     if (UI.skinName) UI.skinName.innerText = SKIN_NAMES[i] || '';
                     updateSkinUI();
+                    startGalleryPreview();
                 };
                 grid.appendChild(wrap);
             });
 
             let sel = grid.querySelector('.skingal-orb.selected');
             if (sel) sel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            startGalleryPreview();
         }
 
+        let galleryPreviewRAF = null, galleryPreviewTime = 0;
+
+        function drawGalleryPreview() {
+            const canvas = document.getElementById('skingal-snake-canvas');
+            if (!canvas || gameState !== 'skin-menu') { galleryPreviewRAF = null; return; }
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+            galleryPreviewTime += 0.05;
+            const colors = SKINS[skinIndex] || ['#ffdf00'];
+            const segR = h * 0.30;
+            const spacing = segR * 1.05;
+            const segCount = Math.floor((w + segR * 2) / spacing) + 2;
+            const headX = w * 0.78;
+            const centerY = h / 2;
+            for (let i = segCount; i >= 0; i--) {
+                const wave = Math.sin(galleryPreviewTime - i * 0.4) * (segR * 0.7);
+                const x = headX - i * spacing;
+                if (x < -segR * 2 || x > w + segR) continue;
+                const rawColor = (colors[i % colors.length] || '#ff0000').replace(/-\w+$/, '');
+                const color = /^#[0-9a-fA-F]{6}$/i.test(rawColor) ? rawColor : '#ff0000';
+                try { ctx.drawImage(TextureManager.getSegment(color, i === 0), x - segR, centerY + wave - segR, segR * 2, segR * 2); } catch (e) { }
+            }
+            galleryPreviewRAF = requestAnimationFrame(drawGalleryPreview);
+        }
+
+        function startGalleryPreview() {
+            if (galleryPreviewRAF) { cancelAnimationFrame(galleryPreviewRAF); galleryPreviewRAF = null; }
+            galleryPreviewTime = 0;
+            drawGalleryPreview();
+        }
 
         function gameLoop(time) {
             const now = performance.now(); const delta = now - lastFrameTime; lastFrameTime = now;
@@ -2464,7 +2515,7 @@
         });
 
         UI.skins.addEventListener('click', () => { gameState = 'skin-menu'; UI.start.style.display = 'none'; UI.preview.classList.remove('hidden'); buildSkinGallery(); updateSkinUI(); });
-        UI.ok.addEventListener('click', () => { UI.preview.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
+        UI.ok.addEventListener('click', () => { if (galleryPreviewRAF) { cancelAnimationFrame(galleryPreviewRAF); galleryPreviewRAF = null; } UI.preview.classList.add('hidden'); UI.start.style.display = 'flex'; gameState = 'menu'; });
 
         function updateOptionsUI() { if (!UI.optAudio) return; UI.optAudio.innerText = APP_SETTINGS.audio ? "LIGADO" : "DESL."; UI.optAudio.style.background = APP_SETTINGS.audio ? "#00ff88" : "#ff4444"; UI.optAudio.style.color = APP_SETTINGS.audio ? "#000" : "#fff"; UI.optGfx.innerText = APP_SETTINGS.highGfx ? "ALTA" : "BAIXA"; UI.optGfx.style.background = APP_SETTINGS.highGfx ? "#ffdf00" : "#ff4444"; UI.optGfx.style.color = APP_SETTINGS.highGfx ? "#000" : "#fff"; }
         UI.optionsBtn.addEventListener('click', () => { updateOptionsUI(); UI.start.style.display = 'none'; UI.optionsUi.classList.remove('hidden'); });
