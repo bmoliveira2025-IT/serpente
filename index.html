@@ -1629,6 +1629,62 @@
 
         let savedAudio = localStorage.getItem('serpente_audio'); let savedGfx = localStorage.getItem('serpente_gfx');
         let APP_SETTINGS = { audio: savedAudio !== null ? savedAudio === 'true' : true, highGfx: savedGfx !== null ? savedGfx === 'true' : !IS_MOBILE_CLIENT, performanceMode: false };
+        const PerformanceManager = {
+            TIERS: {
+                LOW:    { dprCap: 0.9,  particles: 20,  vagalumes: 0,  segStep: 12, renderScale: 0.75 },
+                MEDIUM: { dprCap: 1.2,  particles: 60,  vagalumes: 8,  segStep: 8,  renderScale: 0.90 },
+                HIGH:   { dprCap: 1.6,  particles: 250, vagalumes: 35, segStep: 4,  renderScale: 1.00 }
+            },
+            tier: 'HIGH',
+            _framesSinceCheck: 0,
+            _degradeCooldown: 0,
+            getCfg() { return this.TIERS[this.tier]; },
+            apply(tier) {
+                this.tier = tier;
+                CONFIG.visual.quantidadeVagalumes = this.TIERS[tier].vagalumes;
+            },
+            detect() {
+                let score = 0;
+                const mem = navigator.deviceMemory || 4;
+                if (mem >= 8) score += 2; else if (mem >= 4) score += 1;
+                try {
+                    const gl = document.createElement('canvas').getContext('webgl');
+                    if (gl) {
+                        const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+                        if (dbg) {
+                            const r = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL).toLowerCase();
+                            if (/apple gpu|m[123]|rtx|radeon rx [5-9]|geforce [3-4]/.test(r)) score += 2;
+                            else if (/intel|mali-g[567]|adreno [5-9]/.test(r)) score += 1;
+                        }
+                    }
+                } catch(e) {}
+                const t0 = performance.now();
+                let _x = 0; for (let i = 0; i < 500000; i++) _x += Math.sqrt(i);
+                const elapsed = performance.now() - t0;
+                if (elapsed < 6) score += 2; else if (elapsed < 14) score += 1;
+                if (IS_MOBILE_CLIENT) score -= 1;
+                if (score >= 4) this.apply('HIGH');
+                else if (score >= 2) this.apply('MEDIUM');
+                else this.apply('LOW');
+            },
+            monitor(delta) {
+                frameTimeBuffer.push(delta);
+                if (frameTimeBuffer.length > 30) frameTimeBuffer.shift();
+                this._framesSinceCheck++;
+                if (this._degradeCooldown > 0) { this._degradeCooldown--; return; }
+                if (this._framesSinceCheck < 30) return;
+                this._framesSinceCheck = 0;
+                const avg = frameTimeBuffer.reduce((a, b) => a + b, 0) / frameTimeBuffer.length;
+                if (avg > 22 && this.tier !== 'LOW') {
+                    this.apply(this.tier === 'HIGH' ? 'MEDIUM' : 'LOW');
+                    this._degradeCooldown = 300;
+                } else if (avg < 14 && this.tier !== 'HIGH') {
+                    this.apply(this.tier === 'LOW' ? 'MEDIUM' : 'HIGH');
+                    this._degradeCooldown = 300;
+                }
+            }
+        };
+        PerformanceManager.detect();
         let lastFrameTime = performance.now(); let frameTimeBuffer = [];
         let lastHudRender = 0;
         let lastNicknameSave = 0;
@@ -1743,7 +1799,7 @@
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
         let joystickActive = false, joystickAngle = 0, skinIndex = 0;
         let smoothedJoystickAngle = 0; const JOYSTICK_LERP_FACTOR = 0.52;
-        let vpWidth = window.innerWidth, vpHeight = window.innerHeight, dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, MOBILE_DPR_CAP) : (window.devicePixelRatio || 1);
+        let vpWidth = window.innerWidth, vpHeight = window.innerHeight, dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, PerformanceManager.getCfg().dprCap) : (window.devicePixelRatio || 1);
 
         const FOOD_CELL_SIZE = 200; let foodGrid = new Map();
         function foodGridKey(x, y) { return (((x / FOOD_CELL_SIZE) | 0) << 16) | (((y / FOOD_CELL_SIZE) | 0) & 0xFFFF); }
@@ -2321,7 +2377,7 @@
         }
 
         async function enterFullscreen() { try { const d = document.documentElement; if (d.requestFullscreen) await d.requestFullscreen(); else if (d.webkitRequestFullscreen) await d.webkitRequestFullscreen(); if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape').catch(() => { }); } catch (e) { } }
-        function resize() { vpWidth = window.innerWidth; vpHeight = window.innerHeight; dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, MOBILE_DPR_CAP) : (window.devicePixelRatio || 1); if (gameCanvasElement) { gameCanvasElement.width = vpWidth * dpr; gameCanvasElement.height = vpHeight * dpr; gameCanvasElement.style.width = vpWidth + 'px'; gameCanvasElement.style.height = vpHeight + 'px'; } if (minimapCanvasElement) { minimapCanvasElement.width = 140 * dpr; minimapCanvasElement.height = 140 * dpr; minimapCanvasElement.style.width = '100%'; minimapCanvasElement.style.height = '100%'; mCtxElement.setTransform(1, 0, 0, 1, 0, 0); mCtxElement.scale(dpr, dpr); } if (IS_MOBILE_CLIENT) UI.orient.style.display = vpHeight > vpWidth ? 'flex' : 'none'; }
+        function resize() { vpWidth = window.innerWidth; vpHeight = window.innerHeight; dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, PerformanceManager.getCfg().dprCap) : (window.devicePixelRatio || 1); if (gameCanvasElement) { gameCanvasElement.width = vpWidth * dpr; gameCanvasElement.height = vpHeight * dpr; gameCanvasElement.style.width = vpWidth + 'px'; gameCanvasElement.style.height = vpHeight + 'px'; } if (minimapCanvasElement) { minimapCanvasElement.width = 140 * dpr; minimapCanvasElement.height = 140 * dpr; minimapCanvasElement.style.width = '100%'; minimapCanvasElement.style.height = '100%'; mCtxElement.setTransform(1, 0, 0, 1, 0, 0); mCtxElement.scale(dpr, dpr); } if (IS_MOBILE_CLIENT) UI.orient.style.display = vpHeight > vpWidth ? 'flex' : 'none'; }
         function showEvolution(evo) { UI.lvlTitle.innerText = evo.name; UI.lvlTitle.style.color = evo.color; UI.lvlPopup.classList.add('show'); AudioSys.play('dash'); setTimeout(() => UI.lvlPopup.classList.remove('show'), 3500); }
         function updateMissionsUI() { let k = Math.min(PLAYER_STATS.totalKills, MISSIONS.killsReq), f = Math.min(PLAYER_STATS.totalFood, MISSIONS.foodReq), t = Math.min(PLAYER_STATS.totalTime, MISSIONS.timeReq); document.getElementById('m-desc-1').innerText = `Abates (${k}/${MISSIONS.killsReq})`; document.getElementById('m-bar-1').style.width = (k / MISSIONS.killsReq * 100) + '%'; document.getElementById('m-desc-2').innerText = `Orbes (${f}/${MISSIONS.foodReq})`; document.getElementById('m-bar-2').style.width = (f / MISSIONS.foodReq * 100) + '%'; document.getElementById('m-desc-3').innerText = `Sobrevivência (${Math.floor(t / 60)}/${Math.floor(MISSIONS.timeReq / 60)}m)`; document.getElementById('m-bar-3').style.width = (t / MISSIONS.timeReq * 100) + '%'; if (k >= MISSIONS.killsReq && f >= MISSIONS.foodReq && t >= MISSIONS.timeReq) { document.getElementById('mission-reward').classList.remove('hidden'); } }
 
@@ -2440,7 +2496,7 @@
         function gameLoop(time) {
             const now = performance.now(); const delta = now - lastFrameTime; lastFrameTime = now;
             if (document.hidden) { frameCount++; requestAnimationFrame(gameLoop); return; }
-            if (frameCount > 60) { frameTimeBuffer.push(delta); if (frameTimeBuffer.length > 20) frameTimeBuffer.shift(); let avg = frameTimeBuffer.reduce((a, b) => a + b, 0) / frameTimeBuffer.length; if (avg > 22 && APP_SETTINGS.highGfx && !APP_SETTINGS.performanceMode) { APP_SETTINGS.highGfx = false; APP_SETTINGS.performanceMode = true; console.warn("Performance baixa. Reduzindo FX."); } }
+            if (frameCount > 60) PerformanceManager.monitor(delta);
 
             mainCtx.setTransform(1, 0, 0, 1, 0, 0); mainCtx.clearRect(0, 0, gameCanvasElement.width, gameCanvasElement.height); mainCtx.scale(dpr, dpr);
 
@@ -2485,7 +2541,7 @@
             if (frameCount % 2 === 0) rebuildFoodGrid(); rebuildSegmentGrid();
             for (let s of snakes) s.update(); for (let b of butterflies) b.update();
 
-            let segStep = IS_MOBILE_CLIENT ? 8 : 4;
+            let segStep = PerformanceManager.getCfg().segStep;
             for (let i = 0; i < snakes.length; i++) {
                 let s1 = snakes[i]; if (!s1.alive) continue; let s1Ghost = s1.activePowers && s1.activePowers.ghost > 0;
                 let searchRadius = s1.radius + 150; let nearSnakesIdx = getNearbySnakesIndices(s1.x, s1.y, searchRadius);
@@ -2513,7 +2569,7 @@
             }
 
             snakes = snakes.filter(s => s.alive || s.isPlayer);
-            let maxParticles = IS_MOBILE_CLIENT ? 40 : 250; for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].dead) { ParticlePool.recycle(particles[i]); particles.splice(i, 1); } }
+            let maxParticles = PerformanceManager.getCfg().particles; for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].dead) { ParticlePool.recycle(particles[i]); particles.splice(i, 1); } }
             if (particles.length > maxParticles) { let overflow = particles.splice(0, particles.length - maxParticles); overflow.forEach(p => ParticlePool.recycle(p)); }
             for (let ff of fireflies) ff.update();
 
