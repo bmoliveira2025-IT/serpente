@@ -2366,21 +2366,61 @@
             const ctx = canvas.getContext('2d');
             const w = canvas.width, h = canvas.height;
             ctx.clearRect(0, 0, w, h);
-            galleryPreviewTime += 0.05;
+            galleryPreviewTime += 0.045;
+
             const colors = SKINS[skinIndex] || ['#ffdf00'];
-            const segR = h * 0.30;
-            const spacing = segR * 1.05;
-            const segCount = Math.floor((w + segR * 2) / spacing) + 2;
-            const headX = w * 0.78;
+            const cabecaMult = CONFIG.cobra.multiplicadorCabeca || 1.05;
+            const segR = h * 0.34;
+            const spacing = segR * 0.30; // igual ao distanciaGomos do jogo
+            const segCount = Math.ceil((w + segR * 4) / spacing);
+            const headX = w * 0.80;
             const centerY = h / 2;
-            for (let i = segCount; i >= 0; i--) {
-                const wave = Math.sin(galleryPreviewTime - i * 0.4) * (segR * 0.7);
-                const x = headX - i * spacing;
-                if (x < -segR * 2 || x > w + segR) continue;
+
+            // Gerar posições de cada gomo
+            const segs = [];
+            for (let i = 0; i <= segCount; i++) {
+                const wave = Math.sin(galleryPreviewTime - i * 0.18) * (segR * 0.72);
+                segs.push({ x: headX - i * spacing, y: centerY + wave });
+            }
+
+            const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
+
+            // 1ª passagem — sombras do corpo
+            ctx.fillStyle = 'rgba(0,0,0,0.28)';
+            ctx.beginPath();
+            for (let i = segs.length - 1; i >= 1; i--) {
+                const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue;
+                ctx.moveTo(s.x + segR + 1.5, s.y); ctx.arc(s.x, s.y, segR + 1.5, 0, Math.PI * 2);
+            }
+            ctx.fill();
+            // sombra da cabeça
+            ctx.save(); ctx.translate(segs[0].x, segs[0].y); ctx.rotate(headAngle);
+            ctx.beginPath();
+            if (ctx.ellipse) ctx.ellipse(0, 0, segR * cabecaMult + 1.2, segR + 1.2, 0, 0, Math.PI * 2);
+            else ctx.arc(0, 0, segR + 1.2, 0, Math.PI * 2);
+            ctx.fill(); ctx.restore();
+
+            // 2ª passagem — gomos do corpo (de trás para frente, rotacionados)
+            for (let i = segs.length - 1; i >= 1; i--) {
+                const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue;
+                const ang = Math.atan2(segs[i - 1].y - s.y, segs[i - 1].x - s.x);
                 const rawColor = (colors[i % colors.length] || '#ff0000').replace(/-\w+$/, '');
                 const color = /^#[0-9a-fA-F]{6}$/i.test(rawColor) ? rawColor : '#ff0000';
-                try { ctx.drawImage(TextureManager.getSegment(color, i === 0), x - segR, centerY + wave - segR, segR * 2, segR * 2); } catch (e) { }
+                ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(ang);
+                try { ctx.drawImage(TextureManager.getSegment(color), -segR, -segR, segR * 2, segR * 2); } catch (e) { }
+                ctx.restore();
             }
+
+            // 3ª passagem — cabeça
+            const rawHead = (colors[0] || '#ff0000').replace(/-\w+$/, '');
+            const headColor = /^#[0-9a-fA-F]{6}$/i.test(rawHead) ? rawHead : '#ff0000';
+            ctx.save(); ctx.translate(segs[0].x, segs[0].y); ctx.rotate(headAngle);
+            try { ctx.drawImage(TextureManager.getSegment(headColor, true), -segR * cabecaMult, -segR, segR * cabecaMult * 2, segR * 2); } catch (e) { }
+            ctx.restore();
+
+            // 4ª passagem — olhos premium
+            drawPremiumEyes(ctx, segs[0].x, segs[0].y, segR, headAngle, headAngle, skinIndex, false, false);
+
             galleryPreviewRAF = requestAnimationFrame(drawGalleryPreview);
         }
 
