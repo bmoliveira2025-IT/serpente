@@ -1598,10 +1598,10 @@
                 // Comida e Orbes
                 quantidadeComida: IS_MOBILE_CLIENT ? 40000 : 50000, // Número máximo de partículas de comida
                 quantidadeInsetosDourados: 2,                       // Borboletas bônus que fogem pelo mapa
-                tamanhoComidaMin: 4.00,                             // Tamanho visual mínimo da comida
-                tamanhoComidaMax: 5.20,                             // Tamanho visual máximo da comida
-                tamanhoOrbeMorte: 4.40,                              // Tamanho base dos orbes quando cobra morre
-                tamanhoOrbeMorteBonus: 4.44,                         // Crescimento extra do orbe baseado no valor
+                tamanhoComidaMin: 3.60,                             // Tamanho visual mínimo da comida
+                tamanhoComidaMax: 4.00,                             // Tamanho visual máximo da comida
+                tamanhoOrbeMorte: 4.00,                              // Tamanho base dos orbes quando cobra morre
+                tamanhoOrbeMorteBonus: 4.00,                         // Crescimento extra do orbe baseado no valor
 
                 // Aparência do Chão
                 pc: {
@@ -1631,9 +1631,9 @@
         let APP_SETTINGS = { audio: savedAudio !== null ? savedAudio === 'true' : true, highGfx: savedGfx !== null ? savedGfx === 'true' : !IS_MOBILE_CLIENT, performanceMode: false };
         const PerformanceManager = {
             TIERS: {
-                LOW:    { dprCap: 0.9,  particles: 20,  vagalumes: 0,  segStep: 12, renderScale: 0.75 },
-                MEDIUM: { dprCap: 1.2,  particles: 60,  vagalumes: 8,  segStep: 8,  renderScale: 0.90 },
-                HIGH:   { dprCap: 1.6,  particles: 250, vagalumes: 35, segStep: 4,  renderScale: 1.00 }
+                LOW: { dprCap: 0.9, particles: 20, vagalumes: 0, segStep: 12, renderScale: 0.75 },
+                MEDIUM: { dprCap: 1.2, particles: 60, vagalumes: 8, segStep: 8, renderScale: 0.90 },
+                HIGH: { dprCap: 1.6, particles: 250, vagalumes: 35, segStep: 4, renderScale: 1.00 }
             },
             tier: 'HIGH',
             _framesSinceCheck: 0,
@@ -1657,7 +1657,7 @@
                             else if (/intel|mali-g[567]|adreno [5-9]/.test(r)) score += 1;
                         }
                     }
-                } catch(e) {}
+                } catch (e) { }
                 const t0 = performance.now();
                 let _x = 0; for (let i = 0; i < 500000; i++) _x += Math.sqrt(i);
                 const elapsed = performance.now() - t0;
