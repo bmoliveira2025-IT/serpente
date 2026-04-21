@@ -903,13 +903,13 @@
             font-weight: 800;
             color: var(--primary);
             letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(0,217,255,0.5);
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
         }
 
         .skingal-cur-name {
             font-size: 13px;
             font-weight: 700;
-            color: rgba(255,255,255,0.75);
+            color: rgba(255, 255, 255, 0.75);
         }
 
         .skingal-grid {
@@ -1460,7 +1460,8 @@
                 <div class="skingal-bottom">
                     <canvas id="skingal-snake-canvas" width="500" height="90"></canvas>
                     <div style="display:flex; gap:12px;">
-                        <button id="btn-apagar-skin" class="skingal-btn ok hidden" style="background:rgba(255,60,60,0.85);">Apagar</button>
+                        <button id="btn-apagar-skin" class="skingal-btn ok hidden"
+                            style="background:rgba(255,60,60,0.85);">Apagar</button>
                         <button id="skin-ok-btn" class="skingal-btn ok">OK</button>
                     </div>
                 </div>
@@ -1472,13 +1473,15 @@
             <div class="acc-modal-box">
                 <h2 style="margin: 0; color: var(--primary); font-size: 16px; letter-spacing: 2px;">✦ ADEREÇOS</h2>
                 <div id="acc-name-display">NENHUM</div>
-                <div style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative;">
+                <div
+                    style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative;">
                     <div id="acc-left-arrow" class="arrow-btn" style="position:absolute; left:0;">
                         <svg viewBox="0 0 24 24" fill="var(--success)">
                             <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
                         </svg>
                     </div>
-                    <canvas id="acc-snake-canvas" width="220" height="160" style="display:block; border-radius:10px;"></canvas>
+                    <canvas id="acc-snake-canvas" width="320" height="200"
+                        style="display:block; border-radius:10px; width:100%; max-width:320px; height:auto;"></canvas>
                     <div id="acc-right-arrow" class="arrow-btn" style="position:absolute; right:0;">
                         <svg viewBox="0 0 24 24" fill="var(--success)">
                             <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
@@ -1532,13 +1535,13 @@
             // --- CONFIGURAÇÕES DA COBRA ---
             cobra: {
                 pc: {
-                    espessuraInicial: 7.3,   // ← LARGURA INICIAL DA COBRA (PC)  | mín recomendado: 3.0 | máx recomendado: 15.0
+                    espessuraInicial: 7.0,   // ← LARGURA INICIAL DA COBRA (PC)  | mín recomendado: 3.0 | máx recomendado: 15.0
                     espessuraMaxima: 12.0,   // Tamanho máximo absoluto no PC
-                    comprimentoInicial: 10,  // Quantidade de gomos iniciais
+                    comprimentoInicial: 9,  // Quantidade de gomos iniciais
                     comprimentoMaximo: 450,  // Quantidade máxima de gomos na cauda
-                    velocidadeBase: 1.25,    // Velocidade de movimento normal
+                    velocidadeBase: 1.22,    // Velocidade de movimento normal
                     velocidadeTurbo: 3.1,    // Velocidade ao usar o botão Turbo
-                    velocidadeGiro: 0.050    // Quão rápido a cobra consegue virar (radianos por frame)
+                    velocidadeGiro: 0.051    // Quão rápido a cobra consegue virar (radianos por frame)
                 },
                 mobile: {
                     espessuraInicial: 3.0,   // ← LARGURA INICIAL DA COBRA (Mobile) | mín recomendado: 2.0 | máx recomendado: 10.0
@@ -1547,7 +1550,7 @@
                     comprimentoMaximo: 450,
                     velocidadeBase: 1.30,
                     velocidadeTurbo: 2.8,
-                    velocidadeGiro: 0.09     // Curva mais rápido no mobile para ajudar no controle
+                    velocidadeGiro: 0.08     // Curva mais rápido no mobile para ajudar no controle
                 },
                 distanciaGomos: 0.26,        // Distância entre cada gomo do corpo (multiplicador do tamanho)
                 pontosParaEngrossar: 1800,   // Quantos pontos precisa para aumentar 1 nível de espessura visual
@@ -1607,9 +1610,9 @@
                     tamanhoHexagono: 14      // Escala geométrica do chão
                 },
                 mobile: {
-                    corGrade: '#1c2d42',
+                    corGrade: '#283b56',
                     corFundo: '#05070a',
-                    tamanhoHexagono: 5       // Mais pequeno no mobile para não pixelizar o padrão
+                    tamanhoHexagono: 6       // Mais pequeno no mobile para não pixelizar o padrão
                 }
             },
 
@@ -2591,14 +2594,14 @@
             accPreviewTime += 0.04;
             const colors = SKINS[skinIndex] || ['#ffdf00'];
             const cabecaMult = CONFIG.cobra.multiplicadorCabeca || 1.05;
-            const segR = h * 0.22;
+            const segR = h * 0.17;           // segmentos menores para caber o adereço
             const spacing = segR * 0.30;
-            const cx = w / 2, cy = h / 2;
-            const segCount = Math.ceil((w + segR * 4) / spacing);
-            const headX = cx + segCount * spacing * 0.5;
+            const headX = w * 0.58;          // cabeça a 58% da largura — adereço tem espaço à esquerda
+            const cy = h * 0.60;             // centro deslocado para baixo — espaço para adereços acima
             const segs = [];
+            const segCount = Math.ceil((w + segR * 4) / spacing);
             for (let i = 0; i <= segCount; i++) {
-                const wave = Math.sin(accPreviewTime - i * 0.22) * (segR * 0.8);
+                const wave = Math.sin(accPreviewTime - i * 0.22) * (segR * 0.7);
                 segs.push({ x: headX - i * spacing, y: cy + wave });
             }
             const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
