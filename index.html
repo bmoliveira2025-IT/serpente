@@ -1473,6 +1473,8 @@
             <div class="acc-modal-box">
                 <h2 style="margin: 0; color: var(--primary); font-size: 16px; letter-spacing: 2px;">✦ ADEREÇOS</h2>
                 <div id="acc-name-display">NENHUM</div>
+                <div id="acc-rarity-label"
+                    style="font-size:11px;font-weight:700;letter-spacing:3px;margin-top:-4px;color:#aaa;"></div>
                 <div
                     style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; position: relative;">
                     <div id="acc-left-arrow" class="arrow-btn" style="position:absolute; left:0;">
@@ -1540,17 +1542,17 @@
                     comprimentoInicial: 9,  // Quantidade de gomos iniciais
                     comprimentoMaximo: 450,  // Quantidade máxima de gomos na cauda
                     velocidadeBase: 1.15,    // Velocidade de movimento normal
-                    velocidadeTurbo: 3.1,    // Velocidade ao usar o botão Turbo
-                    velocidadeGiro: 0.055    // Quão rápido a cobra consegue virar (radianos por frame)
+                    velocidadeTurbo: 3.0,    // Velocidade ao usar o botão Turbo
+                    velocidadeGiro: 0.053    // Quão rápido a cobra consegue virar (radianos por frame)
                 },
                 mobile: {
                     espessuraInicial: 2.3,   // ← LARGURA INICIAL DA COBRA (Mobile) | mín recomendado: 2.0 | máx recomendado: 10.0
-                    espessuraMaxima: 5.0,    // Tamanho máximo absoluto no Mobile
+                    espessuraMaxima: 4.0,    // Tamanho máximo absoluto no Mobile
                     comprimentoInicial: 11,
-                    comprimentoMaximo: 450,
+                    comprimentoMaximo: 350,
                     velocidadeBase: 1.30,
                     velocidadeTurbo: 2.8,
-                    velocidadeGiro: 0.085     // Curva mais rápido no mobile para ajudar no controle
+                    velocidadeGiro: 0.083     // Curva mais rápido no mobile para ajudar no controle
                 },
                 distanciaGomos: 0.26,        // Distância entre cada gomo do corpo (multiplicador do tamanho)
                 pontosParaEngrossar: 1800,   // Quantos pontos precisa para aumentar 1 nível de espessura visual
@@ -1580,7 +1582,7 @@
             // --- CONFIGURAÇÕES DO MAPA E ARENA ---
             mundo: {
                 tamanhoRaio: 5300,           // Tamanho total do mundo/arena circular
-                forcaAtracao: 25,            // Distância em que a cobra "puxa" a comida como imã
+                forcaAtracao: 15,            // Distância em que a cobra "puxa" a comida como imã
 
                 // Inimigos (Bots)
                 quantidadeBots: IS_MOBILE_CLIENT ? 150 : 300,  // Ajustado para performance
@@ -1598,21 +1600,21 @@
                 // Comida e Orbes
                 quantidadeComida: IS_MOBILE_CLIENT ? 40000 : 50000, // Número máximo de partículas de comida
                 quantidadeInsetosDourados: 2,                       // Borboletas bônus que fogem pelo mapa
-                tamanhoComidaMin: 3.60,                             // Tamanho visual mínimo da comida
-                tamanhoComidaMax: 4.00,                             // Tamanho visual máximo da comida
+                tamanhoComidaMin: 2.60,                             // Tamanho visual mínimo da comida
+                tamanhoComidaMax: 5.00,                             // Tamanho visual máximo da comida
                 tamanhoOrbeMorte: 4.00,                              // Tamanho base dos orbes quando cobra morre
-                tamanhoOrbeMorteBonus: 4.00,                         // Crescimento extra do orbe baseado no valor
+                tamanhoOrbeMorteBonus: 3.70,                         // Crescimento extra do orbe baseado no valor
 
                 // Aparência do Chão
                 pc: {
-                    corGrade: '#0c3a57',     // Cor da linha dos hexágonos
-                    corFundo: '#0a1112',     // Cor do vazio/espaço
-                    tamanhoHexagono: 14      // Escala geométrica do chão
+                    corGrade: '#070808',     // Cor da linha dos hexágonos
+                    corFundo: '#070808',     // Cor do vazio/espaço
+                    tamanhoHexagono: 1      // Escala geométrica do chão
                 },
                 mobile: {
-                    corGrade: '#0c3a57',
-                    corFundo: '#0a1112',
-                    tamanhoHexagono: 3.5       // Mais pequeno no mobile para não pixelizar o padrão
+                    corGrade: '#070808',
+                    corFundo: '#070808',
+                    tamanhoHexagono: 1       // Mais pequeno no mobile para não pixelizar o padrão
                 }
             },
 
@@ -1698,7 +1700,25 @@
         ];
         let SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados", "Ouro Negro", "Tigre", "Galáxia", "Ciborgue", "Algodão Doce", "Vazio", "Abissal", "Vampiro", "Matriz", "Zebra", "👑 LENDÁRIO", "💎 CRISTAL", "🔥 INFERNO", "❄️ GELO", "⚡ RELÂMPAGO", "🌙 LUNAR", "☀️ SOLAR", "🌊 OCEANO", "🍃 FLORESTA", "💀 CAVEIRA"];
 
-        const ACCESSORIES = [{ id: 0, name: "Nenhum" }, { id: 1, name: "Coroa Real" }, { id: 2, name: "Viking Helmet" }, { id: 3, name: "Cartola VIP" }, { id: 4, name: "Cyborg Vizor" }, { id: 5, name: "Óculos Aviador" }, { id: 6, name: "Chapéu de Mago" }, { id: 7, name: "Máscara Ninja" }, { id: 8, name: "Bigode Imperial" }];
+        const ACCESSORIES = [
+            { id: 0, name: "Nenhum", rarity: "none" },
+            { id: 1, name: "Bone", rarity: "common" },
+            { id: 2, name: "Oculos de Sol", rarity: "common" },
+            { id: 3, name: "Bigode", rarity: "common" },
+            { id: 4, name: "Laco", rarity: "common" },
+            { id: 5, name: "Coroa", rarity: "rare" },
+            { id: 6, name: "Capacete Militar", rarity: "rare" },
+            { id: 7, name: "Oculos Neon", rarity: "rare" },
+            { id: 8, name: "Chapeu Cowboy", rarity: "rare" },
+            { id: 9, name: "Chapeu de Mago", rarity: "epic" },
+            { id: 10, name: "Mascara Oni", rarity: "epic" },
+            { id: 11, name: "Aura Neon", rarity: "epic" },
+            { id: 12, name: "Capacete Viking", rarity: "epic" },
+            { id: 13, name: "Coroa Lendaria", rarity: "legendary" },
+            { id: 14, name: "Halo Divino", rarity: "legendary" },
+            { id: 15, name: "Cranio Cyber", rarity: "legendary" },
+            { id: 16, name: "Asas de Dragao", rarity: "legendary" },
+        ];
         let accIndex = parseInt(localStorage.getItem('serpente_accIndex') || '0');
 
         const PLAYER_STATS = {
@@ -1965,21 +1985,323 @@
             ctx.restore();
         }
 
+        const ACC_RARITY_COLORS = { none: "#aaa", common: "#cccccc", rare: "#4ab8ff", epic: "#cc44ff", legendary: "#ffd700" };
+        const ACC_RARITY_NAMES = { none: "", common: "COMUM", rare: "RARO", epic: "EPICO", legendary: "LENDARIO" };
         function drawAccessory(ctx, x, y, r, angle, accId) {
             if (!accId || accId === 0) return;
-            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+            const t = performance.now() * 0.001;
+            const mobile = IS_MOBILE_CLIENT;
+            const highQ = APP_SETTINGS.highGfx;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            // Coordinate system after rotate: +x = forward (snake direction)
             switch (accId) {
-                case 1: ctx.lineWidth = r * 0.25; ctx.strokeStyle = '#e6c200'; ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.45, 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = r * 0.08; ctx.strokeStyle = '#fff59d'; ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.45, 0, Math.PI * 2); ctx.stroke(); let gemColors = ['#ff0000', '#00ff00', '#0000ff', '#ff00ff']; for (let i = 0; i < 4; i++) { let gx = -r * 0.1 + Math.cos(i * Math.PI / 2 + Math.PI / 4) * r * 0.45; let gy = Math.sin(i * Math.PI / 2 + Math.PI / 4) * r * 0.45; ctx.fillStyle = gemColors[i]; ctx.beginPath(); ctx.arc(gx, gy, r * 0.12, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(gx - r * 0.03, gy - r * 0.03, r * 0.04, 0, Math.PI * 2); ctx.fill(); } break;
-                case 2: let steel = ctx.createRadialGradient(-r * 0.1, 0, 0, -r * 0.1, 0, r * 0.55); steel.addColorStop(0, '#ffffff'); steel.addColorStop(0.4, '#a0a0a0'); steel.addColorStop(1, '#555555'); ctx.fillStyle = steel; ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.55, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#333'; ctx.lineWidth = r * 0.08; ctx.beginPath(); ctx.moveTo(-r * 0.65, 0); ctx.lineTo(r * 0.45, 0); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-r * 0.1, -r * 0.55); ctx.lineTo(-r * 0.1, r * 0.55); ctx.stroke(); ctx.fillStyle = '#ffeedd'; ctx.beginPath(); ctx.moveTo(-r * 0.1, -r * 0.4); ctx.quadraticCurveTo(-r * 0.4, -r * 0.9, -r * 0.5, -r * 1.1); ctx.quadraticCurveTo(0, -r * 0.8, -r * 0.05, -r * 0.4); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-r * 0.1, r * 0.4); ctx.quadraticCurveTo(-r * 0.4, r * 0.9, -r * 0.5, r * 1.1); ctx.quadraticCurveTo(0, r * 0.8, -r * 0.05, r * 0.4); ctx.fill(); ctx.stroke(); break;
-                case 3: ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.65, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#333'; ctx.lineWidth = r * 0.05; ctx.stroke(); ctx.fillStyle = '#d4af37'; ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.42, 0, Math.PI * 2); ctx.fill(); let hatTop = ctx.createRadialGradient(-r * 0.15, -r * 0.05, 0, -r * 0.2, 0, r * 0.38); hatTop.addColorStop(0, '#444'); hatTop.addColorStop(1, '#050505'); ctx.fillStyle = hatTop; ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.38, 0, Math.PI * 2); ctx.fill(); break;
-                case 4: ctx.strokeStyle = '#111'; ctx.lineWidth = r * 0.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.65); ctx.quadraticCurveTo(r * 0.9, 0, r * 0.65, r * 0.65); ctx.stroke(); ctx.strokeStyle = '#00ffff'; ctx.lineWidth = r * 0.12; ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.6); ctx.quadraticCurveTo(r * 0.88, 0, r * 0.65, r * 0.6); ctx.stroke(); ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff'; ctx.stroke(); ctx.shadowBlur = 0; break;
-                case 5: const lensB = ctx.createLinearGradient(r * 0.4, -r * 0.5, r * 0.8, r * 0.5); lensB.addColorStop(0, '#111'); lensB.addColorStop(0.5, '#444'); lensB.addColorStop(1, '#000'); ctx.fillStyle = lensB; ctx.strokeStyle = '#d4af37'; ctx.lineWidth = r * 0.06; const dl = (lx, ly) => { ctx.beginPath(); ctx.ellipse(lx, ly, r * 0.35, r * 0.45, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.ellipse(lx + r * 0.1, ly - r * 0.1, r * 0.15, r * 0.08, Math.PI / 4, 0, Math.PI * 2); ctx.fill(); }; dl(r * 0.65, -r * 0.45); dl(r * 0.65, r * 0.45); ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.2); ctx.quadraticCurveTo(r * 0.75, 0, r * 0.65, r * 0.2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(r * 0.65, -r * 0.85); ctx.lineTo(-r * 0.2, -r * 0.8); ctx.stroke(); ctx.beginPath(); ctx.moveTo(r * 0.65, r * 0.85); ctx.lineTo(-r * 0.2, r * 0.8); ctx.stroke(); break;
-                case 6: ctx.fillStyle = '#1a237e'; ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.75, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#3949ab'; ctx.lineWidth = r * 0.08; ctx.stroke(); ctx.fillStyle = '#283593'; ctx.beginPath(); ctx.moveTo(r * 0.2, -r * 0.4); ctx.lineTo(r * 0.2, r * 0.4); ctx.lineTo(-r * 1.6, 0); ctx.fill(); ctx.fillStyle = '#ffdf00'; ctx.beginPath(); ctx.arc(-r * 0.1, -r * 0.2, r * 0.15, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#283593'; ctx.beginPath(); ctx.arc(-r * 0.05, -r * 0.2, r * 0.12, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffdf00'; ctx.beginPath(); ctx.arc(-r * 0.5, 0, r * 0.05, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(-r * 0.8, r * 0.1, r * 0.04, 0, Math.PI * 2); ctx.fill(); break;
-                case 7: ctx.fillStyle = '#111111'; ctx.beginPath(); ctx.arc(0, 0, r * 1.03, Math.PI * 0.35, -Math.PI * 0.35); ctx.lineTo(r * 0.45, -r * 0.8); ctx.quadraticCurveTo(r * 0.35, 0, r * 0.45, r * 0.8); ctx.fill(); ctx.beginPath(); ctx.arc(0, 0, r * 1.03, -Math.PI * 0.2, Math.PI * 0.2); ctx.lineTo(r * 0.85, r * 0.5); ctx.quadraticCurveTo(r * 0.95, 0, r * 0.85, -r * 0.5); ctx.fill(); ctx.strokeStyle = '#333'; ctx.lineWidth = r * 0.05; ctx.beginPath(); ctx.moveTo(-r * 0.8, 0); ctx.lineTo(-r * 0.2, 0); ctx.stroke(); break;
-                case 8: ctx.fillStyle = '#1a1a1a'; ctx.shadowBlur = 5; ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.moveTo(r * 0.9, 0); ctx.quadraticCurveTo(r * 0.9, -r * 0.2, r * 0.7, -r * 0.8); ctx.quadraticCurveTo(r * 1.1, -r * 0.6, r * 0.9, 0); ctx.fill(); ctx.beginPath(); ctx.moveTo(r * 0.9, 0); ctx.quadraticCurveTo(r * 0.9, r * 0.2, r * 0.7, r * 0.8); ctx.quadraticCurveTo(r * 1.1, r * 0.6, r * 0.9, 0); ctx.fill(); ctx.shadowBlur = 0; break;
+
+                // COMUM -------------------------------------------------------
+                case 1: { // Bone (Baseball Cap)
+                    const capG = ctx.createRadialGradient(-r * 0.12, -r * 0.1, 0, -r * 0.1, 0, r * 0.75);
+                    capG.addColorStop(0, "#ff3333"); capG.addColorStop(0.7, "#cc0000"); capG.addColorStop(1, "#880000");
+                    ctx.fillStyle = capG;
+                    ctx.beginPath(); ctx.ellipse(-r * 0.08, 0, r * 0.74, r * 0.74, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#aa0000";
+                    ctx.beginPath(); ctx.ellipse(r * 0.62, 0, r * 0.42, r * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#660000";
+                    ctx.beginPath(); ctx.ellipse(r * 0.62, 0, r * 0.42, r * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = "#dd2222"; ctx.lineWidth = r * 0.05;
+                    ctx.beginPath(); ctx.moveTo(-r * 0.7, 0); ctx.lineTo(r * 0.2, 0); ctx.stroke();
+                    ctx.fillStyle = "#ff6666";
+                    ctx.beginPath(); ctx.arc(-r * 0.08, 0, r * 0.09, 0, Math.PI * 2); ctx.fill();
+                    break;
+                }
+                case 2: { // Oculos de Sol
+                    const lR = r * 0.27, lY = r * 0.36, lX = r * 0.4;
+                    ctx.fillStyle = "rgba(15,15,15,0.93)"; ctx.strokeStyle = "#666"; ctx.lineWidth = r * 0.07;
+                    ctx.beginPath(); ctx.ellipse(lX, -lY, lR * 1.1, lR * 0.8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.ellipse(lX, lY, lR * 1.1, lR * 0.8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(lX, -lY + lR * 0.55); ctx.lineTo(lX, lY - lR * 0.55); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(lX - lR, -lY); ctx.lineTo(-r * 0.72, -lY * 0.65); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(lX - lR, lY); ctx.lineTo(-r * 0.72, lY * 0.65); ctx.stroke();
+                    ctx.fillStyle = "rgba(255,255,255,0.22)";
+                    ctx.beginPath(); ctx.ellipse(lX + lR * 0.22, -lY - lR * 0.18, lR * 0.26, lR * 0.12, -0.7, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(lX + lR * 0.22, lY - lR * 0.18, lR * 0.26, lR * 0.12, -0.7, 0, Math.PI * 2); ctx.fill();
+                    break;
+                }
+                case 3: { // Bigode
+                    ctx.strokeStyle = "#2a1008"; ctx.lineWidth = r * 0.14; ctx.lineCap = "round"; ctx.lineJoin = "round";
+                    ctx.beginPath(); ctx.moveTo(r * 0.72, 0);
+                    ctx.bezierCurveTo(r * 0.7, -r * 0.38, r * 0.1, -r * 0.58, -r * 0.05, -r * 0.28);
+                    ctx.bezierCurveTo(-r * 0.18, -r * 0.08, r * 0.12, -r * 0.04, r * 0.08, 0); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r * 0.72, 0);
+                    ctx.bezierCurveTo(r * 0.7, r * 0.38, r * 0.1, r * 0.58, -r * 0.05, r * 0.28);
+                    ctx.bezierCurveTo(-r * 0.18, r * 0.08, r * 0.12, r * 0.04, r * 0.08, 0); ctx.stroke();
+                    ctx.strokeStyle = "#1a0804"; ctx.lineWidth = r * 0.1;
+                    ctx.beginPath(); ctx.moveTo(r * 0.55, -r * 0.04); ctx.lineTo(r * 0.55, r * 0.04); ctx.stroke();
+                    break;
+                }
+                case 4: { // Laco (Bow Tie)
+                    ctx.strokeStyle = "#880000"; ctx.lineWidth = r * 0.04;
+                    ctx.fillStyle = "#e62020";
+                    ctx.beginPath(); ctx.moveTo(r * 0.65, 0);
+                    ctx.bezierCurveTo(r * 0.45, -r * 0.42, r * 0.05, -r * 0.52, r * 0.65, 0); ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r * 0.65, 0);
+                    ctx.bezierCurveTo(r * 0.45, r * 0.42, r * 0.05, r * 0.52, r * 0.65, 0); ctx.fill(); ctx.stroke();
+                    ctx.fillStyle = "#cc0000";
+                    ctx.beginPath(); ctx.ellipse(r * 0.65, 0, r * 0.11, r * 0.15, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "rgba(255,255,255,0.28)";
+                    ctx.beginPath(); ctx.ellipse(r * 0.48, -r * 0.2, r * 0.12, r * 0.06, -0.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.48, r * 0.2, r * 0.12, r * 0.06, 0.5, 0, Math.PI * 2); ctx.fill();
+                    break;
+                }
+
+                // RARO --------------------------------------------------------
+                case 5: { // Coroa
+                    const cr = r * 0.54, sp = 5;
+                    const cg = ctx.createRadialGradient(0, 0, cr * 0.55, 0, 0, cr);
+                    cg.addColorStop(0, "#fff176"); cg.addColorStop(0.5, "#ffd700"); cg.addColorStop(1, "#b8860b");
+                    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, cr, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#111100"; ctx.beginPath(); ctx.arc(0, 0, cr * 0.72, 0, Math.PI * 2); ctx.fill();
+                    const gemC = ["#ff2020", "#20ff60", "#2060ff", "#ff20ff", "#ffcc00"];
+                    for (let i = 0; i < sp; i++) {
+                        const a = (i / sp) * Math.PI * 2 - Math.PI / 2, la = a - Math.PI / sp, ra = a + Math.PI / sp;
+                        ctx.fillStyle = i % 2 === 0 ? "#ffe033" : "#ffd700";
+                        ctx.beginPath();
+                        ctx.moveTo(Math.cos(la) * cr * 0.9, Math.sin(la) * cr * 0.9);
+                        ctx.lineTo(Math.cos(a) * (cr + r * 0.42), Math.sin(a) * (cr + r * 0.42));
+                        ctx.lineTo(Math.cos(ra) * cr * 0.9, Math.sin(ra) * cr * 0.9); ctx.fill();
+                        const gx = Math.cos(a) * cr * 0.86, gy = Math.sin(a) * cr * 0.86;
+                        ctx.fillStyle = gemC[i]; ctx.beginPath(); ctx.arc(gx, gy, r * 0.09, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = "rgba(255,255,255,0.65)"; ctx.beginPath(); ctx.arc(gx - r * 0.03, gy - r * 0.03, r * 0.033, 0, Math.PI * 2); ctx.fill();
+                    }
+                    break;
+                }
+                case 6: { // Capacete Militar
+                    const hg = ctx.createRadialGradient(-r * 0.1, -r * 0.18, 0, -r * 0.08, 0, r * 0.78);
+                    hg.addColorStop(0, "#9ac45e"); hg.addColorStop(0.6, "#4a7a2e"); hg.addColorStop(1, "#2a4a16");
+                    ctx.fillStyle = hg; ctx.beginPath(); ctx.ellipse(-r * 0.07, 0, r * 0.78, r * 0.63, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#2e5018"; ctx.beginPath(); ctx.ellipse(-r * 0.07, 0, r * 0.78, r * 0.2, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "rgba(25,45,8,0.45)";
+                    ctx.beginPath(); ctx.ellipse(-r * 0.3, -r * 0.28, r * 0.16, r * 0.1, -0.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.18, -r * 0.18, r * 0.13, r * 0.08, 0.3, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(-r * 0.08, r * 0.3, r * 0.14, r * 0.09, -0.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.28, r * 0.25, r * 0.1, r * 0.07, 0.6, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "rgba(255,255,255,0.12)";
+                    ctx.beginPath(); ctx.ellipse(-r * 0.28, -r * 0.22, r * 0.34, r * 0.19, -0.3, 0, Math.PI * 2); ctx.fill();
+                    break;
+                }
+                case 7: { // Oculos Neon
+                    const lR2 = r * 0.27, lY2 = r * 0.36, lX2 = r * 0.38;
+                    if (!mobile && highQ) { ctx.shadowBlur = r * 0.9; ctx.shadowColor = "#00ffff"; }
+                    ctx.strokeStyle = "#00ffff"; ctx.lineWidth = r * 0.075; ctx.fillStyle = "rgba(0,255,255,0.15)";
+                    ctx.beginPath(); ctx.ellipse(lX2, -lY2, lR2 * 1.1, lR2 * 0.82, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    if (!mobile && highQ) ctx.shadowColor = "#ff00ff";
+                    ctx.strokeStyle = "#ff00ff"; ctx.fillStyle = "rgba(255,0,255,0.15)";
+                    ctx.beginPath(); ctx.ellipse(lX2, lY2, lR2 * 1.1, lR2 * 0.82, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    ctx.shadowBlur = 0; ctx.strokeStyle = "#888"; ctx.lineWidth = r * 0.055;
+                    ctx.beginPath(); ctx.moveTo(lX2, -lY2 + lR2 * 0.58); ctx.lineTo(lX2, lY2 - lR2 * 0.58); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(lX2 - lR2, -lY2); ctx.lineTo(-r * 0.72, -lY2 * 0.65); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(lX2 - lR2, lY2); ctx.lineTo(-r * 0.72, lY2 * 0.65); ctx.stroke();
+                    break;
+                }
+                case 8: { // Chapeu Cowboy
+                    const cwG = ctx.createRadialGradient(-r * 0.1, -r * 0.12, 0, -r * 0.08, 0, r * 0.58);
+                    cwG.addColorStop(0, "#c8a050"); cwG.addColorStop(0.7, "#8b6914"); cwG.addColorStop(1, "#5a4010");
+                    ctx.fillStyle = cwG; ctx.beginPath(); ctx.ellipse(-r * 0.08, 0, r * 0.57, r * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#6b4f0c"; ctx.beginPath(); ctx.ellipse(-r * 0.08, 0, r * 0.96, r * 0.25, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#7a5a14"; ctx.beginPath(); ctx.ellipse(-r * 0.08, 0, r * 0.57, r * 0.14, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#3a2808"; ctx.strokeStyle = "#2a1a04"; ctx.lineWidth = r * 0.02;
+                    ctx.beginPath(); ctx.ellipse(-r * 0.08, 0, r * 0.57, r * 0.1, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    ctx.fillStyle = "#daa520"; ctx.fillRect(-r * 0.09, -r * 0.09, r * 0.18, r * 0.18);
+                    ctx.fillStyle = "#7a5014"; ctx.fillRect(-r * 0.045, -r * 0.045, r * 0.09, r * 0.09);
+                    ctx.fillStyle = "rgba(255,200,100,0.15)";
+                    ctx.beginPath(); ctx.ellipse(-r * 0.25, -r * 0.15, r * 0.25, r * 0.16, -0.4, 0, Math.PI * 2); ctx.fill();
+                    break;
+                }
+
+                // EPICO -------------------------------------------------------
+                case 9: { // Chapeu de Mago
+                    const star5 = (sx, sy, sr) => {
+                        ctx.beginPath();
+                        for (let p = 0; p < 10; p++) { const pa = (p / 10) * Math.PI * 2 - Math.PI / 2, pr = p % 2 === 0 ? sr : sr * 0.42; ctx[p === 0 ? "moveTo" : "lineTo"](sx + Math.cos(pa) * pr, sy + Math.sin(pa) * pr); }
+                        ctx.closePath(); ctx.fill();
+                    };
+                    const hatBaseX = -r * 0.58, coneLen = r * 1.45, hW = r * 0.6;
+                    ctx.fillStyle = "#1a0a4a";
+                    ctx.beginPath(); ctx.moveTo(hatBaseX, -hW); ctx.lineTo(hatBaseX, hW);
+                    ctx.bezierCurveTo(hatBaseX + coneLen * 0.35, hW * 0.4, hatBaseX + coneLen * 0.35, -hW * 0.4, hatBaseX, -hW);
+                    ctx.fill();
+                    ctx.fillStyle = "#2a1070"; ctx.strokeStyle = "#4a20a0"; ctx.lineWidth = r * 0.05;
+                    ctx.beginPath(); ctx.ellipse(hatBaseX, 0, r * 0.28, hW * 1.08, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    ctx.fillStyle = "#ffdf00";
+                    const tipX = hatBaseX + coneLen * 0.32;
+                    star5(tipX, 0, r * 0.11); star5(tipX - r * 0.38, -r * 0.22, r * 0.08);
+                    star5(tipX - r * 0.38, r * 0.22, r * 0.08); star5(tipX - r * 0.7, 0, r * 0.07);
+                    if (!mobile && highQ) {
+                        ctx.shadowColor = "#8833ff"; ctx.shadowBlur = r * 1.2;
+                        ctx.fillStyle = "rgba(0,0,0,0)"; ctx.beginPath(); ctx.arc(tipX - r * 0.2, 0, r * 0.5, 0, Math.PI * 2); ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                    break;
+                }
+                case 10: { // Mascara Oni
+                    const mg = ctx.createRadialGradient(r * 0.1, 0, 0, r * 0.08, 0, r * 0.88);
+                    mg.addColorStop(0, "#ff3333"); mg.addColorStop(0.65, "#cc1111"); mg.addColorStop(1, "#770000");
+                    ctx.fillStyle = mg; ctx.beginPath(); ctx.ellipse(r * 0.08, 0, r * 0.84, r * 0.74, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#111";
+                    ctx.beginPath(); ctx.ellipse(r * 0.36, -r * 0.28, r * 0.19, r * 0.14, -0.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.36, r * 0.28, r * 0.19, r * 0.14, 0.2, 0, Math.PI * 2); ctx.fill();
+                    if (!mobile && highQ) { ctx.shadowColor = "#ffcc00"; ctx.shadowBlur = r * 0.7; }
+                    ctx.fillStyle = "#ffcc00";
+                    ctx.beginPath(); ctx.ellipse(r * 0.36, -r * 0.28, r * 0.1, r * 0.075, -0.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.36, r * 0.28, r * 0.1, r * 0.075, 0.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = "#cc2200";
+                    ctx.beginPath(); ctx.moveTo(-r * 0.55, -r * 0.58); ctx.lineTo(-r * 0.28, -r * 0.72); ctx.lineTo(-r * 0.44, -r * 1.08); ctx.lineTo(-r * 0.62, -r * 0.72); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(-r * 0.55, r * 0.58); ctx.lineTo(-r * 0.28, r * 0.72); ctx.lineTo(-r * 0.44, r * 1.08); ctx.lineTo(-r * 0.62, r * 0.72); ctx.fill();
+                    ctx.fillStyle = "#880000"; ctx.beginPath(); ctx.arc(r * 0.65, 0, r * 0.14, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.lineWidth = r * 0.06;
+                    ctx.beginPath(); ctx.moveTo(r * 0.22, -r * 0.05); ctx.lineTo(r * 0.58, -r * 0.05); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r * 0.22, r * 0.05); ctx.lineTo(r * 0.58, r * 0.05); ctx.stroke();
+                    if (!mobile && highQ) {
+                        ctx.shadowColor = "#ff2200"; ctx.shadowBlur = r * 1.0;
+                        ctx.fillStyle = "rgba(0,0,0,0)"; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                    break;
+                }
+                case 11: { // Aura Neon
+                    const aT = t * 1.6, pulse = 1.0 + Math.sin(aT) * 0.13, aR = r * 1.38 * pulse;
+                    const cols = ["#00ffff", "#ff00ff", "#ffff00"];
+                    for (let i = 0; i < 3; i++) {
+                        const a = aT + (i / 3) * Math.PI * 2;
+                        ctx.globalAlpha = 0.32;
+                        if (!mobile && highQ) { ctx.shadowColor = cols[i]; ctx.shadowBlur = r * 0.7; }
+                        ctx.strokeStyle = cols[i]; ctx.lineWidth = r * 0.07;
+                        ctx.beginPath(); ctx.arc(0, 0, aR, a, a + Math.PI * 2 / 3); ctx.stroke();
+                    }
+                    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+                    ctx.globalAlpha = 0.5; ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = r * 0.045;
+                    ctx.beginPath(); ctx.arc(0, 0, r * 1.1, 0, Math.PI * 2); ctx.stroke();
+                    ctx.globalAlpha = 1;
+                    break;
+                }
+                case 12: { // Capacete Viking
+                    const vg = ctx.createRadialGradient(-r * 0.1, -r * 0.2, 0, -r * 0.08, 0, r * 0.76);
+                    vg.addColorStop(0, "#d8d8d8"); vg.addColorStop(0.5, "#888"); vg.addColorStop(1, "#333");
+                    ctx.fillStyle = vg; ctx.beginPath(); ctx.ellipse(-r * 0.07, 0, r * 0.76, r * 0.64, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#666"; ctx.beginPath(); ctx.rect(r * 0.2, -r * 0.085, r * 0.55, r * 0.17); ctx.fill();
+                    ctx.fillStyle = "#888"; ctx.beginPath(); ctx.rect(r * 0.22, -r * 0.065, r * 0.5, r * 0.13); ctx.fill();
+                    ctx.fillStyle = "#f0edd8"; ctx.strokeStyle = "#c8c5a0"; ctx.lineWidth = r * 0.04;
+                    const dHorn = (side) => {
+                        ctx.beginPath();
+                        ctx.moveTo(-r * 0.52, side * r * 0.52);
+                        ctx.bezierCurveTo(-r * 0.78, side * r * 0.68, -r * 1.12, side * r * 0.5, -r * 1.08, side * r * 0.08);
+                        ctx.bezierCurveTo(-r * 1.08, -side * r * 0.08, -r * 0.85, 0, -r * 0.62, side * r * 0.44);
+                        ctx.closePath(); ctx.fill(); ctx.stroke();
+                    };
+                    dHorn(-1); dHorn(1);
+                    ctx.fillStyle = "#aaa";
+                    [[-r * 0.32, -r * 0.44], [r * 0.08, -r * 0.44], [-r * 0.32, r * 0.44], [r * 0.08, r * 0.44]].forEach(([nx, ny]) => {
+                        ctx.beginPath(); ctx.arc(nx, ny, r * 0.056, 0, Math.PI * 2); ctx.fill();
+                    });
+                    ctx.fillStyle = "rgba(255,255,255,0.19)";
+                    ctx.beginPath(); ctx.ellipse(-r * 0.28, -r * 0.22, r * 0.32, r * 0.18, -0.4, 0, Math.PI * 2); ctx.fill();
+                    break;
+                }
+
+                // LENDARIO ----------------------------------------------------
+                case 13: { // Coroa Lendaria
+                    const lT = t * 1.8, cr3 = r * 0.6, sp3 = 7, gP = 0.85 + Math.sin(lT * 1.4) * 0.15;
+                    if (!mobile) { ctx.shadowColor = "#ffd700"; ctx.shadowBlur = r * (1.3 + Math.sin(lT) * 0.45); }
+                    const cg3 = ctx.createRadialGradient(0, 0, cr3 * 0.55, 0, 0, cr3);
+                    cg3.addColorStop(0, "#fffde0"); cg3.addColorStop(0.45, "#ffd700"); cg3.addColorStop(1, "#b8860b");
+                    ctx.fillStyle = cg3; ctx.beginPath(); ctx.arc(0, 0, cr3, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#100e00"; ctx.beginPath(); ctx.arc(0, 0, cr3 * 0.7, 0, Math.PI * 2); ctx.fill();
+                    const lG = ["#ff2020", "#2af", "#44ff44", "#ff44ff", "#ffa500", "#ff2020", "#44ff44"];
+                    for (let i = 0; i < sp3; i++) {
+                        const a = (i / sp3) * Math.PI * 2 - Math.PI / 2, la = a - Math.PI / sp3, ra = a + Math.PI / sp3;
+                        const tipR = cr3 + r * (0.48 + Math.sin(lT + i * 0.9) * 0.06);
+                        ctx.fillStyle = i % 3 === 0 ? "#fff176" : "#ffd700";
+                        ctx.beginPath();
+                        ctx.moveTo(Math.cos(la) * cr3 * 0.9, Math.sin(la) * cr3 * 0.9);
+                        ctx.lineTo(Math.cos(a) * tipR, Math.sin(a) * tipR);
+                        ctx.lineTo(Math.cos(ra) * cr3 * 0.9, Math.sin(ra) * cr3 * 0.9); ctx.fill();
+                    }
+                    ctx.shadowBlur = 0;
+                    for (let i = 0; i < sp3; i++) {
+                        const a = (i / sp3) * Math.PI * 2 - Math.PI / 2, gx = Math.cos(a) * cr3 * 0.84, gy = Math.sin(a) * cr3 * 0.84;
+                        if (!mobile) { ctx.shadowColor = lG[i]; ctx.shadowBlur = r * 0.45 * gP; }
+                        ctx.fillStyle = lG[i]; ctx.beginPath(); ctx.arc(gx, gy, r * 0.1 * gP, 0, Math.PI * 2); ctx.fill();
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.beginPath(); ctx.arc(gx - r * 0.03, gy - r * 0.03, r * 0.035, 0, Math.PI * 2); ctx.fill();
+                    }
+                    break;
+                }
+                case 14: { // Halo Divino
+                    const hT = t * 1.0, hR = r * 1.3, tilt = 0.32, hY = -r * 0.9;
+                    if (!mobile && highQ) {
+                        for (let p = 0; p < 10; p++) {
+                            const pa = hT * 1.8 + (p / 10) * Math.PI * 2;
+                            ctx.globalAlpha = (Math.sin(pa) + 1) * 0.22 + 0.15; ctx.fillStyle = "#fff9c4";
+                            ctx.beginPath(); ctx.arc(Math.cos(pa) * hR, hY + Math.sin(pa) * hR * tilt, r * 0.05, 0, Math.PI * 2); ctx.fill();
+                        }
+                        ctx.globalAlpha = 1;
+                    }
+                    if (!mobile) { ctx.shadowColor = "#ffd700"; ctx.shadowBlur = r * (0.95 + Math.sin(hT * 2) * 0.3); }
+                    ctx.strokeStyle = "#ffd700"; ctx.lineWidth = r * 0.14; ctx.globalAlpha = 0.93;
+                    ctx.beginPath(); ctx.ellipse(0, hY, hR, hR * tilt, 0, 0, Math.PI * 2); ctx.stroke();
+                    ctx.shadowBlur = 0; ctx.globalAlpha = 0.38; ctx.strokeStyle = "#fffde0"; ctx.lineWidth = r * 0.05;
+                    ctx.beginPath(); ctx.ellipse(0, hY, hR * 0.86, hR * tilt * 0.86, 0, 0, Math.PI * 2); ctx.stroke();
+                    ctx.globalAlpha = 1;
+                    break;
+                }
+                case 15: { // Cranio Cyber
+                    const cT = t * 2.8, scanY = Math.sin(cT) * r * 0.55;
+                    if (!mobile && highQ) { ctx.shadowColor = "#00ffaa"; ctx.shadowBlur = r * 0.7; }
+                    ctx.strokeStyle = "#00ffaa"; ctx.lineWidth = r * 0.055; ctx.globalAlpha = 0.82;
+                    ctx.fillStyle = "rgba(0,255,170,0.1)"; ctx.fillRect(-r * 0.82, scanY - r * 0.06, r * 1.64, r * 0.12);
+                    ctx.beginPath(); ctx.moveTo(-r * 0.72, -r * 0.46); ctx.lineTo(r * 0.52, -r * 0.46); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-r * 0.72, r * 0.46); ctx.lineTo(r * 0.52, r * 0.46); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-r * 0.72, -r * 0.46); ctx.lineTo(-r * 0.72, r * 0.46); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r * 0.52, -r * 0.46); ctx.lineTo(r * 0.52, r * 0.46); ctx.stroke();
+                    ctx.fillStyle = "#00ffaa";
+                    [[-r * 0.72, -r * 0.46], [r * 0.52, -r * 0.46], [-r * 0.72, r * 0.46], [r * 0.52, r * 0.46]].forEach(([nx, ny]) => {
+                        ctx.beginPath(); ctx.arc(nx, ny, r * 0.075, 0, Math.PI * 2); ctx.fill();
+                    });
+                    ctx.beginPath(); ctx.moveTo(r * 0.28, -r * 0.1); ctx.lineTo(r * 0.52, -r * 0.1); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r * 0.28, r * 0.1); ctx.lineTo(r * 0.52, r * 0.1); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r * 0.4, -r * 0.28); ctx.lineTo(r * 0.4, r * 0.28); ctx.stroke();
+                    ctx.globalAlpha = Math.sin(cT * 2) > 0 ? 0.9 : 0.1;
+                    ctx.fillStyle = "#ff0044";
+                    if (!mobile && highQ) { ctx.shadowColor = "#ff0044"; ctx.shadowBlur = r * 0.5; }
+                    ctx.beginPath(); ctx.arc(-r * 0.58, -r * 0.58, r * 0.1, 0, Math.PI * 2); ctx.fill();
+                    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+                    break;
+                }
+                case 16: { // Asas de Dragao
+                    const wT = t * 2.2, flap = Math.sin(wT) * 0.28 + 0.12;
+                    if (!mobile && highQ) { ctx.shadowColor = "#ff4400"; ctx.shadowBlur = r * 1.1; }
+                    const dWing = (side) => {
+                        const wg = ctx.createLinearGradient(0, 0, 0, side * r * 2.1);
+                        wg.addColorStop(0, "#cc2200"); wg.addColorStop(0.5, "#ff6600"); wg.addColorStop(1, "rgba(255,80,0,0)");
+                        ctx.fillStyle = wg; ctx.globalAlpha = 0.88;
+                        ctx.beginPath(); ctx.moveTo(-r * 0.18, 0);
+                        ctx.bezierCurveTo(-r * 0.5, side * r * (0.75 + flap), r * 0.28, side * r * (1.75 + flap * 0.5), r * 0.02, side * r * (0.95 + flap * 0.8));
+                        ctx.bezierCurveTo(r * 0.22, side * r * (0.55 + flap * 0.5), r * 0.22, side * r * 0.3, -r * 0.18, 0); ctx.fill();
+                        ctx.globalAlpha = 0.38; ctx.strokeStyle = "#ff9900"; ctx.lineWidth = r * 0.04;
+                        for (let m = 1; m <= 3; m++) {
+                            ctx.beginPath(); ctx.moveTo(-r * 0.18, 0);
+                            ctx.lineTo(-r * 0.38 + m * r * 0.14, side * r * (0.65 + flap) * (m / 3)); ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1;
+                    };
+                    dWing(-1); dWing(1); ctx.shadowBlur = 0;
+                    break;
+                }
             }
             ctx.restore();
         }
+
 
         class Particle {
             constructor(x, y, color, s) { this.init(x, y, color, s); }
@@ -2693,7 +3015,13 @@
         }
         function startAccPreview() { if (accPreviewRAF) { cancelAnimationFrame(accPreviewRAF); accPreviewRAF = null; } accPreviewTime = 0; drawAccPreview(); }
         function updateAccUI() {
-            accUI.name.innerText = ACCESSORIES[accIndex].name.toUpperCase();
+            const acc = ACCESSORIES[accIndex];
+            accUI.name.innerText = acc.name.toUpperCase();
+            const rarEl = document.getElementById("acc-rarity-label");
+            if (rarEl) {
+                rarEl.innerText = ACC_RARITY_NAMES[acc.rarity] || "";
+                rarEl.style.color = ACC_RARITY_COLORS[acc.rarity] || "#aaa";
+            }
             startAccPreview();
         }
         accUI.ok.addEventListener('click', () => { if (accPreviewRAF) { cancelAnimationFrame(accPreviewRAF); accPreviewRAF = null; } }, true);
