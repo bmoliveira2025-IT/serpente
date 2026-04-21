@@ -1566,12 +1566,12 @@
             // --- CONFIGURAÇÕES DA CÂMERA (ZOOM) ---
             zoom: {
                 pc: {
-                    inicial: 3.80,           // Zoom inicial ao nascer (valores maiores = mais afastado)
+                    inicial: 3.90,           // Zoom inicial ao nascer (valores maiores = mais afastado)
                     minimo: 1.80,            // O limite máximo que a câmera afasta quando ficas gigante
                     fatorAfastamento: 0.028  // Velocidade com que a câmera afasta conforme a cobra cresce
                 },
                 mobile: {
-                    inicial: 4.00,           // Zoom inicial mais afastado no mobile
+                    inicial: 4.10,           // Zoom inicial mais afastado no mobile
                     minimo: 1.60,
                     fatorAfastamento: 0.030
                 }
@@ -1583,7 +1583,7 @@
                 forcaAtracao: 25,            // Distância em que a cobra "puxa" a comida como imã
 
                 // Inimigos (Bots)
-                quantidadeBots: IS_MOBILE_CLIENT ? 200 : 300,  // Ajustado para performance
+                quantidadeBots: IS_MOBILE_CLIENT ? 180 : 300,  // Ajustado para performance
                 distribuicaoBots: {
                     // Probabilidade de cada tamanho de bot (deve somar 1.0)
                     probabilidades: { pequeno: 0.25, medio: 0.35, grande: 0.25, gigante: 0.15 },
