@@ -1272,28 +1272,51 @@
         console.log(`%c 🎮 MODO DETECTADO: ${IS_MOBILE_CLIENT ? 'MOBILE' : 'PC'} `, `background: ${IS_MOBILE_CLIENT ? '#ff0055' : '#007bff'}; color: white; font-weight: bold; border-radius: 4px; padding: 2px 8px;`);
 
         // ======================================================================
-        // ⚙️ CONFIGURAÇÕES MESTRAS DO JOGO
+        // ⚙️ CONFIGURAÇÕES MESTRAS DO JOGO (SUPER PAINEL DE CONTROLO)
         // ======================================================================
         const CONFIG = {
             cobra: {
-                pc: { espessuraInicial: 6.5, espessuraMaxima: 8.0, comprimentoInicial: 9, comprimentoMaximo: 350, velocidadeBase: 1.15, velocidadeTurbo: 3.0, velocidadeGiro: 0.053 },
-                mobile: { espessuraInicial: 2.3, espessuraMaxima: 4.0, comprimentoInicial: 11, comprimentoMaximo: 350, velocidadeBase: 1.30, velocidadeTurbo: 2.8, velocidadeGiro: 0.083 },
-                distanciaGomos: 0.30, pontosParaEngrossar: 1800, pontosParaCrescer: 1.5, custoDoTurbo: 0.3, tamanhoOrbeTurbo: 4.4, chanceOrbeTurbo: 1.8, quantidadeOrbeTurbo: 1, pontosIniciais: 20, multiplicadorCabeca: 1.15
+                pc: {
+                    espessuraInicial: 6.5, espessuraMaxima: 8.0, comprimentoInicial: 9, comprimentoMaximo: 350,
+                    velocidadeBase: 1.15, velocidadeTurbo: 3.0, velocidadeGiro: 0.053,
+                    distanciaGomos: 0.30, multiplicadorCabeca: 1.15, hitboxMult: 0.85
+                },
+                mobile: {
+                    espessuraInicial: 2.3, espessuraMaxima: 4.0, comprimentoInicial: 11, comprimentoMaximo: 350,
+                    velocidadeBase: 1.30, velocidadeTurbo: 2.8, velocidadeGiro: 0.083,
+                    distanciaGomos: 0.30, multiplicadorCabeca: 1.15, hitboxMult: 0.85
+                },
+                pontosParaEngrossar: 1800, pontosParaCrescer: 1.5, pontosIniciais: 20,
+                turbo: { custo: 0.3, tamanhoOrbe: 4.4, chanceOrbe: 1.8, quantidadeOrbe: 1 },
+                captura: { raioBase: 15, raioMagnet: 220, forcaAtracao: 15 }
             },
             zoom: {
-                pc: { inicial: 3.90, minimo: 1.80, fatorAfastamento: 3.020 },
-                mobile: { inicial: 4.10, minimo: 2.60, fatorAfastamento: 3.020 }
+                pc: { inicial: 3.90, minimo: 2.80, fatorAfastamento: 2.720, velocidadeTransica: 0.04 },
+                mobile: { inicial: 4.10, minimo: 3.60, fatorAfastamento: 2.720, velocidadeTransica: 0.04 }
             },
             mundo: {
-                tamanhoRaio: 5300, forcaAtracao: 15,
-                quantidadeBots: IS_MOBILE_CLIENT ? 150 : 300,
+                tamanhoRaioInicial: 5300, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
+                pc: { quantidadeBots: 300, quantidadeComida: 50000, quantidadeInsetos: 4, corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 },
+                mobile: { quantidadeBots: 150, quantidadeComida: 40000, quantidadeInsetos: 2, corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 },
                 distribuicaoBots: { probabilidades: { pequeno: 0.25, medio: 0.35, grande: 0.25, gigante: 0.15 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
-                quantidadeComida: IS_MOBILE_CLIENT ? 40000 : 50000, quantidadeInsetosDourados: 2,
-                tamanhoComidaMin: 2.60, tamanhoComidaMax: 5.00, tamanhoOrbeMorte: 4.00, tamanhoOrbeMorteBonus: 3.70,
-                pc: { corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 },
-                mobile: { corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 }
+                comida: { tamanhoMin: 2.60, tamanhoMax: 5.00, tamanhoMorte: 4.00, tamanhoMorteBonus: 3.70 }
             },
-            visual: { balancoComida: 100.0, velocidadeAnimacaoComida: 0.004, quantidadeVagalumes: IS_MOBILE_CLIENT ? 0 : 35, distanciaFugaVagalumes: 120, dRender: 550 }
+            powerups: {
+                spawnTimerMin: 600, spawnTimerMax: 900, limiteNoMapa: 4,
+                duracao: { shield: 600, magnet: 540, ghost: 360, mega: 300 }
+            },
+            controles: {
+                mobile: { joystickDeadzone: 8, joystickMaxRadius: 58, lerpFactor: 0.52 }
+            },
+            visual: {
+                balancoComida: 100.0, velocidadeAnimacaoComida: 0.004, vagalumesAtuais: 0,
+                pc: { vagalumes: 35, distanciaFugaVagalumes: 120, dRender: 550 },
+                mobile: { vagalumes: 0, distanciaFugaVagalumes: 120, dRender: 400 }
+            },
+            ai: {
+                intervaloBaseDecisao: { hunter: 3, king: 4, cowards: 7 },
+                distanciaPerigo: 1.8, raioScanMultiplicador: 15
+            }
         };
 
         // DOM MAPPING NOVO UI
@@ -1351,7 +1374,7 @@
             TIERS: { LOW: { dprCap: 0.9, particles: 20, vagalumes: 0, segStep: 12, renderScale: 0.75 }, MEDIUM: { dprCap: 1.2, particles: 60, vagalumes: 8, segStep: 8, renderScale: 0.90 }, HIGH: { dprCap: 1.6, particles: 250, vagalumes: 35, segStep: 4, renderScale: 1.00 } },
             tier: 'HIGH', _framesSinceCheck: 0, _degradeCooldown: 0,
             getCfg() { return this.TIERS[this.tier]; },
-            apply(tier) { this.tier = tier; CONFIG.visual.quantidadeVagalumes = this.TIERS[tier].vagalumes; },
+            apply(tier) { this.tier = tier; CONFIG.visual.vagalumesAtuais = this.TIERS[tier].vagalumes; },
             detect() {
                 let score = 0; const mem = navigator.deviceMemory || 4; if (mem >= 8) score += 2; else if (mem >= 4) score += 1;
                 try { const gl = document.createElement('canvas').getContext('webgl'); if (gl) { const dbg = gl.getExtension('WEBGL_debug_renderer_info'); if (dbg) { const r = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL).toLowerCase(); if (/apple gpu|m[123]|rtx|radeon rx [5-9]|geforce [3-4]/.test(r)) score += 2; else if (/intel|mali-g[567]|adreno [5-9]/.test(r)) score += 1; } } } catch (e) { }
@@ -1374,7 +1397,7 @@
         let lastFrameTime = performance.now(); let frameTimeBuffer = [];
         let lastHudRender = 0; let lastNicknameSave = 0;
 
-        const WORLD_CENTER = CONFIG.mundo.tamanhoRaio; let currentArenaRadius = CONFIG.mundo.tamanhoRaio; let targetArenaRadius = CONFIG.mundo.tamanhoRaio;
+        const WORLD_CENTER = CONFIG.mundo.tamanhoRaioInicial; let currentArenaRadius = CONFIG.mundo.tamanhoRaioInicial; let targetArenaRadius = CONFIG.mundo.tamanhoRaioInicial;
         const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã", "Tempestade", "Veneno"];
         const PALETTE_COLORS = ['#39ff14', '#00ffff', '#ff00ff', '#007bff', '#ff4500', '#ff8800', '#8a2be2', '#ff69b4', '#ffdf00', '#ffffff', '#00ff88', '#7a28cb', '#ff0055'];
 
@@ -1426,17 +1449,18 @@
 
         let snakes = [], foods = [], fireflies = [], particles = [], butterflies = [], powerUps = [], player = null;
         const POWERUP_TYPES = {
-            shield: { emoji: '🛡', color: '#4dd2ff', glow: 'rgba(77,210,255,', duration: 600, name: 'ESCUDO', desc: 'Próxima colisão é absorvida' },
-            magnet: { emoji: '🧲', color: '#ff6bd6', glow: 'rgba(255,107,214,', duration: 540, name: 'ÍMAN', desc: 'Atrai orbes próximos' },
-            ghost: { emoji: '👻', color: '#b9a4ff', glow: 'rgba(185,164,255,', duration: 360, name: 'FANTASMA', desc: 'Atravessa cobras' },
-            mega: { emoji: '⚡', color: '#ffe14a', glow: 'rgba(255,225,74,', duration: 300, name: 'MEGA-BOOST', desc: 'Velocidade + sem custo' }
+            shield: { emoji: '🛡', color: '#4dd2ff', glow: 'rgba(77,210,255,', duration: CONFIG.powerups.duracao.shield, name: 'ESCUDO', desc: 'Próxima colisão é absorvida' },
+            magnet: { emoji: '🧲', color: '#ff6bd6', glow: 'rgba(255,107,214,', duration: CONFIG.powerups.duracao.magnet, name: 'ÍMAN', desc: 'Atrai orbes próximos' },
+            ghost: { emoji: '👻', color: '#b9a4ff', glow: 'rgba(185,164,255,', duration: CONFIG.powerups.duracao.ghost, name: 'FANTASMA', desc: 'Atravessa cobras' },
+            mega: { emoji: '⚡', color: '#ffe14a', glow: 'rgba(255,225,74,', duration: CONFIG.powerups.duracao.mega, name: 'MEGA-BOOST', desc: 'Velocidade + sem custo' }
         };
         const POWERUP_KEYS = Object.keys(POWERUP_TYPES);
-        let powerUpSpawnTimer = 600 + Math.floor(Math.random() * 600);
+        let powerUpSpawnTimer = CONFIG.powerups.spawnTimerMin + Math.floor(Math.random() * (CONFIG.powerups.spawnTimerMax - CONFIG.powerups.spawnTimerMin));
 
         let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 1, shake: 0 };
         let mouseX = 0, mouseY = 0, isMouseDown = false, frameCount = 0, playerKills = 0, gameState = 'menu';
-        let joystickActive = false, joystickAngle = 0, smoothedJoystickAngle = 0; const JOYSTICK_LERP_FACTOR = 0.52;
+        let joystickActive = false, joystickAngle = 0, smoothedJoystickAngle = 0;
+        const JOYSTICK_LERP_FACTOR = CONFIG.controles.mobile.lerpFactor;
         let vpWidth = window.innerWidth, vpHeight = window.innerHeight, dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, PerformanceManager.getCfg().dprCap) : (window.devicePixelRatio || 1);
 
         const FOOD_CELL_SIZE = 200; let foodGrid = new Map();
@@ -1460,8 +1484,11 @@
 
         const ParticlePool = { pool: [], get: function (x, y, color, s) { let p; if (this.pool.length > 0) { p = this.pool.pop(); p.init(x, y, color, s); } else { p = new Particle(x, y, color, s); } return p; }, recycle: function (p) { if (this.pool.length < 500) this.pool.push(p); } };
         function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2)); for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2)); }
-        function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(15, 600); let weight = Math.pow(Math.random(), 2.8); let size = CONFIG.mundo.tamanhoComidaMin + weight * (CONFIG.mundo.tamanhoComidaMax - CONFIG.mundo.tamanhoComidaMin); foods.push(new Food(p.x, p.y, size, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)], 0, size)); } }
+        function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(15, 600); let weight = Math.pow(Math.random(), 2.8); let size = CONFIG.mundo.comida.tamanhoMin + weight * (CONFIG.mundo.comida.tamanhoMax - CONFIG.mundo.comida.tamanhoMin); foods.push(new Food(p.x, p.y, size, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)], 0, size)); } }
 
+        // ======================================================================
+        // OTIMIZAÇÃO GRÁFICA & ORBES SLITHER.IO
+        // ======================================================================
         const TextureManager = {
             cache: {},
             getSegment: function (color, isHead = false) {
@@ -1508,6 +1535,7 @@
                 g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.5, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.45)'); cx.fillStyle = g; cx.fillRect(0, 0, c.width, c.height);
                 this.cache[key] = c; return c;
             },
+            // NOVAS ORBES OTIMIZADAS ESTILO SLITHER.IO
             getMapOrb: function (color) {
                 let key = 'slitherOrb_' + color; if (this.cache[key]) return this.cache[key];
                 let baseColor = color.split('-')[0];
@@ -1568,6 +1596,9 @@
             ctx.restore();
         }
 
+        // ======================================================================
+        // ADEREÇOS FLAT/NEON (ALTA PERFORMANCE)
+        // ======================================================================
         function drawAccessory(ctx, x, y, r, angle, accId) {
             if (!accId) return;
             const t = performance.now() * 0.001; const mob = IS_MOBILE_CLIENT; const hQ = APP_SETTINGS.highGfx;
@@ -1715,10 +1746,10 @@
         class Particle { constructor(x, y, color, s) { this.init(x, y, color, s); } init(x, y, color, s) { this.x = x; this.y = y; this.color = color; let a = Math.random() * Math.PI * 2, speed = s * (0.7 + Math.random() * 0.6); this.vx = Math.cos(a) * speed; this.vy = Math.sin(a) * speed; this.vy -= Math.random() * s * 0.4; this.gravity = 0.04 + Math.random() * 0.06; this.life = 1.0; this.decay = 0.018 + Math.random() * 0.022; this.size = 2.5 + Math.random() * 3.5; this.dead = false; this.shape = Math.random() < 0.3 ? 1 : 0; this.rot = Math.random() * Math.PI; } update() { this.x += this.vx; this.y += this.vy; this.vy += this.gravity; this.vx *= 0.98; this.life -= this.decay; if (this.life <= 0) this.dead = true; } draw(ctx) { if (this.life <= 0) return; ctx.globalAlpha = Math.max(0, this.life * this.life); ctx.fillStyle = this.color; const r = this.size * this.life; if (this.shape === 1 && !IS_MOBILE_CLIENT) { ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rot + this.life * 3); ctx.fillRect(-r, -r, r * 2, r * 2); ctx.restore(); } else { ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.fill(); } ctx.globalAlpha = 1; } }
         class Food { constructor(x, y, r, c, type = 0, eV = 2) { this.x = x; this.y = y; this.radius = r; this.color = c; this.type = type; this.value = eV; this.wO = Math.random() * Math.PI * 2; this.wX = Math.random() * Math.PI * 2; this.wY = Math.random() * Math.PI * 2; this.dead = false; this.attractSpeed = 0; this.life = 1.0; this.isDropped = (type === 1 || type === 2); } draw(ctx, time, zoom) { let invZoom = Math.pow(1 / zoom, 0.7); let scaleMult = Math.max(0.65, Math.min(invZoom, 3.0)); let r = this.radius * scaleMult; let isLOD = (r < 2.5 || zoom < 0.5); let driftX = 0, driftY = 0, pulse = 1.0; if (!isLOD) { if (this.type === 0) { pulse = 1.0 + Math.sin(time * CONFIG.visual.velocidadeAnimacaoComida + this.wO) * 0.12; driftX = Math.sin(time * 0.0012 + this.wX) * 3; driftY = Math.cos(time * 0.0015 + this.wY) * 2; } else if (this.type === 1) { pulse = 1.0 + Math.sin(time * 0.015 + this.wO) * 0.20; driftX = Math.sin(time * 0.002 + this.wX) * 1.5; driftY = Math.cos(time * 0.002 + this.wY) * 1.5; } } r *= pulse; if (this.type === 2) r *= this.life; let img; if (this.type === 0) img = TextureManager.getMapOrb(this.color); else if (this.type === 1) img = TextureManager.getDeathOrb(this.color); else img = TextureManager.getBoostOrb(this.color); if (this.type === 2) ctx.globalAlpha = this.life; ctx.drawImage(img, (this.x + driftX) - r, (this.y + driftY) - r, r * 2, r * 2); if (this.type === 2) ctx.globalAlpha = 1.0; } }
         class Butterfly { constructor(x, y) { let rnd = Math.random(); if (rnd < 0.70) { this.color = '#ffdf00'; this.glowColor = 'rgba(255,220,0,'; this.value = 150; this.rarity = 'common'; } else if (rnd < 0.90) { this.color = '#00ffaa'; this.glowColor = 'rgba(0,255,150,'; this.value = 350; this.rarity = 'rare'; } else { this.color = '#cc44ff'; this.glowColor = 'rgba(180,50,255,'; this.value = 600; this.rarity = 'epic'; } this.x = x; this.y = y; this.radius = this.rarity === 'epic' ? 12 : this.rarity === 'rare' ? 10 : 9; this.angle = Math.random() * Math.PI * 2; this.speed = 1.8; this.targetSpeed = 1.8; this.wO = Math.random() * Math.PI * 2; this.isFleeing = false; this.trailPoints = []; this.phase = Math.random() * Math.PI * 2; } update() { let nearest = null, minDist = 450; for (let s of snakes) { if (!s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < minDist) { minDist = d; nearest = s; } } if (nearest && minDist < 300) { let evadeAngle = Math.atan2(this.y - nearest.y, this.x - nearest.x); let diff = evadeAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2; this.angle += diff * 0.15; this.targetSpeed = 6.5; this.isFleeing = true; } else { this.angle += Math.sin(performance.now() * 0.002 + this.phase) * 0.05 + (Math.random() - 0.5) * 0.1; this.targetSpeed = 1.8 + Math.sin(performance.now() * 0.005 + this.phase) * 0.5; this.isFleeing = false; } this.speed += (this.targetSpeed - this.speed) * 0.1; this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; if (!IS_MOBILE_CLIENT && (this.isFleeing || APP_SETTINGS.highGfx)) { if (frameCount % 2 === 0) this.trailPoints.push({ x: this.x, y: this.y, life: 1.0, size: Math.random() * 3 + 1 }); } for (let i = this.trailPoints.length - 1; i >= 0; i--) { this.trailPoints[i].life -= 0.04; if (this.trailPoints[i].life <= 0) this.trailPoints.splice(i, 1); } if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > currentArenaRadius - 150) { this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); } } draw(ctx, time) { if (IS_MOBILE_CLIENT) { ctx.globalAlpha = 0.5; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 0.35, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; return; } for (let t of this.trailPoints) { ctx.globalAlpha = t.life * 0.6; ctx.fillStyle = this.color; ctx.beginPath(); if (this.rarity === 'epic' && Math.random() > 0.5) { let s = t.size * t.life; ctx.moveTo(t.x, t.y - s); ctx.lineTo(t.x + s / 2, t.y - s / 2); ctx.lineTo(t.x + s, t.y); ctx.lineTo(t.x + s / 2, t.y + s / 2); ctx.lineTo(t.x, t.y + s); ctx.lineTo(t.x - s / 2, t.y + s / 2); ctx.lineTo(t.x - s, t.y); ctx.lineTo(t.x - s / 2, t.y - s / 2); } else { ctx.arc(t.x, t.y, t.size * t.life, 0, Math.PI * 2); } ctx.fill(); } ctx.globalAlpha = 1; ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle + Math.PI / 2); let flap = Math.sin(time * 0.015); let flapScale = 0.3 + Math.abs(flap) * 0.7; let g = ctx.createRadialGradient(0, 0, 0, 0, 0, this.radius * 3); g.addColorStop(0, this.glowColor + '0.4)'); g.addColorStop(1, this.glowColor + '0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, this.radius * 3, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 1.5; ctx.lineJoin = 'round'; ctx.save(); ctx.scale(flapScale, 1); this.drawWing(ctx, -1, this.color); ctx.restore(); ctx.save(); ctx.scale(flapScale, 1); this.drawWing(ctx, 1, this.color); ctx.restore(); let bodyG = ctx.createLinearGradient(0, -this.radius, 0, this.radius); bodyG.addColorStop(0, '#111'); bodyG.addColorStop(0.5, '#333'); bodyG.addColorStop(1, '#000'); ctx.fillStyle = bodyG; ctx.beginPath(); ctx.ellipse(0, 0, this.radius * 0.2, this.radius * 1.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#555'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-1, -this.radius * 0.8); ctx.quadraticCurveTo(-4, -this.radius * 1.8, -2, -this.radius * 2.2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(1, -this.radius * 0.8); ctx.quadraticCurveTo(4, -this.radius * 1.8, 2, -this.radius * 2.2); ctx.stroke(); ctx.restore(); } drawWing(ctx, side, color) { ctx.fillStyle = color; ctx.strokeStyle = shadeColor(color, -60); ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(side * this.radius * 3, -this.radius * 2, side * this.radius * 4, this.radius, 0, this.radius * 0.5); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, this.radius * 0.3); ctx.bezierCurveTo(side * this.radius * 2.5, this.radius * 0.5, side * this.radius * 3, this.radius * 2.5, 0, this.radius * 1.2); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 0.3; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(side * this.radius * 1.5, -this.radius * 0.5, this.radius * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(side * this.radius * 1.2, this.radius * 0.8, this.radius * 0.3, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; } }
-        class Firefly { constructor() { let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * 2 * Math.PI; this.x = WORLD_CENTER + r * Math.cos(t); this.y = WORLD_CENTER + r * Math.sin(t); this.radius = 1.5 + Math.random() * 2; this.angle = Math.random() * Math.PI * 2; this.speed = 1.0; this.targetSpeed = 1.0; this.offset = Math.random() * Math.PI * 2; this.blinkSpeed = 0.002 + Math.random() * 0.005; let colorRnd = Math.random(); if (colorRnd < 0.55) { this.color = '255,255,255'; } else if (colorRnd < 0.82) { this.color = '140,220,255'; } else { this.color = '180,255,140'; } } update() { if (IS_MOBILE_CLIENT && frameCount % 3 !== 0) { this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; return; } let dX = 0, dY = 0, count = 0; for (let s of snakes) { if (!s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < CONFIG.visual.distanciaFugaVagalumes) { dX += s.x; dY += s.y; count++; } } if (count > 0) { let away = Math.atan2(this.y - (dY / count), this.x - (dX / count)); let diff = away - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2; this.angle += diff * 0.15; this.targetSpeed = 4.5; } else { this.angle += (Math.random() - 0.5) * 0.1; this.targetSpeed = 1.2; } this.speed += (this.targetSpeed - this.speed) * 0.08; this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > currentArenaRadius) this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); } draw(ctx, time) { let blink = Math.sin(time * this.blinkSpeed + this.offset); let brightness = Math.max(0, blink); if (brightness < 0.05) return; let cR = Math.max(0.8, this.radius * (0.6 + brightness * 0.8)); if (IS_MOBILE_CLIENT) { ctx.globalAlpha = 0.4 + brightness * 0.6; ctx.fillStyle = `rgb(${this.color})`; ctx.beginPath(); ctx.arc(this.x, this.y, cR * 1.2, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; return; } let g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, cR * 5); g.addColorStop(0, `rgba(${this.color},${brightness * 0.5})`); g.addColorStop(1, `rgba(${this.color},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, cR * 5, 0, Math.PI * 2); ctx.fill(); ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); ctx.globalAlpha = 0.5 + brightness * 0.5; ctx.fillStyle = `rgb(${this.color})`; ctx.beginPath(); ctx.ellipse(0, 0, cR * 1.4, cR * 0.8, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = `rgba(255,255,255,${brightness * 0.9})`; ctx.beginPath(); ctx.arc(0, 0, cR * 0.45, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; ctx.restore(); } }
+        class Firefly { constructor() { let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * 2 * Math.PI; this.x = WORLD_CENTER + r * Math.cos(t); this.y = WORLD_CENTER + r * Math.sin(t); this.radius = 1.5 + Math.random() * 2; this.angle = Math.random() * Math.PI * 2; this.speed = 1.0; this.targetSpeed = 1.0; this.offset = Math.random() * Math.PI * 2; this.blinkSpeed = 0.002 + Math.random() * 0.005; let colorRnd = Math.random(); if (colorRnd < 0.55) { this.color = '255,255,255'; } else if (colorRnd < 0.82) { this.color = '140,220,255'; } else { this.color = '180,255,140'; } } update() { if (IS_MOBILE_CLIENT && frameCount % 3 !== 0) { this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; return; } let dX = 0, dY = 0, count = 0; for (let s of snakes) { if (!s.alive) continue; let d = Math.hypot(s.x - this.x, s.y - this.y); if (d < CONFIG.visual[IS_MOBILE_CLIENT ? 'mobile' : 'pc'].distanciaFugaVagalumes) { dX += s.x; dY += s.y; count++; } } if (count > 0) { let away = Math.atan2(this.y - (dY / count), this.x - (dX / count)); let diff = away - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2; this.angle += diff * 0.15; this.targetSpeed = 4.5; } else { this.angle += (Math.random() - 0.5) * 0.1; this.targetSpeed = 1.2; } this.speed += (this.targetSpeed - this.speed) * 0.08; this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > currentArenaRadius) this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); } draw(ctx, time) { let blink = Math.sin(time * this.blinkSpeed + this.offset); let brightness = Math.max(0, blink); if (brightness < 0.05) return; let cR = Math.max(0.8, this.radius * (0.6 + brightness * 0.8)); if (IS_MOBILE_CLIENT) { ctx.globalAlpha = 0.4 + brightness * 0.6; ctx.fillStyle = `rgb(${this.color})`; ctx.beginPath(); ctx.arc(this.x, this.y, cR * 1.2, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; return; } let g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, cR * 5); g.addColorStop(0, `rgba(${this.color},${brightness * 0.5})`); g.addColorStop(1, `rgba(${this.color},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, cR * 5, 0, Math.PI * 2); ctx.fill(); ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle); ctx.globalAlpha = 0.5 + brightness * 0.5; ctx.fillStyle = `rgb(${this.color})`; ctx.beginPath(); ctx.ellipse(0, 0, cR * 1.4, cR * 0.8, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = `rgba(255,255,255,${brightness * 0.9})`; ctx.beginPath(); ctx.arc(0, 0, cR * 0.45, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; ctx.restore(); } }
         class PowerUp { constructor(x, y, type) { this.x = x; this.y = y; this.type = type; this.cfg = POWERUP_TYPES[type]; this.radius = 18; this.dead = false; this.bornAt = performance.now(); this.life = 60 * 35; this.wO = Math.random() * Math.PI * 2; } update() { this.life--; if (this.life <= 0) this.dead = true; } draw(ctx, time, zoom) { let invZoom = Math.pow(1 / zoom, 0.7); let scaleMult = Math.max(0.85, Math.min(invZoom, 2.6)); let pulse = 1.0 + Math.sin(time * 0.005 + this.wO) * 0.18; let r = this.radius * scaleMult * pulse; let alpha = this.life < 180 ? (Math.sin(this.life * 0.3) * 0.5 + 0.5) : 1; ctx.save(); ctx.globalAlpha = alpha; let halo = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r * 3.2); halo.addColorStop(0, this.cfg.glow + '0.55)'); halo.addColorStop(0.5, this.cfg.glow + '0.15)'); halo.addColorStop(1, this.cfg.glow + '0)'); ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(this.x, this.y, r * 3.2, 0, Math.PI * 2); ctx.fill(); let ringRot = time * 0.002; ctx.strokeStyle = this.cfg.color; ctx.lineWidth = 2.5; ctx.setLineDash([r * 0.5, r * 0.3]); ctx.lineDashOffset = -ringRot * 50; ctx.beginPath(); ctx.arc(this.x, this.y, r * 1.4, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); let core = ctx.createRadialGradient(this.x - r * 0.3, this.y - r * 0.3, 0, this.x, this.y, r); core.addColorStop(0, '#fff'); core.addColorStop(0.4, this.cfg.color); core.addColorStop(1, this.cfg.glow + '0.2)'); ctx.fillStyle = core; ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.fill(); ctx.font = `${Math.floor(r * 1.25)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(this.cfg.emoji, this.x, this.y + r * 0.05); ctx.restore(); } }
 
-        function spawnPowerUp() { if (powerUps.length >= 4) return; let pos = getRandomPosInCircle(200); let type = POWERUP_KEYS[Math.floor(Math.random() * POWERUP_KEYS.length)]; powerUps.push(new PowerUp(pos.x, pos.y, type)); }
+        function spawnPowerUp() { if (powerUps.length >= CONFIG.powerups.limiteNoMapa) return; let pos = getRandomPosInCircle(200); let type = POWERUP_KEYS[Math.floor(Math.random() * POWERUP_KEYS.length)]; powerUps.push(new PowerUp(pos.x, pos.y, type)); }
         function applyPowerUp(snake, type) { if (!snake || !snake.alive) return; const cfg = POWERUP_TYPES[type]; snake.activePowers = snake.activePowers || {}; snake.activePowers[type] = cfg.duration; if (snake.isPlayer) { createExplosion(snake.x, snake.y, cfg.color, 20); AudioSys.play('eat'); Haptic.medium(); } }
 
         class Snake {
@@ -1730,7 +1761,7 @@
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
                 this.segments = []; this.trails = []; this.eatTimer = 0; this.tongueTime = 0;
-                let spc = this.conf.espessuraInicial * CONFIG.cobra.distanciaGomos;
+                let spc = this.conf.espessuraInicial * this.conf.distanciaGomos;
                 for (let i = 0; i < this.targetLength; i++) { this.segments.push({ x: x - Math.cos(this.angle) * spc * i, y: y - Math.sin(this.angle) * spc * i }); }
             }
             updateAI() {
@@ -1740,16 +1771,17 @@
                     this.aiReactionDelay = Math.floor(Math.random() * 2); this.aiAggression = 0.58 + Math.random() * 0.42; this.aiRiskTolerance = 0.38 + Math.random() * 0.48; this.aiMicroError = 0.012 + Math.random() * 0.025; this.aiGreed = 0.68 + Math.random() * 0.32; this.aiDecisionTimer = 0; this.aiEncirclePhase = 0; this.aiEncircleTarget = null; this.aiLastDodgeFrame = -999; this.aiBoostCooldown = 0; this.aiTrauma = 0; this.aiConfidence = 0; this.aiHomeX = this.x; this.aiHomeY = this.y; this.aiTerritoryRadius = 900 + Math.random() * 700; this.aiWanderAngle = Math.random() * Math.PI * 2;
                 }
                 if (this.isKing) this.aiPersonality = 2; if (this.aiBoostCooldown > 0) this.aiBoostCooldown--;
-                if (frameCount % 30 === 0) { this.aiConfidence = Math.min(1.0, this.score / 2000); if (this.aiTrauma > 0) this.aiTrauma = Math.max(0, this.aiTrauma - (0.03 + this.aiConfidence * 0.04)); this.aiReactionDelay = Math.max(0, Math.floor(3 - this.aiConfidence * 3)); this.aiMicroError = Math.max(0.005, 0.03 - this.aiConfidence * 0.025); }
+                if (frameCount % 30 === 0) { this.aiConfidence = Math.min(1.0, this.score / 2000); if (this.aiTrauma > 0) this.aiTrauma = Math.max(0, this.aiTrauma - (0.03 + this.aiConfidence * 0.04)); this.aiReactionDelay = 0; this.aiMicroError = Math.max(0.001, 0.01 - this.aiConfidence * 0.01); }
 
-                let danger = false, evadeAngle = 0, dangerUrgency = 0, dangerSnake = null; let scanRadius = this.radius * (10 + this.aiConfidence * 6 + this.aiTrauma * 4);
+                let danger = false, evadeAngle = 0, dangerUrgency = 0, dangerSnake = null;
+                let scanRadius = this.radius * (CONFIG.ai.raioScanMultiplicador + this.aiConfidence * 6 + this.aiTrauma * 4);
 
                 {
-                    let spc = this.conf.espessuraInicial * CONFIG.cobra.distanciaGomos; let skipSegs = Math.max(10, Math.ceil(this.radius * 3.5 / Math.max(0.1, spc))); let selfR = this.isBoosting ? this.radius * 22 : this.radius * 11;
+                    let spc = this.conf.espessuraInicial * this.conf.distanciaGomos; let skipSegs = Math.max(10, Math.ceil(this.radius * 3.5 / Math.max(0.1, spc))); let selfR = this.isBoosting ? this.radius * 22 : this.radius * 11;
                     for (let k = skipSegs; k < this.segments.length; k += 2) {
                         let seg = this.segments[k]; let ds = Math.hypot(seg.x - this.x, seg.y - this.y); if (ds > selfR) break;
                         let ats = Math.atan2(seg.y - this.y, seg.x - this.x); let ad = ats - this.angle; while (ad > Math.PI) ad -= Math.PI * 2; while (ad < -Math.PI) ad += Math.PI * 2;
-                        if (Math.abs(ad) < 1.6) { danger = true; dangerUrgency = Math.min(1.0, 0.75 + 0.25 * (1 - ds / selfR)); evadeAngle = ad < 0 ? this.angle + Math.PI * 0.55 : this.angle - Math.PI * 0.55; this.isBoosting = false; break; }
+                        if (Math.abs(ad) < CONFIG.ai.distanciaPerigo) { danger = true; dangerUrgency = Math.min(1.0, 0.75 + 0.25 * (1 - ds / selfR)); evadeAngle = ad < 0 ? this.angle + Math.PI * 0.55 : this.angle - Math.PI * 0.55; this.isBoosting = false; break; }
                     }
                 }
 
@@ -1761,7 +1793,7 @@
                         let seg = other.segments[k]; let ds = Math.hypot(seg.x - this.x, seg.y - this.y); let hitZone = this.radius * 4.5 + this.aiConfidence * this.radius * 2;
                         if (ds < hitZone) {
                             let angleToSeg = Math.atan2(seg.y - this.y, seg.x - this.x); let angleDiff = angleToSeg - this.angle; while (angleDiff > Math.PI) angleDiff -= Math.PI * 2; while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-                            if (Math.abs(angleDiff) < 1.6) {
+                            if (Math.abs(angleDiff) < CONFIG.ai.distanciaPerigo) {
                                 danger = true; dangerSnake = other; dangerUrgency = Math.max(dangerUrgency, 1 - (ds / hitZone)); evadeAngle = Math.atan2(this.y - seg.y, this.x - seg.x);
                                 let left = evadeAngle + Math.PI * 0.5; let right = evadeAngle - Math.PI * 0.5; let clearL = true, clearR = true; let probeLen = this.radius * 8;
                                 for (let os of snakes) {
@@ -1780,15 +1812,15 @@
                     if (canReact) {
                         this.aiLastDodgeFrame = frameCount; let err = (Math.random() - 0.5) * this.aiMicroError * (1 - dangerUrgency); let finalAngle = evadeAngle + err;
                         let canCounterAttack = (this.aiPersonality !== 1 && this.aiPersonality !== 4);
-                        if (canCounterAttack && dangerSnake && this.score > dangerSnake.score * 1.8 && this.aiConfidence > 0.4 && this.aiTrauma < 0.3 && Math.random() < 0.4) {
+                        if (canCounterAttack && dangerSnake && this.score > dangerSnake.score * 1.5 && this.aiConfidence > 0.3 && this.aiTrauma < 0.4 && Math.random() < 0.6) {
                             let cutAngle = Math.atan2(dangerSnake.y - this.y, dangerSnake.x - this.x); let perpAngle = dangerSnake.angle + Math.PI * 0.5 * (Math.random() > 0.5 ? 1 : -1); finalAngle = cutAngle + (perpAngle - cutAngle) * 0.3; this.isBoosting = this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 15;
-                        } else { this.isBoosting = dangerUrgency > 0.4 && this.aiBoostCooldown === 0 && this.score > 100; if (this.isBoosting) this.aiBoostCooldown = 20 + Math.floor(Math.random() * 20); }
+                        } else { this.isBoosting = dangerUrgency > 0.25 && this.aiBoostCooldown === 0 && this.score > 30; if (this.isBoosting) this.aiBoostCooldown = 15 + Math.floor(Math.random() * 15); }
                         this.targetAngle = finalAngle; this.aiEncirclePhase = 0;
                     } return;
                 }
 
                 this.aiDecisionTimer--; if (this.aiDecisionTimer > 0) return; this.isBoosting = false;
-                let baseInterval = this.aiPersonality === 0 ? 6 : this.aiPersonality === 2 ? 7 : 12; this.aiDecisionTimer = baseInterval + Math.floor(Math.random() * 10);
+                let baseInterval = this.aiPersonality === 0 ? CONFIG.ai.intervaloBaseDecisao.hunter : this.aiPersonality === 2 ? CONFIG.ai.intervaloBaseDecisao.king : CONFIG.ai.intervaloBaseDecisao.cowards; this.aiDecisionTimer = baseInterval + Math.floor(Math.random() * 10);
                 let distToCenter = Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER);
                 if (distToCenter > currentArenaRadius - 600) { this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x) + (Math.random() - 0.5) * 0.3; this.isBoosting = distToCenter > currentArenaRadius - 300 && this.aiBoostCooldown === 0; if (this.isBoosting) this.aiBoostCooldown = 10; return; }
 
@@ -1859,9 +1891,9 @@
                 if (hasMega || (this.isBoosting && this.score > 30)) {
                     this.speed = hasMega ? this.conf.velocidadeTurbo * 1.18 : this.conf.velocidadeTurbo;
                     if (frameCount % 2 === 0 && APP_SETTINGS.highGfx) this.trails.push({ x: this.segments[0].x, y: this.segments[0].y, life: 1.0 });
-                    if (!hasMega && Math.random() < CONFIG.cobra.chanceOrbeTurbo) {
-                        this.score -= CONFIG.cobra.custoDoTurbo; let t = this.segments[this.segments.length - 1];
-                        for (let q = 0; q < CONFIG.cobra.quantidadeOrbeTurbo; q++) foods.push(new Food(t.x + (Math.random() * 14 - 7), t.y + (Math.random() * 14 - 7), CONFIG.cobra.tamanhoOrbeTurbo, this.skin[this.segments.length % this.skin.length], 2, CONFIG.cobra.custoDoTurbo));
+                    if (!hasMega && Math.random() < CONFIG.cobra.turbo.chanceOrbe) {
+                        this.score -= CONFIG.cobra.turbo.custo; let t = this.segments[this.segments.length - 1];
+                        for (let q = 0; q < CONFIG.cobra.turbo.quantidadeOrbe; q++) foods.push(new Food(t.x + (Math.random() * 14 - 7), t.y + (Math.random() * 14 - 7), CONFIG.cobra.turbo.tamanhoOrbe, this.skin[this.segments.length % this.skin.length], 2, CONFIG.cobra.turbo.custo));
                     }
                 } else { this.speed = this.conf.velocidadeBase; this.isBoosting = false; }
 
@@ -1892,11 +1924,11 @@
                 if (this.eatTimer > 0) this.eatTimer--;
                 if (Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER) > currentArenaRadius) { this.die(false); return; }
 
-                let pX = this.x, pY = this.y, spc = this.radius * CONFIG.cobra.distanciaGomos;
+                let pX = this.x, pY = this.y, spc = this.radius * this.conf.distanciaGomos;
                 for (let i = 0; i < this.segments.length; i++) { let s = this.segments[i], dx = pX - s.x, dy = pY - s.y, d = Math.sqrt(dx * dx + dy * dy); if (d > spc) { let mv = d - spc; s.x += (dx / d) * mv; s.y += (dy / d) * mv; } pX = s.x; pY = s.y; }
 
-                let eatRadius = Math.max(CONFIG.mundo.forcaAtracao, this.radius + 15);
-                if (hasMagnet) eatRadius = Math.max(eatRadius, 220);
+                let eatRadius = Math.max(CONFIG.cobra.captura.forcaAtracao, this.radius + CONFIG.cobra.captura.raioBase);
+                if (hasMagnet) eatRadius = Math.max(eatRadius, CONFIG.cobra.captura.raioMagnet);
                 let eatRadiusSq = eatRadius * eatRadius;
                 let nearFoodIdx = getNearbyFoodIndices(this.x, this.y, eatRadius);
                 for (let i of nearFoodIdx) {
@@ -1930,7 +1962,7 @@
                         DOM.inGameHud.classList.add('hidden');
                     }, 1500);
                 }
-                if (dropFood) { let step = 3, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num; for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; let rSize = CONFIG.mundo.tamanhoOrbeMorte + Math.min(CONFIG.mundo.tamanhoOrbeMorteBonus, val / 30); foods.push(new Food(s.x + (Math.random() * 6 - 3), s.y + (Math.random() * 6 - 3), rSize, this.skin[i % this.skin.length], 1, val)); } }
+                if (dropFood) { let step = 3, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num; for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; let rSize = CONFIG.mundo.comida.tamanhoMorte + Math.min(CONFIG.mundo.comida.tamanhoMorteBonus, val / 30); foods.push(new Food(s.x + (Math.random() * 6 - 3), s.y + (Math.random() * 6 - 3), rSize, this.skin[i % this.skin.length], 1, val)); } }
             }
             draw(ctx) {
                 if (!this.alive) return;
@@ -1977,7 +2009,7 @@
                     ctx.moveTo(seg.x + r + 1.5, seg.y); ctx.arc(seg.x, seg.y, r + 1.5, 0, Math.PI * 2);
                 } ctx.fill();
 
-                let cabecaMult = CONFIG.cobra.multiplicadorCabeca || 1.15;
+                let cabecaMult = this.conf.multiplicadorCabeca || 1.15;
                 ctx.beginPath(); ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle);
                 if (ctx.ellipse) ctx.ellipse(0, 0, headR * cabecaMult + 1.2, headR + 1.2, 0, 0, Math.PI * 2); else ctx.arc(0, 0, headR + 1.2, 0, Math.PI * 2);
                 ctx.fillStyle = hasGlow ? this.mainColor + '88' : 'rgba(0, 0, 0, 0.25)'; ctx.fill(); ctx.restore();
@@ -2084,7 +2116,7 @@
             const ctx = canvas.getContext('2d');
             const w = canvas.width = canvas.parentElement.clientWidth; const h = canvas.height = canvas.parentElement.clientHeight;
             ctx.clearRect(0, 0, w, h); galleryPreviewTime += 0.045;
-            const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.multiplicadorCabeca || 1.05;
+            const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
             const segR = h * 0.20; const spacing = segR * 0.30; const headX = w * 0.80; const centerY = h / 2;
             const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
             for (let i = 0; i <= segCount; i++) { const wave = Math.sin(galleryPreviewTime - i * 0.18) * (segR * 0.72); segs.push({ x: headX - i * spacing, y: centerY + wave }); }
@@ -2117,7 +2149,7 @@
             const ctx = canvas.getContext('2d');
             const w = canvas.width = canvas.parentElement.clientWidth; const h = canvas.height = canvas.parentElement.clientHeight;
             ctx.clearRect(0, 0, w, h); accPreviewTime += 0.04;
-            const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.multiplicadorCabeca || 1.05;
+            const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
             const segR = h * 0.25; const spacing = segR * 0.30; const headX = w * 0.50; const cy = h * 0.50;
             const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
             for (let i = 0; i <= segCount; i++) { const wave = Math.sin(accPreviewTime - i * 0.22) * (segR * 0.7); segs.push({ x: headX - i * spacing, y: cy + wave }); }
@@ -2175,10 +2207,10 @@
             try { const d = document.documentElement; if (d.requestFullscreen) await d.requestFullscreen(); else if (d.webkitRequestFullscreen) await d.webkitRequestFullscreen(); if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape').catch(() => { }); } catch (e) { }
 
             if (player) { let idx = snakes.indexOf(player); if (idx > -1) snakes.splice(idx, 1); }
-            playerKills = 0; currentEvo = -1; powerUps = []; powerUpSpawnTimer = 60 * 25;
+            playerKills = 0; currentEvo = -1; powerUps = []; powerUpSpawnTimer = CONFIG.powerups.spawnTimerMin + Math.floor(Math.random() * (CONFIG.powerups.spawnTimerMax - CONFIG.powerups.spawnTimerMin));
             const puHud = document.getElementById('powerup-hud'); if (puHud) puHud.innerHTML = '';
 
-            const spawn = getSafeSpawnPos(1200);
+            const spawn = getSafeSpawnPos(CONFIG.mundo.distanciaSeguraSpawn);
             player = new Snake(spawn.x, spawn.y, DOM.nick.value.trim() || "LENDA", skinIndex, true, CONFIG.cobra.pontosIniciais, ACCESSORIES[accIndex].id);
             player.activePowers = {}; snakes.push(player);
 
@@ -2206,29 +2238,31 @@
                 const camLerp = player.isBoosting ? 0.14 : 0.10;
                 camera.x += (player.x - camera.x) * camLerp; camera.y += (player.y - camera.y) * camLerp;
                 let isBoostingNow = player.isBoosting && player.score > 30; if (isBoostingNow && frameCount % 10 === 0) camera.shake = Math.max(camera.shake, 1.5);
-                let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc']; let sizeZoom = Math.max(zV.minimo, zV.inicial - (player.radius - (IS_MOBILE_CLIENT ? CONFIG.cobra.mobile.espessuraInicial : CONFIG.cobra.pc.espessuraInicial)) * CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc'].fatorAfastamento);
-                let turboZoomMult = isBoostingNow ? 0.82 : 1.0; let targetZoom = sizeZoom * turboZoomMult; camera.zoom += (targetZoom - camera.zoom) * 0.04;
+                let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc']; let sizeZoom = Math.max(zV.minimo, zV.inicial - (player.radius - (IS_MOBILE_CLIENT ? CONFIG.cobra.mobile.espessuraInicial : CONFIG.cobra.pc.espessuraInicial)) * zV.fatorAfastamento);
+                let turboZoomMult = isBoostingNow ? 0.82 : 1.0; let targetZoom = sizeZoom * turboZoomMult; camera.zoom += (targetZoom - camera.zoom) * zV.velocidadeTransica;
             } else if (gameState === 'menu') {
                 camera.x = WORLD_CENTER + Math.cos(time * 0.0001) * 1500; camera.y = WORLD_CENTER + Math.sin(time * 0.0001) * 1500; camera.zoom = 0.55;
             }
 
-            if (snakes.filter(s => s.alive).length < CONFIG.mundo.quantidadeBots) {
+            let cfgMundo = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
+
+            if (snakes.filter(s => s.alive).length < cfgMundo.quantidadeBots) {
                 let sI = Math.floor(Math.random() * SKINS.length); let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0;
                 snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], sI, false, CONFIG.cobra.pontosIniciais, aI));
             }
 
             const totalScoreOnMap = snakes.reduce((sum, s) => sum + (s.alive ? s.score : 0), 0);
-            targetArenaRadius = CONFIG.mundo.tamanhoRaio + (totalScoreOnMap / 28); currentArenaRadius += (targetArenaRadius - currentArenaRadius) * 0.005;
+            targetArenaRadius = CONFIG.mundo.tamanhoRaioInicial + (totalScoreOnMap / CONFIG.mundo.expansaoPorPonto); currentArenaRadius += (targetArenaRadius - currentArenaRadius) * CONFIG.mundo.taxaExpansao;
 
-            for (let i = foods.length - 1; i >= 0; i--) { let f = foods[i]; if (f.type === 2) { f.life -= 0.006; if (f.life <= 0) f.dead = true; } }
+            for (let i = foods.length - 1; i >= 0; i--) { let f = foods[i]; if (f.type === 2) { /* f.life -= 0.006; Se quiseres que desapareçam, descomenta. Agora ficam para sempre! */ } }
             if (frameCount % 60 === 0) foods = foods.filter(f => !f.dead);
             if (frameCount % 45 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) cnt++; window._activeFoodCount = cnt; }
-            if ((window._activeFoodCount || 0) < CONFIG.mundo.quantidadeComida) { spawnFood(IS_MOBILE_CLIENT ? 8 : 15); window._activeFoodCount = (window._activeFoodCount || 0) + (IS_MOBILE_CLIENT ? 8 : 15); }
-            if (butterflies.length < CONFIG.mundo.quantidadeInsetosDourados && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
+            if ((window._activeFoodCount || 0) < cfgMundo.quantidadeComida) { spawnFood(IS_MOBILE_CLIENT ? 8 : 15); window._activeFoodCount = (window._activeFoodCount || 0) + (IS_MOBILE_CLIENT ? 8 : 15); }
+            if (butterflies.length < cfgMundo.quantidadeInsetos && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
             if (gameState === 'playing') {
                 powerUpSpawnTimer--;
-                if (powerUpSpawnTimer <= 0) { spawnPowerUp(); powerUpSpawnTimer = 600 + Math.floor(Math.random() * 900); }
+                if (powerUpSpawnTimer <= 0) { spawnPowerUp(); powerUpSpawnTimer = CONFIG.powerups.spawnTimerMin + Math.floor(Math.random() * (CONFIG.powerups.spawnTimerMax - CONFIG.powerups.spawnTimerMin)); }
             }
             for (let i = powerUps.length - 1; i >= 0; i--) {
                 let pu = powerUps[i]; pu.update(); if (pu.dead) { powerUps.splice(i, 1); continue; }
@@ -2244,7 +2278,7 @@
                 let searchRadius = s1.radius + 150; let nearSnakesIdx = getNearbySnakesIndices(s1.x, s1.y, searchRadius);
                 for (let j of nearSnakesIdx) {
                     let s2 = snakes[j]; if (i === j || !s2.alive) continue; if (s1Ghost) continue;
-                    let hitDist = (s1.radius * 0.85) + (s2.radius * 0.85); let dx = s1.x - s2.x; let dy = s1.y - s2.y;
+                    let hitDist = (s1.radius * s1.conf.hitboxMult) + (s2.radius * s2.conf.hitboxMult); let dx = s1.x - s2.x; let dy = s1.y - s2.y;
                     if (Math.abs(dx) < 300 && Math.abs(dy) < 300) { if (dx * dx + dy * dy < hitDist * hitDist) { let loser = s1.score > s2.score ? s2 : s1; if (loser.activePowers && loser.activePowers.shield > 0) { loser.activePowers.shield = 0; createExplosion(loser.x, loser.y, '#4dd2ff', 30); if (loser.isPlayer) Haptic.medium(); } else loser.die(true); } }
                     for (let k = 0; k < s2.segments.length; k += segStep) {
                         let seg = s2.segments[k]; let sdx = s1.x - seg.x; let sdy = s1.y - seg.y;
@@ -2260,14 +2294,15 @@
 
             let currentKing = null, maxScore = 500; for (let s of snakes) { if (s.alive && s.score > maxScore) { maxScore = s.score; currentKing = s; } } for (let s of snakes) { s.isKing = (s === currentKing); }
 
-            let cullingDist = Math.max(vpWidth, vpHeight) / camera.zoom / 2 + CONFIG.visual.dRender;
+            let cfgVisual = CONFIG.visual[IS_MOBILE_CLIENT ? 'mobile' : 'pc'];
+            let cullingDist = Math.max(vpWidth, vpHeight) / camera.zoom / 2 + cfgVisual.dRender;
             mainCtx.save(); mainCtx.translate(vpWidth / 2, vpHeight / 2);
             if (camera.shake > 0.5) { mainCtx.translate(Math.random() * camera.shake - camera.shake / 2, Math.random() * camera.shake - camera.shake / 2); camera.shake *= 0.85; }
             mainCtx.scale(camera.zoom, camera.zoom); mainCtx.translate(-camera.x, -camera.y);
 
             drawGrid(mainCtx, camera.x, camera.y, camera.zoom); if (!APP_SETTINGS.highGfx) drawArenaBoundary(mainCtx, camera.x, camera.y, camera.zoom);
 
-            const frustumMargin = CONFIG.visual.dRender;
+            const frustumMargin = cfgVisual.dRender;
             const camMinX = camera.x - (vpWidth / camera.zoom / 2) - frustumMargin; const camMaxX = camera.x + (vpWidth / camera.zoom / 2) + frustumMargin;
             const camMinY = camera.y - (vpHeight / camera.zoom / 2) - frustumMargin; const camMaxY = camera.y + (vpHeight / camera.zoom / 2) + frustumMargin;
 
@@ -2278,7 +2313,7 @@
             for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
 
             let dL = snakes.slice().sort((a, b) => a.score - b.score);
-            for (let s of dL) { let pixelLength = s.segments.length * (s.radius * CONFIG.cobra.distanciaGomos); let bboxHalf = (pixelLength + s.radius * 2); if (s.x + bboxHalf < camMinX || s.x - bboxHalf > camMaxX || s.y + bboxHalf < camMinY || s.y - bboxHalf > camMaxY) continue; s.draw(mainCtx); }
+            for (let s of dL) { let pixelLength = s.segments.length * (s.radius * s.conf.distanciaGomos); let bboxHalf = (pixelLength + s.radius * 2); if (s.x + bboxHalf < camMinX || s.x - bboxHalf > camMaxX || s.y + bboxHalf < camMinY || s.y - bboxHalf > camMaxY) continue; s.draw(mainCtx); }
             mainCtx.restore();
 
             if (gameState === 'playing' && frameCount % 6 === 0) updatePowerupHUD();
@@ -2299,7 +2334,7 @@
         window.addEventListener('resize', resize); window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
         window.addEventListener('mousedown', (e) => { if (e.button === 0) isMouseDown = true; }); window.addEventListener('mouseup', (e) => { if (e.button === 0) isMouseDown = false; });
 
-        const JOYSTICK_DEADZONE = 8, JOYSTICK_MAX_RADIUS = 58; let joystickTouchId = null;
+        const JOYSTICK_DEADZONE = CONFIG.controles.mobile.joystickDeadzone, JOYSTICK_MAX_RADIUS = CONFIG.controles.mobile.joystickMaxRadius; let joystickTouchId = null;
         function updateJoystick(touch) { const r = DOM.joyB.getBoundingClientRect(), cX = r.left + r.width / 2, cY = r.top + r.height / 2; const dx = touch.clientX - cX, dy = touch.clientY - cY, dist = Math.hypot(dx, dy); if (dist > JOYSTICK_DEADZONE) { joystickAngle = Math.atan2(dy, dx); } const capD = Math.min(dist, JOYSTICK_MAX_RADIUS); DOM.joyH.style.transform = `translate(calc(-50% + ${Math.cos(joystickAngle) * capD}px), calc(-50% + ${Math.sin(joystickAngle) * capD}px))`; }
 
         window.addEventListener('touchstart', (e) => {
@@ -2337,10 +2372,11 @@
         resize(); updateMissionsUI();
         DOM.nick.value = localStorage.getItem('serpente_nick') || '';
         DOM.nick.addEventListener('input', () => { const now = performance.now(); if (now - lastNicknameSave < 180) return; lastNicknameSave = now; localStorage.setItem('serpente_nick', DOM.nick.value.trim()); });
-        DOM.nick.addEventListener('blur', () => localStorage.setItem('serpente_nick', DOM.nick.value.trim()));
+        DOM.nick.addEventListener('blur', () => { localStorage.setItem('serpente_nick', DOM.nick.value.trim()); });
         document.addEventListener('visibilitychange', () => { if (!document.hidden) lastFrameTime = performance.now(); });
 
-        for (let i = 0; i < CONFIG.mundo.quantidadeBots; i++) {
+        let cfgMundoInitial = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
+        for (let i = 0; i < cfgMundoInitial.quantidadeBots; i++) {
             let sI = Math.floor(Math.random() * SKINS.length);
             let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0;
             snakes.push(new Snake(...Object.values(getSafeSpawnPos(800)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], sI, false, CONFIG.cobra.pontosIniciais, aI));
