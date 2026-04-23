@@ -988,10 +988,17 @@
             }
 
             #hud-status {
-                width: 100%;
+                position: fixed;
+                bottom: max(20px, env(safe-area-inset-bottom));
+                left: 50%;
+                transform: translateX(-50%);
+                width: max-content;
                 justify-content: center;
-                padding: 8px;
+                padding: 8px 20px;
                 border-radius: 30px;
+                background: rgba(10, 15, 25, 0.3);
+                backdrop-filter: blur(10px);
+                z-index: 50;
             }
 
             #leaderboard {
@@ -1001,8 +1008,10 @@
             #minimap-wrapper {
                 width: 90px;
                 height: 90px;
-                bottom: max(130px, env(safe-area-inset-bottom));
-                right: max(16px, env(safe-area-inset-right));
+                top: max(16px, env(safe-area-inset-top));
+                left: max(16px, env(safe-area-inset-left));
+                bottom: auto;
+                right: auto;
             }
 
             .modal-content {
@@ -1074,8 +1083,7 @@
                 </div>
                 <div id="btn-turbo">
                     <svg viewBox="0 0 24 24">
-                        <path
-                            d="M13 2.05v3.03c3.39.49 6 3.39 6 6.92 0 .9-.22 1.75-.61 2.51l2.33 2.33c.8-1.43 1.28-3.08 1.28-4.84 0-4.95-3.64-9.05-8-9.95zM12 19c-3.87 0-7-3.13-7-7 0-3.53 2.61-6.43 6-6.92V2.05C6.36 2.95 3 7.05 3 12c0 4.97 4.03 9 9 9 2.22 0 4.24-.81 5.8-2.14l-2.2-2.2C14.6 18.25 13.35 19 12 19zm4.23-2.61c.42-.45.79-.95 1.1-1.49l-2.15-2.15c-.15.25-.33.48-.53.69l1.58 2.95zM12 6.5c-3.03 0-5.5 2.47-5.5 5.5s2.47 5.5 5.5 5.5 5.5-2.47 5.5-5.5-2.47-5.5-5.5-5.5z" />
+                        <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z" />
                     </svg>
                     <span>TURBO</span>
                 </div>
