@@ -1295,8 +1295,8 @@
             },
             mundo: {
                 tamanhoRaioInicial: 7500, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
-                pc: { quantidadeBots: 549, quantidadeComida: 110000, quantidadeInsetos: 1, corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 },
-                mobile: { quantidadeBots: 549, quantidadeComida: 110000, quantidadeInsetos: 1, corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 },
+                pc: { quantidadeBots: 549, quantidadeComida: 110000, quantidadeInsetos: 1, corGrade: '#1a2436', corFundo: '#080c14', tamanhoHexagono: 12 },
+                mobile: { quantidadeBots: 549, quantidadeComida: 110000, quantidadeInsetos: 1, corGrade: '#1a2436', corFundo: '#080c14', tamanhoHexagono: 5 },
                 distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
                 comida: { tamanhoMin: 1.60, tamanhoMax: 3.00, tamanhoMorte: 3.00, tamanhoMorteBonus: 3.00 }
             },
@@ -1309,7 +1309,7 @@
             },
             visual: {
                 balancoComida: 110.0, velocidadeAnimacaoComida: 0.004, vagalumesAtuais: 0,
-                pc: { vagalumes: 35, distanciaFugaVagalumes: 120, dRender: 550 },
+                pc: { vagalumes: 0, distanciaFugaVagalumes: 120, dRender: 550 },
                 mobile: { vagalumes: 0, distanciaFugaVagalumes: 120, dRender: 400 }
             },
             ai: {
@@ -1370,7 +1370,7 @@
         let APP_SETTINGS = { audio: savedAudio !== null ? savedAudio === 'true' : true, highGfx: savedGfx !== null ? savedGfx === 'true' : !IS_MOBILE_CLIENT, performanceMode: false };
 
         const PerformanceManager = {
-            TIERS: { LOW: { dprCap: 0.9, particles: 20, vagalumes: 0, segStep: 12, renderScale: 0.75 }, MEDIUM: { dprCap: 1.2, particles: 60, vagalumes: 8, segStep: 8, renderScale: 0.90 }, HIGH: { dprCap: 1.6, particles: 250, vagalumes: 35, segStep: 4, renderScale: 1.00 } },
+            TIERS: { LOW: { dprCap: 0.9, particles: 20, vagalumes: 0, segStep: 12, renderScale: 0.75 }, MEDIUM: { dprCap: 1.2, particles: 60, vagalumes: 0, segStep: 8, renderScale: 0.90 }, HIGH: { dprCap: 1.6, particles: 250, vagalumes: 0, segStep: 4, renderScale: 1.00 } },
             tier: 'HIGH', _framesSinceCheck: 0, _degradeCooldown: 0,
             getCfg() { return this.TIERS[this.tier]; },
             apply(tier) { this.tier = tier; CONFIG.visual.vagalumesAtuais = this.TIERS[tier].vagalumes; },
@@ -1574,10 +1574,40 @@
                 cx.restore(); this.cache[key] = c; return c;
             },
             getGridPattern: function (size, color, isLite = false) {
-                const key = 'grid_' + size + '_' + color + (isLite ? '_lite' : ''); if (this.cache[key]) return this.cache[key];
-                const c = document.createElement('canvas'); const h = size * Math.sqrt(3), w = size * 1.5; c.width = w * 2; c.height = h; const cx = c.getContext('2d');
-                const drawHex = (x, y) => { let s = size * 0.92; cx.beginPath(); cx.moveTo(x + s, y); for (let i = 1; i <= 6; i++) cx.lineTo(x + s * Math.cos(i * Math.PI / 3), y + s * Math.sin(i * Math.PI / 3)); cx.closePath(); cx.fillStyle = color; cx.fill(); if (!IS_MOBILE_CLIENT) { cx.fillStyle = 'rgba(255,255,255,0.015)'; cx.fill(); } };
+                const key = 'grid_v3_' + size + '_' + color + (isLite ? '_lite' : ''); if (this.cache[key]) return this.cache[key];
+
+                const c = document.createElement('canvas');
+                const mathW = size * 3;
+                const mathH = size * Math.sqrt(3);
+
+                c.width = Math.round(mathW);
+                c.height = Math.round(mathH);
+
+                const cx = c.getContext('2d');
+                cx.scale(c.width / mathW, c.height / mathH);
+
+                const drawHex = (x, y) => {
+                    let s = size * 0.88;
+                    cx.beginPath(); cx.moveTo(x + s, y);
+                    for (let i = 1; i <= 6; i++) cx.lineTo(x + s * Math.cos(i * Math.PI / 3), y + s * Math.sin(i * Math.PI / 3));
+                    cx.closePath();
+
+                    let grad = cx.createLinearGradient(x - s, y - s, x + s, y + s);
+                    grad.addColorStop(0, color);
+                    grad.addColorStop(1, '#0a0f18');
+
+                    cx.fillStyle = grad; cx.fill();
+                    if (!IS_MOBILE_CLIENT) {
+                        cx.lineWidth = Math.max(1, size * 0.04);
+                        cx.strokeStyle = 'rgba(255,255,255,0.04)';
+                        cx.stroke();
+                    }
+                };
+
+                const w = size * 1.5;
+                const h = mathH;
                 drawHex(0, 0); drawHex(w, h / 2); drawHex(w * 2, 0); drawHex(0, h); drawHex(w * 2, h);
+
                 const pattern = mainCtx.createPattern(c, 'repeat'); this.cache[key] = pattern; return pattern;
             },
             getStarsPattern: function () {
@@ -2321,7 +2351,6 @@
             const viewportW = vpWidth / zoom, viewportH = vpHeight / zoom; const startX = camX - viewportW / 2, startY = camY - viewportH / 2; const mundoConf = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
             ctx.fillStyle = mundoConf.corFundo; ctx.fillRect(startX, startY, viewportW, viewportH);
             if (APP_SETTINGS.highGfx) {
-                ctx.save(); ctx.globalAlpha = 0.55; const starP = TextureManager.getStarsPattern(); ctx.fillStyle = starP; const starOX = -(camX * 0.018) % 1024, starOY = -(camY * 0.018) % 1024; ctx.translate(startX + starOX, startY + starOY); ctx.fillRect(-starOX, -starOY, viewportW + 1024, viewportH + 1024); ctx.restore();
                 const nebula = TextureManager.getNebula(); ctx.save(); ctx.translate(startX + viewportW / 2, startY + viewportH / 2); let pX = -((camX * 0.06) % 1024); let pY = -((camY * 0.06) % 1024); ctx.globalAlpha = 0.55; ctx.drawImage(nebula, pX, pY, 1536, 1536); ctx.drawImage(nebula, pX + 1024, pY, 1536, 1536); ctx.drawImage(nebula, pX, pY + 1024, 1536, 1536); ctx.drawImage(nebula, pX + 1024, pY + 1024, 1536, 1536); ctx.restore();
             }
             const size = mundoConf.tamanhoHexagono; const gridPattern = TextureManager.getGridPattern(size, mundoConf.corGrade, false); ctx.fillStyle = gridPattern; ctx.fillRect(startX, startY, viewportW, viewportH);
