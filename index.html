@@ -1276,39 +1276,39 @@
         const CONFIG = {
             cobra: {
                 pc: {
-                    espessuraInicial: 6.5, espessuraMaxima: 8.0, comprimentoInicial: 9, comprimentoMaximo: 350,
+                    espessuraInicial: 6.6, espessuraMaxima: 9.0, comprimentoInicial: 9, comprimentoMaximo: 450,
                     velocidadeBase: 1.15, velocidadeTurbo: 3.0, velocidadeGiro: 0.053,
-                    distanciaGomos: 0.30, multiplicadorCabeca: 1.15, hitboxMult: 0.85
+                    distanciaGomos: 0.29, multiplicadorCabeca: 1.15, hitboxMult: 0.85
                 },
                 mobile: {
-                    espessuraInicial: 2.3, espessuraMaxima: 4.0, comprimentoInicial: 11, comprimentoMaximo: 350,
-                    velocidadeBase: 1.30, velocidadeTurbo: 2.8, velocidadeGiro: 0.083,
-                    distanciaGomos: 0.30, multiplicadorCabeca: 1.15, hitboxMult: 0.85
+                    espessuraInicial: 2.3, espessuraMaxima: 3.3, comprimentoInicial: 11, comprimentoMaximo: 450,
+                    velocidadeBase: 1.00, velocidadeTurbo: 2.8, velocidadeGiro: 0.083,
+                    distanciaGomos: 0.29, multiplicadorCabeca: 1.15, hitboxMult: 0.85
                 },
-                pontosParaEngrossar: 1800, pontosParaCrescer: 1.5, pontosIniciais: 20,
-                turbo: { custo: 0.3, tamanhoOrbe: 4.4, chanceOrbe: 1.8, quantidadeOrbe: 1 },
+                pontosParaEngrossar: 2000, pontosParaCrescer: 1.2, pontosIniciais: 22,
+                turbo: { custo: 0.3, tamanhoOrbe: 4.4, chanceOrbe: 1.8, quantidadeOrbe: 0.6 },
                 captura: { raioBase: 15, raioMagnet: 220, forcaAtracao: 15 }
             },
             zoom: {
-                pc: { inicial: 3.90, minimo: 1.80, fatorAfastamento: 3.020, velocidadeTransica: 0.04 },
-                mobile: { inicial: 4.10, minimo: 2.60, fatorAfastamento: 3.020, velocidadeTransica: 0.04 }
+                pc: { inicial: 3.90, minimo: 3.00, fatorAfastamento: 1.020, velocidadeTransica: 0.002 },
+                mobile: { inicial: 4.10, minimo: 3.00, fatorAfastamento: 1.020, velocidadeTransica: 0.002 }
             },
             mundo: {
-                tamanhoRaioInicial: 5300, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
-                pc: { quantidadeBots: 300, quantidadeComida: 50000, quantidadeInsetos: 4, corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 },
-                mobile: { quantidadeBots: 150, quantidadeComida: 40000, quantidadeInsetos: 2, corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 },
-                distribuicaoBots: { probabilidades: { pequeno: 0.25, medio: 0.35, grande: 0.25, gigante: 0.15 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
+                tamanhoRaioInicial: 7500, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
+                pc: { quantidadeBots: 449, quantidadeComida: 50000, quantidadeInsetos: 1, corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 },
+                mobile: { quantidadeBots: 150, quantidadeComida: 50000, quantidadeInsetos: 2, corGrade: '#070808', corFundo: '#050814', tamanhoHexagono: 1 },
+                distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
                 comida: { tamanhoMin: 2.60, tamanhoMax: 5.00, tamanhoMorte: 4.00, tamanhoMorteBonus: 3.70 }
             },
             powerups: {
-                spawnTimerMin: 600, spawnTimerMax: 900, limiteNoMapa: 4,
+                spawnTimerMin: 600, spawnTimerMax: 900, limiteNoMapa: 0,
                 duracao: { shield: 600, magnet: 540, ghost: 360, mega: 300 }
             },
             controles: {
                 mobile: { joystickDeadzone: 8, joystickMaxRadius: 58, lerpFactor: 0.52 }
             },
             visual: {
-                balancoComida: 100.0, velocidadeAnimacaoComida: 0.004, vagalumesAtuais: 0,
+                balancoComida: 110.0, velocidadeAnimacaoComida: 0.004, vagalumesAtuais: 0,
                 pc: { vagalumes: 35, distanciaFugaVagalumes: 120, dRender: 550 },
                 mobile: { vagalumes: 0, distanciaFugaVagalumes: 120, dRender: 400 }
             },
