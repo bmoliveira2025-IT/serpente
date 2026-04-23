@@ -1297,7 +1297,7 @@
                 },
                 mobile: {
                     espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 5, comprimentoMaximo: 450,
-                    velocidadeBase: 0.36, velocidadeTurbo: 2.5, velocidadeGiro: 0.069,
+                    velocidadeBase: 0.38, velocidadeTurbo: 2.5, velocidadeGiro: 0.069,
                     distanciaGomos: 0.29, multiplicadorCabeca: 1.15, hitboxMult: 0.85
                 },
                 pontosParaEngrossar: 1000, pontosParaCrescer: 1.3, pontosIniciais: 22,
@@ -2299,7 +2299,7 @@
             DOM.score.innerText = Math.floor(player.score).toLocaleString();
             let act = snakes.filter(s => s.alive); let sorted = [...act].sort((a, b) => b.score - a.score);
             DOM.rank.innerText = sorted.findIndex(s => s === player) + 1; DOM.total.innerText = sorted.length;
-            
+
             if (performance.now() - lastLeaderboardUpdate > 10000) {
                 let html = ''; for (let i = 0; i < Math.min(10, sorted.length); i++) { let s = sorted[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`; }
                 if (DOM.lbList) { DOM.lbList.innerHTML = html; }
