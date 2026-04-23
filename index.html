@@ -1313,17 +1313,17 @@
         const CONFIG = {
             cobra: {
                 pc: {
-                    espessuraInicial: 5.8, espessuraMaxima: 8.7, comprimentoInicial: 1, comprimentoMaximo: 450,
-                    velocidadeBase: 0.98, velocidadeTurbo: 2.0, velocidadeGiro: 0.042,
+                    espessuraInicial: 5.8, espessuraMaxima: 8.7, comprimentoInicial: 1, comprimentoMaximo: 400,
+                    velocidadeBase: 0.99, velocidadeTurbo: 1.5, velocidadeGiro: 0.042,
                     distanciaGomos: 0.29, multiplicadorCabeca: 1.15, hitboxMult: 0.85
                 },
                 mobile: {
-                    espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 1, comprimentoMaximo: 450,
-                    velocidadeBase: 0.38, velocidadeTurbo: 2.0, velocidadeGiro: 0.042,
+                    espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 1, comprimentoMaximo: 400,
+                    velocidadeBase: 0.40, velocidadeTurbo: 1.5, velocidadeGiro: 0.042,
                     distanciaGomos: 0.29, multiplicadorCabeca: 1.15, hitboxMult: 0.85
                 },
-                pontosParaEngrossar: 1000, pontosParaCrescer: 1.3, pontosIniciais: 22,
-                turbo: { custo: 0.03, tamanhoOrbe: 4.4, chanceOrbe: 0.8, quantidadeOrbe: 0.06 },
+                pontosParaEngrossar: 1000, pontosParaCrescer: 1.0, pontosIniciais: 20,
+                turbo: { custo: 0.04, tamanhoOrbe: 4.4, chanceOrbe: 0.8, quantidadeOrbe: 0.06 },
                 captura: { raioBase: 10, raioMagnet: 220, forcaAtracao: 10 }
             },
             zoom: {
@@ -1333,9 +1333,9 @@
             mundo: {
                 tamanhoRaioInicial: 4000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
                 pc: { quantidadeBots: 250, quantidadeComida: 25000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 13 },
-                mobile: { quantidadeBots: 150, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 3 },
+                mobile: { quantidadeBots: 150, quantidadeComida: 20000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 3 },
                 distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
-                comida: { tamanhoMin: 1.60, tamanhoMax: 4.00, tamanhoMorte: 3.40, tamanhoMorteBonus: 4.00 }
+                comida: { tamanhoMin: 1.80, tamanhoMax: 4.10, tamanhoMorte: 3.70, tamanhoMorteBonus: 4.10 }
             },
             powerups: {
                 spawnTimerMin: 600, spawnTimerMax: 900, limiteNoMapa: 0,
@@ -1345,13 +1345,13 @@
                 mobile: { joystickDeadzone: 8, joystickMaxRadius: 58, lerpFactor: 0.52 }
             },
             visual: {
-                balancoComida: 210.0, velocidadeAnimacaoComida: 0.012, vagalumesAtuais: 50,
-                pc: { vagalumes: 50, distanciaFugaVagalumes: 150, dRender: 550 },
+                balancoComida: 310.0, velocidadeAnimacaoComida: 0.010, vagalumesAtuais: 30,
+                pc: { vagalumes: 30, distanciaFugaVagalumes: 150, dRender: 550 },
                 mobile: { vagalumes: 30, distanciaFugaVagalumes: 120, dRender: 400 }
             },
             ai: {
                 intervaloBaseDecisao: { hunter: 3, king: 4, cowards: 7 },
-                distanciaPerigo: 1.8, raioScanMultiplicador: 15
+                distanciaPerigo: 1.8, raioScanMultiplicador: 10
             }
         };
 
