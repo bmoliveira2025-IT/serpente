@@ -380,6 +380,10 @@
             gap: 6px;
             margin-left: auto;
             pointer-events: auto;
+            background: rgba(10, 15, 25, 0.15); /* More transparent */
+            backdrop-filter: blur(4px); /* Less blur */
+            border: 1px solid rgba(255, 255, 255, 0.05); /* Lighter border */
+            box-shadow: none; /* Remove thick shadow */
         }
 
         .lb-title {
@@ -1001,9 +1005,7 @@
                 padding: 6px 16px;
             }
 
-            #leaderboard {
-                display: none;
-            }
+
 
             #minimap-wrapper {
                 width: 90px;
