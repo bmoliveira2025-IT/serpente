@@ -1408,7 +1408,21 @@
         let lastHudRender = 0; let lastNicknameSave = 0;
 
         const WORLD_CENTER = CONFIG.mundo.tamanhoRaioInicial; let currentArenaRadius = CONFIG.mundo.tamanhoRaioInicial; let targetArenaRadius = CONFIG.mundo.tamanhoRaioInicial;
-        const BOT_NAMES = ["Helena", "Jorge", "Príncipe", "Vila", "Milagre", "Sombra", "Veloz", "Mago", "Rei", "Guardião", "Fantasma", "Lenda", "Titã", "Tempestade", "Veneno"];
+        const BOT_NAMES = [
+            "Predador", "Ninja_BR", "Kiler", "Sombra", "Lenda", "Gamer_007", "Toxico", "ReiDaArena", "Pro_Player", "Viper",
+            "Fantasma", "SenhorX", "Alpha", "Destruidor", "Fenix", "Poderoso", "CobraKai", "Malvadao", "Bala_Seca", "PaiTaOn",
+            "Monstro", "Anonimo", "NoobSlayer", "Furia", "Coronel", "Titã", "Ciclone", "Caçador", "Guerreiro", "Venom",
+            "Chefão", "Espectro", "Mito", "Dragão", "Supremo", "Invencivel", "Ligeiro", "Silencioso", "Matador", "O_Brabo",
+            "Caveira", "Mestre", "Trovão", "Vulcao", "Besta", "Lobo_Solitario", "Imperador", "Gladiador", "Vingador", "Tsunami",
+            "Terremoto", "Fantasma_BR", "Mago", "Bruxo", "Pistoleiro", "Atirador", "Sniper", "Kamikaze", "Samurai", "Shogun",
+            "Barba_Negra", "Pirata", "Marujo", "Corvo", "Gargula", "Leviata", "Kraken", "Behemoth", "Gargantua", "Colosso"
+        ];
+        function getUniqueBotName() {
+            let usedNames = snakes.filter(s => s && s.alive).map(s => s.name);
+            let availableNames = BOT_NAMES.filter(n => !usedNames.includes(n));
+            if (availableNames.length === 0) availableNames = BOT_NAMES; // fallback
+            return availableNames[Math.floor(Math.random() * availableNames.length)];
+        }
         const PALETTE_COLORS = ['#39ff14', '#00ffff', '#ff00ff', '#007bff', '#ff4500', '#ff8800', '#8a2be2', '#ff69b4', '#ffdf00', '#ffffff', '#00ff88', '#7a28cb', '#ff0055'];
 
         let SKINS = [
@@ -2451,7 +2465,7 @@
 
             if (snakes.filter(s => s.alive).length < cfgMundo.quantidadeBots) {
                 let sI = Math.floor(Math.random() * SKINS.length); let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0;
-                snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], sI, false, CONFIG.cobra.pontosIniciais, aI));
+                snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), getUniqueBotName(), sI, false, CONFIG.cobra.pontosIniciais, aI));
             }
 
             const totalScoreOnMap = snakes.reduce((sum, s) => sum + (s.alive ? s.score : 0), 0);
@@ -2582,7 +2596,7 @@
         for (let i = 0; i < cfgMundoInitial.quantidadeBots; i++) {
             let sI = Math.floor(Math.random() * SKINS.length);
             let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0;
-            snakes.push(new Snake(...Object.values(getSafeSpawnPos(800)), BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], sI, false, CONFIG.cobra.pontosIniciais, aI));
+            snakes.push(new Snake(...Object.values(getSafeSpawnPos(800)), getUniqueBotName(), sI, false, CONFIG.cobra.pontosIniciais, aI));
         }
 
         requestAnimationFrame(gameLoop);
