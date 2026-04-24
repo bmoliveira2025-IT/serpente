@@ -2044,7 +2044,8 @@
                 }
 
                 let nearbyIndices = getNearbyFoodIndices(this.x, this.y, 2500);
-                for (let idx of nearbyIndices) {
+                for (let k = 0; k < nearbyIndices.length; k++) {
+                    let idx = nearbyIndices[k];
                     let f = foods[idx]; if (!f || f.dead) continue;
                     let dx = f.x - this.x, dy = f.y - this.y; let dSq = dx * dx + dy * dy;
                     let valMult = f.isDropped ? (20 + this.aiGreed * 10) : 1;
@@ -2165,7 +2166,8 @@
                 if (hasMagnet) eatRadius = Math.max(eatRadius, CONFIG.cobra.captura.raioMagnet);
                 let eatRadiusSq = eatRadius * eatRadius;
                 let nearFoodIdx = getNearbyFoodIndices(this.x, this.y, eatRadius);
-                for (let i of nearFoodIdx) {
+                for (let k = 0; k < nearFoodIdx.length; k++) {
+                    let i = nearFoodIdx[k];
                     let f = foods[i]; if (!f || f.dead) continue;
                     let dx = f.x - this.x, dy = f.y - this.y; let distSq = dx * dx + dy * dy; let hitDist = (this.radius * 0.82) + f.radius; let hitDistSq = hitDist * hitDist;
                     if (distSq < eatRadiusSq) {
@@ -2317,19 +2319,30 @@
 
         let lastLeaderboardUpdate = -999999;
         function updateHUD() {
-            if (gameState !== 'playing' || !player) return;
+            if (gameState !== 'playing' || !player || !player.alive) return;
             DOM.score.innerText = Math.floor(player.score).toLocaleString();
-            let act = snakes.filter(s => s.alive); let sorted = [...act].sort((a, b) => b.score - a.score);
-            DOM.rank.innerText = sorted.findIndex(s => s === player) + 1; DOM.total.innerText = sorted.length;
+            
+            let rank = snakes.length - snakes.indexOf(player);
+            DOM.rank.innerText = rank; DOM.total.innerText = snakes.length;
 
             if (performance.now() - lastLeaderboardUpdate > 10000) {
-                let html = ''; for (let i = 0; i < Math.min(10, sorted.length); i++) { let s = sorted[i]; html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${i + 1} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`; }
+                let html = ''; let count = 0;
+                for (let i = snakes.length - 1; i >= 0 && count < 10; i--) {
+                    let s = snakes[i]; count++;
+                    html += `<div class="lb-entry ${s === player ? 'is-me' : ''}" style="color: ${s === player ? '#ffdf00' : s.mainColor}"><span>#${count} ${s.name}</span><span>${Math.floor(s.score).toLocaleString()}</span></div>`;
+                }
                 if (DOM.lbList) { DOM.lbList.innerHTML = html; }
                 lastLeaderboardUpdate = performance.now();
             }
             mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill(); mCtxElement.strokeStyle = 'rgba(255,255,255,0.15)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
             let sc = 70 / currentArenaRadius;
-            for (let s of act) { if (s === player) continue; let mX = 70 + (s.x - WORLD_CENTER) * sc; let mY = 70 + (s.y - WORLD_CENTER) * sc; let dist = Math.hypot(mX - 70, mY - 70); if (dist > 67) { let ag = Math.atan2(mY - 70, mX - 70); mX = 70 + Math.cos(ag) * 67; mY = 70 + Math.sin(ag) * 67; } mCtxElement.beginPath(); mCtxElement.arc(mX, mY, 1.5, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.35)'; mCtxElement.fill(); }
+            for (let i = 0; i < snakes.length; i++) { 
+                let s = snakes[i];
+                if (s === player) continue; 
+                let mX = 70 + (s.x - WORLD_CENTER) * sc; let mY = 70 + (s.y - WORLD_CENTER) * sc; let dist = Math.hypot(mX - 70, mY - 70); 
+                if (dist > 67) { let ag = Math.atan2(mY - 70, mX - 70); mX = 70 + Math.cos(ag) * 67; mY = 70 + Math.sin(ag) * 67; } 
+                mCtxElement.beginPath(); mCtxElement.arc(mX, mY, 1.5, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.35)'; mCtxElement.fill(); 
+            }
             if (player && player.alive) { let pX = 70 + (player.x - WORLD_CENTER) * sc; let pY = 70 + (player.y - WORLD_CENTER) * sc; let dist = Math.hypot(pX - 70, pY - 70); if (dist > 65) { let ag = Math.atan2(pY - 70, pX - 70); pX = 70 + Math.cos(ag) * 65; pY = 70 + Math.sin(ag) * 65; } let pulse = 0.6 + Math.sin(performance.now() * 0.005) * 0.4; mCtxElement.beginPath(); mCtxElement.arc(pX, pY, 7, 0, Math.PI * 2); mCtxElement.fillStyle = `rgba(255,255,255,${0.15 * pulse})`; mCtxElement.fill(); mCtxElement.beginPath(); mCtxElement.arc(pX, pY, 3.5, 0, Math.PI * 2); mCtxElement.fillStyle = '#ffffff'; mCtxElement.fill(); }
         }
 
@@ -2494,16 +2507,17 @@
 
             let cfgMundo = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
 
-            if (snakes.filter(s => s.alive).length < cfgMundo.quantidadeBots) {
+            let aliveBots = 0; for (let i = 0; i < snakes.length; i++) if (snakes[i].alive) aliveBots++;
+            if (aliveBots < cfgMundo.quantidadeBots) {
                 let sI = Math.floor(Math.random() * SKINS.length); let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0;
                 snakes.push(new Snake(...Object.values(getSafeSpawnPos(1500)), getUniqueBotName(), sI, false, CONFIG.cobra.pontosIniciais, aI));
             }
 
-            const totalScoreOnMap = snakes.reduce((sum, s) => sum + (s.alive ? s.score : 0), 0);
+            let totalScoreOnMap = 0; for (let i = 0; i < snakes.length; i++) if (snakes[i].alive) totalScoreOnMap += snakes[i].score;
             targetArenaRadius = CONFIG.mundo.tamanhoRaioInicial + (totalScoreOnMap / CONFIG.mundo.expansaoPorPonto); currentArenaRadius += (targetArenaRadius - currentArenaRadius) * CONFIG.mundo.taxaExpansao;
 
             for (let i = foods.length - 1; i >= 0; i--) { let f = foods[i]; if (f.type === 2) { f.life -= 0.006; if (f.life <= 0) f.dead = true; } }
-            if (frameCount % 60 === 0) foods = foods.filter(f => !f.dead);
+            if (frameCount % 60 === 0) { let writeF = 0; for (let i = 0; i < foods.length; i++) { if (!foods[i].dead) foods[writeF++] = foods[i]; } foods.length = writeF; }
             if (frameCount % 45 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) cnt++; window._activeFoodCount = cnt; }
             if ((window._activeFoodCount || 0) < cfgMundo.quantidadeComida) { spawnFood(IS_MOBILE_CLIENT ? 8 : 15); window._activeFoodCount = (window._activeFoodCount || 0) + (IS_MOBILE_CLIENT ? 8 : 15); }
             if (butterflies.length < cfgMundo.quantidadeInsetos && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
@@ -2518,13 +2532,14 @@
             }
 
             if (frameCount % 2 === 0) rebuildFoodGrid(); rebuildSegmentGrid();
-            for (let s of snakes) s.update(); for (let b of butterflies) b.update();
+            for (let i = 0; i < snakes.length; i++) snakes[i].update(); for (let i = 0; i < butterflies.length; i++) butterflies[i].update();
 
             let segStep = PerformanceManager.getCfg().segStep;
             for (let i = 0; i < snakes.length; i++) {
                 let s1 = snakes[i]; if (!s1.alive) continue; let s1Ghost = s1.activePowers && s1.activePowers.ghost > 0;
                 let searchRadius = s1.radius + 150; let nearSnakesIdx = getNearbySnakesIndices(s1.x, s1.y, searchRadius);
-                for (let j of nearSnakesIdx) {
+                for (let _k = 0; _k < nearSnakesIdx.length; _k++) {
+                    let j = nearSnakesIdx[_k];
                     let s2 = snakes[j]; if (i === j || !s2.alive) continue; if (s1Ghost) continue;
                     let hitDist = (s1.radius * s1.conf.hitboxMult) + (s2.radius * s2.conf.hitboxMult); let dx = s1.x - s2.x; let dy = s1.y - s2.y;
                     if (Math.abs(dx) < 300 && Math.abs(dy) < 300) { if (dx * dx + dy * dy < hitDist * hitDist) { let loser = s1.score > s2.score ? s2 : s1; if (loser.activePowers && loser.activePowers.shield > 0) { loser.activePowers.shield = 0; if (loser.isPlayer) Haptic.medium(); } else loser.die(true); } }
@@ -2535,8 +2550,11 @@
                 }
             }
 
-            snakes = snakes.filter(s => s.alive || s.isPlayer);
-            let maxParticles = PerformanceManager.getCfg().particles; for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].dead) { ParticlePool.recycle(particles[i]); particles.splice(i, 1); } }
+            let writeS = 0; for (let i = 0; i < snakes.length; i++) { if (snakes[i].alive || snakes[i].isPlayer) snakes[writeS++] = snakes[i]; } snakes.length = writeS;
+            let maxParticles = PerformanceManager.getCfg().particles; 
+            let writeP = 0;
+            for (let i = 0; i < particles.length; i++) { particles[i].update(); if (particles[i].dead) { ParticlePool.recycle(particles[i]); } else { particles[writeP++] = particles[i]; } }
+            particles.length = writeP;
             if (particles.length > maxParticles) { let overflow = particles.splice(0, particles.length - maxParticles); overflow.forEach(p => ParticlePool.recycle(p)); }
             for (let ff of fireflies) ff.update();
 
@@ -2554,14 +2572,14 @@
             const camMinX = camera.x - (vpWidth / camera.zoom / 2) - frustumMargin; const camMaxX = camera.x + (vpWidth / camera.zoom / 2) + frustumMargin;
             const camMinY = camera.y - (vpHeight / camera.zoom / 2) - frustumMargin; const camMaxY = camera.y + (vpHeight / camera.zoom / 2) + frustumMargin;
 
-            for (let f of foods) { if (!f.dead && f.x > camMinX && f.x < camMaxX && f.y > camMinY && f.y < camMaxY) { f.draw(mainCtx, time, camera.zoom); } }
-            for (let pu of powerUps) { if (pu.x > camMinX && pu.x < camMaxX && pu.y > camMinY && pu.y < camMaxY) pu.draw(mainCtx, time, camera.zoom); }
-            for (let ff of fireflies) { if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
-            for (let b of butterflies) { if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
-            for (let p of particles) { if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
+            for (let i = 0; i < foods.length; i++) { let f = foods[i]; if (!f.dead && f.x > camMinX && f.x < camMaxX && f.y > camMinY && f.y < camMaxY) { f.draw(mainCtx, time, camera.zoom); } }
+            for (let i = 0; i < powerUps.length; i++) { let pu = powerUps[i]; if (pu.x > camMinX && pu.x < camMaxX && pu.y > camMinY && pu.y < camMaxY) pu.draw(mainCtx, time, camera.zoom); }
+            for (let i = 0; i < fireflies.length; i++) { let ff = fireflies[i]; if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
+            for (let i = 0; i < butterflies.length; i++) { let b = butterflies[i]; if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
+            for (let i = 0; i < particles.length; i++) { let p = particles[i]; if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
 
-            let dL = snakes.slice().sort((a, b) => a.score - b.score);
-            for (let s of dL) { let pixelLength = s.segments.length * (s.radius * s.conf.distanciaGomos); let bboxHalf = (pixelLength + s.radius * 2); if (s.x + bboxHalf < camMinX || s.x - bboxHalf > camMaxX || s.y + bboxHalf < camMinY || s.y - bboxHalf > camMaxY) continue; s.draw(mainCtx); }
+            snakes.sort((a, b) => a.score - b.score);
+            for (let i = 0; i < snakes.length; i++) { let s = snakes[i]; let pixelLength = s.segments.length * (s.radius * s.conf.distanciaGomos); let bboxHalf = (pixelLength + s.radius * 2); if (s.x + bboxHalf < camMinX || s.x - bboxHalf > camMaxX || s.y + bboxHalf < camMinY || s.y - bboxHalf > camMaxY) continue; s.draw(mainCtx); }
             mainCtx.restore();
 
             if (gameState === 'playing' && frameCount % 6 === 0) updatePowerupHUD();
