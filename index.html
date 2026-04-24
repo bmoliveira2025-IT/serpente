@@ -79,10 +79,13 @@
             border: 1px solid rgba(0, 229, 255, 0.3);
             color: var(--primary);
             font-family: 'Inter', sans-serif;
+            font-size: 13px;
             font-weight: 800;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            border-radius: 12px;
+            border-radius: 50px;
+            padding: 14px 24px;
+            min-height: 52px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             backdrop-filter: blur(10px);
@@ -646,9 +649,17 @@
             flex-direction: column;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.05);
             transform: translateY(20px) scale(0.95);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
+        }
+
+        .modal-content.no-card {
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
         }
 
         .modal-overlay.active .modal-content {
@@ -1198,11 +1209,7 @@
 
         <!-- MODAL: SKINS -->
         <div id="modal-skins" class="modal-overlay">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title">Galeria de Skins</div>
-                    <button class="btn-close" onclick="closeModal('modal-skins')">✕</button>
-                </div>
+            <div class="modal-content no-card">
                 <div class="modal-body" id="skins-carousel-view">
                     <div class="showroom-stage" style="height: 120px;">
                         <canvas id="skingal-snake-canvas" class="showroom-canvas"></canvas>
@@ -1214,7 +1221,8 @@
                 </div>
                 <div class="modal-footer" id="skins-carousel-footer"
                     style="display:flex; justify-content: space-between; gap: 10px;">
-                    <button id="skin-equip-btn" class="btn-premium" style="flex: 1;">OK</button>
+                    <button id="skin-equip-btn" class="btn-premium" style="flex: 1;"
+                        onclick="closeModal('modal-skins')">OK</button>
                     <button id="btn-go-build" class="btn-premium"
                         style="flex: 1; border-color: #4b0082; color: #b9a4ff;">Build a Slither</button>
                 </div>
@@ -1239,11 +1247,7 @@
 
         <!-- MODAL: ACESSÓRIOS -->
         <div id="modal-accs" class="modal-overlay">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title" style="color: var(--success);">Adereços</div>
-                    <button class="btn-close" onclick="closeModal('modal-accs')">✕</button>
-                </div>
+            <div class="modal-content no-card">
                 <div class="modal-body" style="padding-bottom: 0;">
                     <div class="showroom-stage" style="height: 120px;">
                         <canvas id="acc-snake-canvas" class="showroom-canvas"></canvas>
@@ -1256,7 +1260,8 @@
                 </div>
                 <div class="modal-footer">
                     <button id="acc-equip-btn" class="btn-premium"
-                        style="width: 100%; border-color: var(--success); color: var(--success);">EQUIPAR
+                        style="width: 100%; border-color: var(--success); color: var(--success);"
+                        onclick="closeModal('modal-accs')">EQUIPAR
                         ADEREÇO</button>
                 </div>
             </div>
@@ -1325,12 +1330,12 @@
                 pc: {
                     espessuraInicial: 5.4, espessuraMaxima: 8.7, comprimentoInicial: 4, comprimentoMaximo: 630,
                     velocidadeBase: 1.00, velocidadeTurbo: 1.8, velocidadeGiro: 0.047,
-                    distanciaGomos: 0.17, multiplicadorCabeca: 1.10, hitboxMult: 0.85
+                    distanciaGomos: 0.17, multiplicadorCabeca: 1.05, hitboxMult: 0.85
                 },
                 mobile: {
                     espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 6, comprimentoMaximo: 630,
-                    velocidadeBase: 0.44, velocidadeTurbo: 1.5, velocidadeGiro: 0.040,
-                    distanciaGomos: 0.17, multiplicadorCabeca: 1.10, hitboxMult: 0.85
+                    velocidadeBase: 0.42, velocidadeTurbo: 1.5, velocidadeGiro: 0.040,
+                    distanciaGomos: 0.17, multiplicadorCabeca: 1.05, hitboxMult: 0.85
                 },
                 pontosParaEngrossar: 2000, pontosParaCrescer: 1.0, pontosIniciais: 20,
                 turbo: { custo: 0.2, tamanhoOrbe: 3.5, chanceOrbe: 0.10, quantidadeOrbe: 1 },
