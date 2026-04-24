@@ -1332,7 +1332,7 @@
                 },
                 mobile: {
                     espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 6, comprimentoMaximo: 630,
-                    velocidadeBase: 0.41, velocidadeTurbo: 1.5, velocidadeGiro: 0.039,
+                    velocidadeBase: 0.39, velocidadeTurbo: 1.5, velocidadeGiro: 0.039,
                     distanciaGomos: 0.17, multiplicadorCabeca: 1.05, hitboxMult: 0.85
                 },
                 pontosParaEngrossar: 2000, pontosParaCrescer: 1.0, pontosIniciais: 20,
@@ -1418,8 +1418,8 @@
         document.getElementById('btn-open-accs').onclick = () => { openModal('modal-accs'); gameState = 'acc-menu'; updateAccUI(); };
         document.getElementById('btn-open-options').onclick = () => { openModal('modal-options'); updateOptionsUI(); };
 
-        document.getElementById('skin-equip-btn').onclick = () => { closeModal('modal-skins'); gameState = 'menu'; };
-        document.getElementById('acc-equip-btn').onclick = () => { closeModal('modal-accs'); gameState = 'menu'; localStorage.setItem('serpente_accIndex', accIndex); };
+        document.getElementById('skin-equip-btn').onclick = () => { closeModal('modal-skins'); gameState = 'menu'; localStorage.setItem('serpente_skinIndex', skinIndex); };
+        document.getElementById('acc-equip-btn').onclick = () => { closeModal('modal-accs'); gameState = 'menu'; localStorage.setItem('serpente_accIndex', accIndex); localStorage.setItem('serpente_skinIndex', skinIndex); };
         document.getElementById('play-again-btn').onclick = () => { closeModal('modal-death'); DOM.startMenu.style.display = 'flex'; DOM.startMenu.classList.remove('hidden'); gameState = 'menu'; };
 
         // Variáveis de Jogo
@@ -1488,7 +1488,22 @@
         ];
 
         let accIndex = parseInt(localStorage.getItem('serpente_accIndex') || '0');
-        let skinIndex = 0;
+        let skinIndex = parseInt(localStorage.getItem('serpente_skinIndex') || '0');
+        // Restaurar skin personalizada se existir
+        (function () {
+            let savedCustomSkin = localStorage.getItem('serpente_customSkin');
+            if (savedCustomSkin) {
+                try {
+                    let colors = JSON.parse(savedCustomSkin);
+                    if (Array.isArray(colors) && colors.length > 0) {
+                        if (!SKIN_NAMES.includes('Minha Cobra')) { SKINS.push(colors); SKIN_NAMES.push('Minha Cobra'); }
+                        else { let idx = SKIN_NAMES.indexOf('Minha Cobra'); SKINS[idx] = colors; }
+                    }
+                } catch (e) { }
+            }
+            if (skinIndex >= SKINS.length) skinIndex = 0;
+            if (accIndex >= ACCESSORIES.length) accIndex = 0;
+        })();
 
         const PLAYER_STATS = {
             highScore: parseInt(localStorage.getItem('serpente_highScore') || '0'), totalKills: parseInt(localStorage.getItem('serpente_totalKills') || '0'),
@@ -2536,6 +2551,8 @@
         document.getElementById('btn-builder-ok').onclick = () => {
             if (!SKIN_NAMES.includes('Minha Cobra')) { SKINS.push([...customSkinBuilder]); SKIN_NAMES.push('Minha Cobra'); skinIndex = SKINS.length - 1; }
             else { let idx = SKIN_NAMES.indexOf('Minha Cobra'); SKINS[idx] = [...customSkinBuilder]; skinIndex = idx; }
+            localStorage.setItem('serpente_customSkin', JSON.stringify([...customSkinBuilder]));
+            localStorage.setItem('serpente_skinIndex', skinIndex);
             document.getElementById('skins-builder-view').classList.add('hidden'); document.getElementById('skins-builder-footer').classList.add('hidden');
             document.getElementById('skins-carousel-view').classList.remove('hidden'); document.getElementById('skins-carousel-footer').classList.remove('hidden');
             updateSkinUI();
