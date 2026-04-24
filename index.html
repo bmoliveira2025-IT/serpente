@@ -2055,242 +2055,309 @@
                 let spc = this.conf.espessuraInicial * this.conf.distanciaGomos;
                 for (let i = 0; i < this.targetLength; i++) { this.segments.push({ x: x - Math.cos(this.angle) * spc * i, y: y - Math.sin(this.angle) * spc * i }); }
             }
+            // ── angle helper ──────────────────────────────────────────────────
+            _ad(a, b) { let d=a-b; while(d>Math.PI)d-=Math.PI*2; while(d<-Math.PI)d+=Math.PI*2; return d; }
+
+            // ── AI initialiser (called once lazily) ───────────────────────────
+            _initAI() {
+                // Per-name personality presets  (ag=aggression, ca=caution, gr=greed, iq=intelligence, im=impulsivity)
+                const P = {
+                    "Helena":    {ag:.22,ca:.82,gr:.88,iq:.62,im:.24},
+                    "Jorge":     {ag:.44,ca:.64,gr:.72,iq:.68,im:.32},
+                    "Principe":  {ag:.58,ca:.45,gr:.80,iq:.72,im:.44},
+                    "Vila":      {ag:.20,ca:.85,gr:.86,iq:.55,im:.20},
+                    "Milagre":   {ag:.27,ca:.78,gr:.90,iq:.60,im:.27},
+                    "Sombra":    {ag:.68,ca:.46,gr:.68,iq:.84,im:.40},
+                    "Veloz":     {ag:.70,ca:.28,gr:.74,iq:.62,im:.74},
+                    "Mago":      {ag:.60,ca:.52,gr:.58,iq:.92,im:.28},
+                    "Rei":       {ag:.78,ca:.36,gr:.42,iq:.82,im:.50},
+                    "Guardiao":  {ag:.72,ca:.40,gr:.38,iq:.82,im:.36},
+                    "Fantasma":  {ag:.56,ca:.50,gr:.82,iq:.78,im:.35},
+                    "Lenda":     {ag:.80,ca:.30,gr:.46,iq:.75,im:.58},
+                    "Tita":      {ag:.90,ca:.16,gr:.44,iq:.60,im:.68},
+                    "Tempestade":{ag:.84,ca:.18,gr:.50,iq:.46,im:.90},
+                    "Veneno":    {ag:.76,ca:.33,gr:.54,iq:.70,im:.54},
+                };
+                // Strip accents for lookup
+                const key = this.name.normalize('NFD').replace(/[̀-ͯ]/g,'');
+                const base = P[key] || {ag:.35+Math.random()*.55, ca:.20+Math.random()*.60,
+                                        gr:.40+Math.random()*.50, iq:.30+Math.random()*.60,
+                                        im:.20+Math.random()*.65};
+                // ±15% jitter so same-named bots still vary
+                const j = v => Math.max(.05, Math.min(.95, v+(Math.random()-.5)*.30));
+                this._ai = {
+                    tr: {ag:j(base.ag), ca:j(base.ca), gr:j(base.gr), iq:j(base.iq), im:j(base.im)},
+                    emo: {fear:0, hunger:.5, ego:0, rage:0},
+                    mood: 'neutral',          // 'aggressive' | 'neutral' | 'cautious'
+                    moodTmr: 0,
+                    decTmr: Math.floor(Math.random()*18),
+                    wp: Math.random()*Math.PI*2,  // wander phase
+                    wAmp: 0,                       // wander amplitude (smoothed)
+                    wanderAngle: Math.random()*Math.PI*2,
+                    homeX: this.x, homeY: this.y,
+                    territoryR: 850+Math.random()*750,
+                    boostCD: 0,
+                    dodgeFrame: -999,
+                    circTarget: null,
+                    circPhase: 0,
+                    rageTarget: null,
+                    rageTmr: 0,
+                    attacker: null,
+                    attackTmr: 0,
+                    deathZones: [],   // [{x,y,born}]
+                };
+            }
+
             updateAI() {
-                if (this.aiPersonality === undefined) {
-                    this.aiAggression = 0.7 + Math.random() * 0.3; // Very aggressive
-                    this.aiRiskTolerance = 0.3 + Math.random() * 0.3;
-                    this.aiGreed = 0.8 + Math.random() * 0.2; // Very greedy for food
-                    this.aiDecisionTimer = 0;
-                    this.aiEncirclePhase = 0;
-                    this.aiEncircleTarget = null;
-                    this.aiBoostCooldown = 0;
-                    this.aiConfidence = 1.0;
-                    this.aiMicroError = 0.002 + Math.random() * 0.005; // Human-like precision
-                    this.aiTargetX = this.x;
-                    this.aiTargetY = this.y;
-                    this.aiPersonality = 1;
-                }
+                if (!this._ai) this._initAI();
+                const ai = this._ai, tr = ai.tr;
 
-                if (this.aiBoostCooldown > 0) this.aiBoostCooldown--;
-                if (frameCount % 30 === 0) {
-                    let topScore = 100;
-                    if (snakes.length > 0) topScore = Math.max(...snakes.map(s => s.score));
-                    this.aiConfidence = Math.min(1.0, this.score / (topScore * 0.5 + 100));
-                }
+                // ── COOLDOWNS ───────────────────────────────────────────────
+                if (ai.boostCD > 0) ai.boostCD--;
+                if (ai.attackTmr > 0) ai.attackTmr--; else ai.attacker = null;
+                if (ai.rageTmr   > 0) ai.rageTmr--;   else ai.rageTarget = null;
+                if (this.isKing) tr.ag = Math.min(.95, tr.ag+.0015);
 
-                let danger = false, evadeAngle = 0, dangerUrgency = 0, dangerSnake = null;
-                let isBoosting = false;
+                // ── EMOTION TICK (O(1), every frame) ────────────────────────
+                const szF = Math.min(1, this.score / 8000);  // 0→small 1→huge
+                ai.emo.hunger = Math.max(0,Math.min(1, ai.emo.hunger*.996 + (szF<.25?.011:-.007)));
+                ai.emo.ego    = Math.max(0,Math.min(1, ai.emo.ego*.995   + (szF>.45?.013:-.009)));
+                ai.emo.fear   = Math.max(0, ai.emo.fear   - .0055);
+                ai.emo.rage   = Math.max(0, ai.emo.rage   - .0038);
 
-                // 1. DANGER AVOIDANCE (Fast reaction)
-                let scanRadius = this.radius * 20;
-                let scanRSq = scanRadius * scanRadius;
+                // Death-zone decay
+                for (let z=ai.deathZones.length-1;z>=0;z--)
+                    if (frameCount-ai.deathZones[z].born>720) ai.deathZones.splice(z,1);
 
-                let skipSegs = Math.max(10, Math.ceil(this.radius * 3.5 / Math.max(0.1, this.conf.espessuraInicial * this.conf.distanciaGomos)));
-                let selfR = this.isBoosting ? this.radius * 16 : this.radius * 10;
-                let selfRSq = selfR * selfR;
-                for (let k = skipSegs; k < this.segments.length; k += 3) {
-                    let seg = this.segments[k]; let dx = seg.x - this.x, dy = seg.y - this.y; let dsSq = dx * dx + dy * dy;
-                    if (dsSq > selfRSq) break;
-                    let ats = Math.atan2(dy, dx); let ad = ats - this.angle;
-                    while (ad > Math.PI) ad -= Math.PI * 2; while (ad < -Math.PI) ad += Math.PI * 2;
-                    if (Math.abs(ad) < 0.85) {
-                        danger = true;
-                        dangerUrgency = 0.9;
-                        evadeAngle = ad < 0 ? this.angle + Math.PI * 0.6 : this.angle - Math.PI * 0.6;
-                        break;
+                // ── IMMEDIATE SELF-COLLISION (every frame) ──────────────────
+                {
+                    const spc = this.conf.espessuraInicial * CONFIG.cobra.distanciaGomos;
+                    const skip = Math.max(10, Math.ceil(this.radius*3.5/Math.max(.1,spc)));
+                    const selfR = this.isBoosting ? this.radius*24 : this.radius*12;
+                    for (let k=skip; k<this.segments.length; k+=2) {
+                        const seg=this.segments[k], ds=Math.hypot(seg.x-this.x,seg.y-this.y);
+                        if (ds>selfR) break;
+                        const ad=this._ad(Math.atan2(seg.y-this.y,seg.x-this.x),this.angle);
+                        if (Math.abs(ad)<1.6) {
+                            this.isBoosting=false; ai.emo.fear=Math.min(1,ai.emo.fear+.22);
+                            this.targetAngle=this.angle+(ad<0?Math.PI*.62:-Math.PI*.62)+(Math.random()-.5)*.22;
+                            return;
+                        }
                     }
                 }
 
-                if (!danger) {
-                    for (let other of snakes) {
-                        if (other === this || !other.alive) continue;
-                        let dx = other.x - this.x, dy = other.y - this.y; let dHeadSq = dx * dx + dy * dy;
-                        if (dHeadSq > scanRSq) continue;
-
-                        let step = dHeadSq < (this.radius * 10) ** 2 ? 1 : 3;
-                        for (let k = 0; k < other.segments.length; k += step) {
-                            let seg = other.segments[k]; let sdx = seg.x - this.x, sdy = seg.y - this.y; let dsSq = sdx * sdx + sdy * sdy;
-                            let hitZone = this.radius * 5.5 + other.radius;
-                            if (dsSq < hitZone * hitZone) {
-                                let angleToSeg = Math.atan2(sdy, sdx); let angleDiff = angleToSeg - this.angle;
-                                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2; while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-
-                                if (Math.abs(angleDiff) < 1.1) {
-                                    danger = true; dangerSnake = other;
-                                    dangerUrgency = Math.max(dangerUrgency, 1 - (Math.sqrt(dsSq) / hitZone));
-
-                                    let left = angleToSeg + Math.PI * 0.55;
-                                    let right = angleToSeg - Math.PI * 0.55;
-
-                                    let scoreL = 0, scoreR = 0;
-                                    let probeLen = this.radius * 7;
-                                    let dlx = this.x + Math.cos(left) * probeLen, dly = this.y + Math.sin(left) * probeLen;
-                                    let drx = this.x + Math.cos(right) * probeLen, dry = this.y + Math.sin(right) * probeLen;
-
-                                    let minDSq = (this.radius * 2) ** 2;
-                                    for (let os of snakes) {
-                                        if (os === this || !os.alive) continue;
-                                        let stp2 = Math.max(3, Math.floor(os.segments.length / 20));
-                                        for (let ks = 0; ks < os.segments.length; ks += stp2) {
-                                            let osx = os.segments[ks].x, osy = os.segments[ks].y;
-                                            if ((osx - dlx) ** 2 + (osy - dly) ** 2 < minDSq) scoreL -= 1;
-                                            if ((osx - drx) ** 2 + (osy - dry) ** 2 < minDSq) scoreR -= 1;
-                                        }
-                                    }
-                                    if ((dlx - WORLD_CENTER) ** 2 + (dly - WORLD_CENTER) ** 2 > currentArenaRadius ** 2) scoreL -= 2;
-                                    if ((drx - WORLD_CENTER) ** 2 + (dry - WORLD_CENTER) ** 2 > currentArenaRadius ** 2) scoreR -= 2;
-
-                                    evadeAngle = (scoreL >= scoreR) ? left : right;
-                                    break;
+                // ── ENEMY DANGER (every frame) ──────────────────────────────
+                {
+                    const scanR = this.radius*(7+tr.ca*5+ai.emo.fear*5+this.isBoosting*2);
+                    let wDist=scanR, wAngle=0, danger=false;
+                    for (const o of snakes) {
+                        if (o===this||!o.alive) continue;
+                        const dH=Math.hypot(o.x-this.x,o.y-this.y);
+                        if (dH>scanR+o.radius*2) continue;
+                        const step=dH<this.radius*8?2:5;
+                        for (let k=0;k<o.segments.length;k+=step) {
+                            const seg=o.segments[k];
+                            const ds=Math.hypot(seg.x-this.x,seg.y-this.y);
+                            const hz=this.radius*(3.5+tr.ca*2.8+ai.emo.fear*3.2);
+                            if (ds<hz) {
+                                const ad=this._ad(Math.atan2(seg.y-this.y,seg.x-this.x),this.angle);
+                                if (Math.abs(ad)<1.9&&ds<wDist) {
+                                    wDist=ds; wAngle=Math.atan2(this.y-seg.y,this.x-seg.x); danger=true;
+                                    if (o!==ai.attacker){ai.attacker=o;ai.attackTmr=280;}
+                                    if (ai.emo.rage<.35){ai.emo.rage=.60;ai.rageTarget=o;ai.rageTmr=220;}
                                 }
                             }
                         }
                         if (danger) break;
                     }
-                }
-
-                if (danger) {
-                    let finalAngle = evadeAngle + (Math.random() - 0.5) * this.aiMicroError;
-
-                    let canCounterAttack = this.aiAggression > 0.4 && this.score > 50;
-                    if (canCounterAttack && dangerSnake && this.score > dangerSnake.score * 0.6 && dangerUrgency < 0.8 && Math.random() < this.aiAggression) {
-                        let cutAngle = Math.atan2(dangerSnake.y - this.y, dangerSnake.x - this.x);
-                        let perpAngle = dangerSnake.angle + Math.PI * 0.45 * (Math.random() > 0.5 ? 1 : -1);
-                        finalAngle = cutAngle + (perpAngle - cutAngle) * 0.55;
-                        isBoosting = this.aiBoostCooldown === 0;
-                        if (isBoosting) this.aiBoostCooldown = 8;
-                    } else {
-                        isBoosting = dangerUrgency > 0.3 && this.aiBoostCooldown === 0 && this.score > 30;
-                        if (isBoosting) this.aiBoostCooldown = 12;
-                    }
-                    this.targetAngle = finalAngle;
-                    this.aiEncirclePhase = 0;
-                    this.isBoosting = isBoosting;
-                    return;
-                }
-
-                this.aiDecisionTimer--;
-                if (this.aiDecisionTimer > 0) return;
-                this.isBoosting = false;
-                this.aiDecisionTimer = 1 + Math.floor(Math.random() * 3);
-
-                let dxC = this.x - WORLD_CENTER, dyC = this.y - WORLD_CENTER;
-                let distToCenterSq = dxC * dxC + dyC * dyC;
-                if (distToCenterSq > (currentArenaRadius - 600) ** 2) {
-                    this.targetAngle = Math.atan2(-dyC, -dxC) + (Math.random() - 0.5) * 0.3;
-                    this.isBoosting = distToCenterSq > (currentArenaRadius - 300) ** 2 && this.aiBoostCooldown === 0 && this.score > 30;
-                    if (this.isBoosting) this.aiBoostCooldown = 10;
-                    return;
-                }
-
-                // 2. ENCIRCLE LOGIC
-                if (this.aiEncirclePhase > 0 && this.aiEncircleTarget) {
-                    let t = this.aiEncircleTarget; let dxT = t.x - this.x, dyT = t.y - this.y; let dToTargetSq = dxT * dxT + dyT * dyT;
-                    if (!t.alive || dToTargetSq > 3000000) {
-                        this.aiEncirclePhase = 0; this.aiEncircleTarget = null;
-                    } else {
-                        let dToTarget = Math.sqrt(dToTargetSq);
-                        if (this.aiEncirclePhase < 40) {
-                            let timeEst = dToTarget / Math.max(1, this.speed);
-                            let ix = t.x + Math.cos(t.angle) * t.speed * timeEst;
-                            let iy = t.y + Math.sin(t.angle) * t.speed * timeEst;
-                            this.targetAngle = Math.atan2(iy - this.y, ix - this.x);
-                            this.isBoosting = dToTarget > 150 && this.aiBoostCooldown === 0 && this.score > 30;
-                            if (this.isBoosting) this.aiBoostCooldown = 5;
+                    if (danger) {
+                        ai.emo.fear=Math.min(1,ai.emo.fear+.16);
+                        const ok=(frameCount-ai.dodgeFrame)>Math.floor((1-tr.iq)*5+1);
+                        if (ok) {
+                            ai.dodgeFrame=frameCount;
+                            const L=wAngle+Math.PI*.58, R=wAngle-Math.PI*.58, pD=this.radius*8;
+                            let cL=true, cR=true;
+                            for (const os of snakes) {
+                                if (os===this||!os.alive) continue;
+                                const st=Math.max(5,Math.floor(os.segments.length/18));
+                                for (let ks=0;ks<os.segments.length;ks+=st) {
+                                    const sx=os.segments[ks].x,sy=os.segments[ks].y;
+                                    if(Math.hypot(sx-(this.x+Math.cos(L)*pD),sy-(this.y+Math.sin(L)*pD))<this.radius*2.4)cL=false;
+                                    if(Math.hypot(sx-(this.x+Math.cos(R)*pD),sy-(this.y+Math.sin(R)*pD))<this.radius*2.4)cR=false;
+                                }
+                            }
+                            const esc=(cL&&!cR)?L:(cR&&!cL)?R:wAngle+Math.PI;
+                            const err=(Math.random()-.5)*(1-tr.iq)*.32;
+                            this.targetAngle=esc+err;
+                            this.isBoosting=wDist<this.radius*5&&ai.boostCD===0;
+                            if(this.isBoosting)ai.boostCD=20+Math.floor(Math.random()*14);
                         }
-                        else if (this.aiEncirclePhase < 100) {
-                            let crossAngle = t.angle + Math.PI * 0.6;
-                            this.targetAngle = crossAngle;
-                            this.isBoosting = this.aiBoostCooldown === 0 && this.score > 50;
-                            if (this.isBoosting) this.aiBoostCooldown = 4;
-                        }
-                        else {
-                            let progress = Math.min(1.0, (this.aiEncirclePhase - 100) / 150);
-                            let orbitRadius = t.radius * (7 - progress * 5);
-                            orbitRadius = Math.max(t.radius * 2.0, orbitRadius);
-                            let angToTarget = Math.atan2(this.y - t.y, this.x - t.x);
-                            let targetOX = t.x + Math.cos(angToTarget + 0.25) * orbitRadius;
-                            let targetOY = t.y + Math.sin(angToTarget + 0.25) * orbitRadius;
-                            this.targetAngle = Math.atan2(targetOY - this.y, targetOX - this.x);
-                            this.isBoosting = dToTarget > orbitRadius * 1.5 && this.aiBoostCooldown === 0 && this.score > 30;
-                            if (this.isBoosting) this.aiBoostCooldown = 8;
-                        }
-                        this.aiEncirclePhase++;
-                        if (this.aiEncirclePhase > 350) { this.aiEncirclePhase = 0; this.aiEncircleTarget = null; }
                         return;
                     }
                 }
 
-                // 3. HUNTING AND FOOD SEEKING
-                let prey = null, preyDistSq = 9999999;
-                let nearestFood = null, bestFoodScore = -1;
-                let nearestButterfly = null, bDistSq = 9999999;
+                // ── ARENA BOUNDARY ──────────────────────────────────────────
+                const dCenter=Math.hypot(this.x-WORLD_CENTER,this.y-WORLD_CENTER);
+                if (dCenter>currentArenaRadius-480) {
+                    this.targetAngle=Math.atan2(WORLD_CENTER-this.y,WORLD_CENTER-this.x)+(Math.random()-.5)*.38;
+                    this.isBoosting=dCenter>currentArenaRadius-240&&ai.boostCD===0;
+                    if(this.isBoosting)ai.boostCD=10; return;
+                }
 
-                let preyRangeSq = (3000) ** 2;
-                for (let s of snakes) {
-                    if (s === this || !s.alive) continue;
-                    let dx = s.x - this.x, dy = s.y - this.y; let dSq = dx * dx + dy * dy;
-                    if (dSq < preyRangeSq && this.score > s.score * 1.3 && dSq < preyDistSq) {
-                        prey = s; preyDistSq = dSq;
+                // ── WANDER NOISE (every frame — humanizing micro-drift) ──────
+                ai.wp += .013+tr.im*.024;
+                const noiseAmp = .022+tr.im*.065+ai.emo.rage*.038;
+                ai.wAmp = ai.wAmp*.90+noiseAmp*.10;
+                this.targetAngle += Math.sin(ai.wp)*ai.wAmp;
+
+                // ── STRATEGIC DECISION GATE ──────────────────────────────────
+                ai.decTmr--;
+                if (ai.decTmr>0) return;
+                const baseInt=Math.floor(4+(1-tr.im)*13+(1-tr.ag)*5+ai.emo.fear*9);
+                ai.decTmr=baseInt+Math.floor(Math.random()*9);
+
+                // ── MOOD TRANSITION ──────────────────────────────────────────
+                if (--ai.moodTmr<=0) {
+                    const rv=Math.random();
+                    const aB=tr.ag*.55+ai.emo.ego*.30+ai.emo.rage*.38-ai.emo.fear*.45;
+                    const cB=tr.ca*.55+ai.emo.fear*.38-ai.emo.ego*.18;
+                    ai.mood = rv<aB*.52 ? 'aggressive' : rv<aB*.52+cB*.52 ? 'cautious' : 'neutral';
+                    ai.moodTmr=180+Math.floor(Math.random()*320);
+                }
+                const mM = ai.mood==='aggressive'?1.55 : ai.mood==='cautious'?.52 : 1.0;
+
+                // ── SCAN: FOOD ───────────────────────────────────────────────
+                let bestFood=null, bFScore=-1;
+                const fR=this.radius*(16+tr.gr*12);
+                for (const idx of getNearbyFoodIndices(this.x,this.y,fR)) {
+                    const f=foods[idx]; if(!f||f.dead) continue;
+                    const d=Math.hypot(f.x-this.x,f.y-this.y);
+                    let zpen=1;
+                    for(const z of ai.deathZones){if(Math.hypot(f.x-z.x,f.y-z.y)<220){zpen=.28;break;}}
+                    const sc=(f.value*(f.isDropped?5+tr.gr*4:1)*zpen*(1+ai.emo.hunger*.55))/Math.max(1,d);
+                    if(sc>bFScore){bFScore=sc;bestFood=f;}
+                }
+
+                // ── SCAN: PREY & THREATS ─────────────────────────────────────
+                let bestPrey=null, bPScore=-1, bigThreat=null, bTDist=9999;
+                // rage target overrides prey selection
+                if (ai.rageTarget&&ai.rageTarget.alive&&ai.rageTmr>0) bestPrey=ai.rageTarget;
+                const prR=this.radius*(13+tr.ag*11+ai.emo.ego*6);
+                for (const s of snakes) {
+                    if (s===this||!s.alive) continue;
+                    const d=Math.hypot(s.x-this.x,s.y-this.y); if(d>prR+200) continue;
+                    const ratio=s.score/Math.max(1,this.score);
+                    if (!bestPrey && ratio<(1.08+tr.ag*.45)) {
+                        const ps=(1.4-ratio)*(1+ai.emo.ego*.4)*mM/Math.max(1,d)*1000;
+                        if(ps>bPScore){bPScore=ps;bestPrey=s;}
+                    }
+                    if (ratio>1.28&&d<bTDist){bigThreat=s;bTDist=d;}
+                }
+
+                // ── DROPPED FOOD CLUSTER → death-zone hint ──────────────────
+                if (bestFood&&bestFood.isDropped) {
+                    const nearby=getNearbyFoodIndices(bestFood.x,bestFood.y,300).filter(i=>foods[i]&&foods[i].isDropped&&!foods[i].dead).length;
+                    if (nearby>4) { ai.deathZones.push({x:bestFood.x,y:bestFood.y,born:frameCount}); if(ai.deathZones.length>6)ai.deathZones.shift(); }
+                }
+
+                // ── SCORE OPTIONS ────────────────────────────────────────────
+                const fMult=1+ai.emo.hunger*.58, egoM=1+ai.emo.ego*.5, fearM=1-ai.emo.fear*.55;
+                let act=null, aScore=-Infinity;
+                const try_=(id,sc)=>{ if(sc>aScore){aScore=sc;act=id;} };
+
+                if(bestFood){
+                    try_('food', tr.gr*fMult*(bFScore*55+(bestFood.isDropped?180:0)));
+                }
+                if(bestPrey&&bestPrey!==ai.rageTarget){
+                    const d=Math.hypot(bestPrey.x-this.x,bestPrey.y-this.y);
+                    try_('attack', tr.ag*mM*fearM*egoM*(750/Math.max(1,d)));
+                }
+                if(ai.rageTarget&&ai.rageTarget.alive){
+                    try_('rage', tr.ag*.75+ai.emo.rage*1.25);
+                }
+                if(bigThreat){
+                    const flScore=tr.ca*(1+ai.emo.fear*.75)*fearM*1.6+(bTDist<this.radius*9?2.8:.5);
+                    try_('flee', flScore);
+                }
+                try_('wander', .38+Math.random()*.28);
+
+                // ── EXECUTE ACTION ───────────────────────────────────────────
+                this.isBoosting=false;
+                const err=(Math.random()-.5)*(1-tr.iq)*.30;
+
+                if (act==='food'&&bestFood) {
+                    const d=Math.hypot(bestFood.x-this.x,bestFood.y-this.y);
+                    this.targetAngle=Math.atan2(bestFood.y-this.y,bestFood.x-this.x)+err;
+                    if((bestFood.isDropped||(tr.gr>.68&&d<420))&&ai.boostCD===0){
+                        this.isBoosting=true; ai.boostCD=8+Math.floor(Math.random()*8);
                     }
                 }
-
-                let nearbyIndices = getNearbyFoodIndices(this.x, this.y, 2500);
-                for (let k = 0; k < nearbyIndices.length; k++) {
-                    let idx = nearbyIndices[k];
-                    let f = foods[idx]; if (!f || f.dead) continue;
-                    let dx = f.x - this.x, dy = f.y - this.y; let dSq = dx * dx + dy * dy;
-                    let valMult = f.isDropped ? (20 + this.aiGreed * 10) : 1;
-                    let scoreVal = (f.value * valMult) / Math.max(1, Math.sqrt(dSq));
-                    if (scoreVal > bestFoodScore) { bestFoodScore = scoreVal; nearestFood = f; }
-                }
-                for (let b of butterflies) {
-                    let dx = b.x - this.x, dy = b.y - this.y; let dSq = dx * dx + dy * dy;
-                    if (dSq < bDistSq && dSq < 1000000) { bDistSq = dSq; nearestButterfly = b; }
-                }
-
-                let decidedAngle = this.targetAngle;
-
-                let wantAttack = prey && preyDistSq < 1500000 && Math.random() < this.aiAggression;
-                if (wantAttack) {
-                    let preyDist = Math.sqrt(preyDistSq);
-                    let timeEst = preyDist / Math.max(1, this.speed);
-                    let ix = prey.x + Math.cos(prey.angle) * prey.speed * timeEst;
-                    let iy = prey.y + Math.sin(prey.angle) * prey.speed * timeEst;
-                    let dToInterceptSq = (ix - this.x) ** 2 + (iy - this.y) ** 2;
-
-                    if (preyDist < 700 && this.score > prey.score * 2.0 && this.segments.length > 50) {
-                        this.aiEncircleTarget = prey; this.aiEncirclePhase = 1;
+                else if (act==='attack'&&bestPrey) {
+                    const d=Math.hypot(bestPrey.x-this.x,bestPrey.y-this.y);
+                    const tE=d/Math.max(1,this.speed);
+                    const iqF=.6+tr.iq*.5;
+                    this.targetAngle=Math.atan2(
+                        bestPrey.y+Math.sin(bestPrey.angle)*bestPrey.speed*tE*iqF-this.y,
+                        bestPrey.x+Math.cos(bestPrey.angle)*bestPrey.speed*tE*iqF-this.x)+err;
+                    if(d>100&&d<1300&&ai.boostCD===0&&tr.ag>.42){
+                        this.isBoosting=true; ai.boostCD=6+Math.floor(Math.random()*10);
                     }
-
-                    decidedAngle = Math.atan2(iy - this.y, ix - this.x);
-                    this.isBoosting = dToInterceptSq < 1000000 && dToInterceptSq > 10000 && this.score > 40 && this.aiBoostCooldown === 0;
-                    if (this.isBoosting) this.aiBoostCooldown = 8;
+                    if(d<750&&tr.iq>.52&&!ai.circTarget){ai.circTarget=bestPrey;ai.circPhase=1;}
                 }
-                else if (nearestButterfly && bDistSq < (nearestFood ? 250000 : 9999999)) {
-                    decidedAngle = Math.atan2(nearestButterfly.y - this.y, nearestButterfly.x - this.x);
-                    this.isBoosting = bDistSq < 160000 && this.aiBoostCooldown === 0 && this.score > 30;
-                    if (this.isBoosting) this.aiBoostCooldown = 12;
+                else if (act==='rage'&&ai.rageTarget&&ai.rageTarget.alive) {
+                    const rt=ai.rageTarget, d=Math.hypot(rt.x-this.x,rt.y-this.y);
+                    this.targetAngle=Math.atan2(rt.y-this.y,rt.x-this.x)+err;
+                    if(d<1600&&ai.boostCD===0){this.isBoosting=true;ai.boostCD=9;}
                 }
-                else if (nearestFood) {
-                    let foodDSq = (nearestFood.x - this.x) ** 2 + (nearestFood.y - this.y) ** 2;
-                    decidedAngle = Math.atan2(nearestFood.y - this.y, nearestFood.x - this.x);
-                    decidedAngle += Math.sin(frameCount * 0.05) * 0.1;
-
-                    if ((nearestFood.isDropped || (this.aiGreed > 0.6 && foodDSq < 250000)) && this.score > 30 && this.aiBoostCooldown === 0) {
-                        this.isBoosting = true; this.aiBoostCooldown = 9;
+                else if (act==='flee'&&bigThreat) {
+                    const fa=Math.atan2(this.y-bigThreat.y,this.x-bigThreat.x);
+                    if(bestFood&&tr.ca<.72){
+                        const foa=Math.atan2(bestFood.y-this.y,bestFood.x-this.x);
+                        const bl=tr.ca*.62;
+                        this.targetAngle=fa*bl+foa*(1-bl)+err;
+                    } else { this.targetAngle=fa+err; }
+                    if(bTDist<this.radius*8&&ai.boostCD===0){
+                        this.isBoosting=true; ai.boostCD=20+Math.floor(Math.random()*12);
                     }
                 }
-                else {
-                    let targetX = WORLD_CENTER + (Math.random() - 0.5) * currentArenaRadius * 0.8;
-                    let targetY = WORLD_CENTER + (Math.random() - 0.5) * currentArenaRadius * 0.8;
-                    decidedAngle = Math.atan2(targetY - this.y, targetX - this.x);
+                else { // wander
+                    if(Math.random()<tr.im*.38+.05)
+                        ai.wanderAngle+=(Math.random()-.5)*(0.38+tr.im*.78);
+                    const dHome=Math.hypot(this.x-ai.homeX,this.y-ai.homeY);
+                    if(dHome>ai.territoryR){
+                        const ha=Math.atan2(ai.homeY-this.y,ai.homeX-this.x);
+                        ai.wanderAngle+=this._ad(ha,ai.wanderAngle)*.14;
+                    }
+                    this.targetAngle=ai.wanderAngle+err;
                 }
 
-                decidedAngle += (Math.random() - 0.5) * this.aiMicroError;
-                this.targetAngle = decidedAngle;
+                // ── ENCIRCLE (intelligent bots) ──────────────────────────────
+                if (ai.circTarget) {
+                    if(!ai.circTarget.alive||Math.hypot(ai.circTarget.x-this.x,ai.circTarget.y-this.y)>2200)
+                        {ai.circTarget=null;ai.circPhase=0;}
+                }
+                if (ai.circTarget&&ai.circTarget.alive&&ai.circPhase>0) {
+                    const et=ai.circTarget, d=Math.hypot(et.x-this.x,et.y-this.y);
+                    ai.circPhase++;
+                    if (ai.circPhase<38) {
+                        const tE=d/Math.max(1,this.speed);
+                        this.targetAngle=Math.atan2(et.y+Math.sin(et.angle)*et.speed*tE-this.y,
+                                                     et.x+Math.cos(et.angle)*et.speed*tE-this.x)+err;
+                        if(d>100&&ai.boostCD===0){this.isBoosting=true;ai.boostCD=5;}
+                    } else if (ai.circPhase<95) {
+                        this.targetAngle=et.angle+Math.PI*(Math.random()<.5?.52:-.52)+err;
+                        if(ai.boostCD===0){this.isBoosting=true;ai.boostCD=4;}
+                    } else if (ai.circPhase<210&&this.score>et.score*1.38) {
+                        const oR=Math.max(et.radius*2.4,et.radius*(10-(ai.circPhase-95)/30));
+                        const ata=Math.atan2(this.y-et.y,this.x-et.x);
+                        this.targetAngle=Math.atan2(et.y+Math.sin(ata+.22)*oR-this.y,
+                                                     et.x+Math.cos(ata+.22)*oR-this.x)+err;
+                        if(d>oR*1.25&&ai.boostCD===0){this.isBoosting=true;ai.boostCD=8;}
+                    } else {ai.circTarget=null;ai.circPhase=0;}
+                }
             }
             update() {
+
                 if (!this.alive) return;
                 this.radius = Math.min(this.conf.espessuraInicial + Math.floor(this.score / CONFIG.cobra.pontosParaEngrossar), this.conf.espessuraMaxima);
                 this.targetLength = Math.min(this.conf.comprimentoInicial + Math.floor(this.score / CONFIG.cobra.pontosParaCrescer), this.conf.comprimentoMaximo);
