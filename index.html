@@ -1326,18 +1326,18 @@
         const CONFIG = {
             cobra: {
                 pc: {
-                    espessuraInicial: 5.4, espessuraMaxima: 8.7, comprimentoInicial: 4, comprimentoMaximo: 630,
-                    velocidadeBase: 0.91, velocidadeTurbo: 1.8, velocidadeGiro: 0.043,
+                    espessuraInicial: 5.4, espessuraMaxima: 7.7, comprimentoInicial: 4, comprimentoMaximo: 730,
+                    velocidadeBase: 0.91, velocidadeTurbo: 1.8, velocidadeGiro: 0.040,
                     distanciaGomos: 0.17, multiplicadorCabeca: 1.05, hitboxMult: 0.85
                 },
                 mobile: {
-                    espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 6, comprimentoMaximo: 630,
-                    velocidadeBase: 0.39, velocidadeTurbo: 1.5, velocidadeGiro: 0.038,
+                    espessuraInicial: 1.9, espessuraMaxima: 3.3, comprimentoInicial: 6, comprimentoMaximo: 730,
+                    velocidadeBase: 0.39, velocidadeTurbo: 1.5, velocidadeGiro: 0.036,
                     distanciaGomos: 0.17, multiplicadorCabeca: 1.05, hitboxMult: 0.85
                 },
-                pontosParaEngrossar: 3000, pontosParaCrescer: 1.0, pontosIniciais: 20,
+                pontosParaEngrossar: 3400, pontosParaCrescer: 1.0, pontosIniciais: 20,
                 turbo: { custo: 0.2, tamanhoOrbe: 3.5, chanceOrbe: 0.10, quantidadeOrbe: 1 },
-                captura: { raioBase: 10, raioMagnet: 220, forcaAtracao: 10 }
+                captura: { raioBase: 10, raioMagnet: 220, forcaAtracao: 8 }
             },
             zoom: {
                 pc: { inicial: 5.10, minimo: 4.70, fatorAfastamento: 1.620, velocidadeTransica: 0.011 },
@@ -1345,7 +1345,7 @@
             },
             mundo: {
                 tamanhoRaioInicial: 3000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
-                pc: { quantidadeBots: 150, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 13 },
+                pc: { quantidadeBots: 150, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 12 },
                 mobile: { quantidadeBots: 100, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 2 },
                 distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
                 comida: { tamanhoMin: 2.00, tamanhoMax: 4.10, tamanhoMorte: 3.10, tamanhoMorteBonus: 1.60 }
