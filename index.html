@@ -1331,9 +1331,9 @@
                 mobile: { inicial: 5.10, minimo: 4.10, fatorAfastamento: 2.020, velocidadeTransica: 0.002 }
             },
             mundo: {
-                tamanhoRaioInicial: 4000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
-                pc: { quantidadeBots: 250, quantidadeComida: 25000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 13 },
-                mobile: { quantidadeBots: 150, quantidadeComida: 20000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 3 },
+                tamanhoRaioInicial: 3000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
+                pc: { quantidadeBots: 250, quantidadeComida: 30000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 13 },
+                mobile: { quantidadeBots: 100, quantidadeComida: 24000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 2 },
                 distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
                 comida: { tamanhoMin: 1.80, tamanhoMax: 4.10, tamanhoMorte: 3.70, tamanhoMorteBonus: 4.10 }
             },
@@ -2474,6 +2474,15 @@
             const spawn = getSafeSpawnPos(CONFIG.mundo.distanciaSeguraSpawn);
             player = new Snake(spawn.x, spawn.y, DOM.nick.value.trim() || "LENDA", skinIndex, true, CONFIG.cobra.pontosIniciais, ACCESSORIES[accIndex].id);
             player.activePowers = {}; snakes.push(player);
+
+            // BÔNUS DE NASCIMENTO: Cria um cluster de orbs focado perto do jogador para garantir um bom começo
+            for (let i = 0; i < 80; i++) {
+                let pAngle = Math.random() * Math.PI * 2;
+                let pRadius = Math.random() * 800;
+                let weight = Math.pow(Math.random(), 2.0);
+                let size = CONFIG.mundo.comida.tamanhoMin + weight * (CONFIG.mundo.comida.tamanhoMax - CONFIG.mundo.comida.tamanhoMin);
+                foods.push(new Food(spawn.x + Math.cos(pAngle) * pRadius, spawn.y + Math.sin(pAngle) * pRadius, size, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)], 0, size));
+            }
 
             let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc']; camera.zoom = zV.inicial; camera.x = player.x; camera.y = player.y; isMouseDown = false; smoothedJoystickAngle = player.angle;
 
