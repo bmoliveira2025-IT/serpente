@@ -1208,12 +1208,7 @@
                     <button class="btn-close" onclick="closeModal('modal-skins')">✕</button>
                 </div>
                 <div class="modal-body" id="skins-carousel-view">
-                    <div class="showroom-stage" style="height: 250px;">
-                        <div class="item-info">
-                            <div class="item-name" id="skin-name-display">PELE ORIGINAL</div>
-                            <div class="item-rarity" id="skin-lock-display" style="color: var(--success);">DESBLOQUEADO
-                            </div>
-                        </div>
+                    <div class="showroom-stage" style="height: 120px;">
                         <canvas id="skingal-snake-canvas" class="showroom-canvas"></canvas>
                         <div class="acc-controls">
                             <div class="acc-arrow" id="btn-skin-prev">❮</div>
@@ -1254,12 +1249,7 @@
                     <button class="btn-close" onclick="closeModal('modal-accs')">✕</button>
                 </div>
                 <div class="modal-body" style="padding-bottom: 0;">
-                    <div class="showroom-stage"
-                        style="height: 250px; background: radial-gradient(ellipse at bottom, rgba(0, 255, 136, 0.15) 0%, transparent 70%);">
-                        <div class="item-info">
-                            <div class="item-name" id="acc-name-display">NENHUM</div>
-                            <div class="item-rarity" id="acc-rarity-label">COMUM</div>
-                        </div>
+                    <div class="showroom-stage" style="height: 120px;">
                         <canvas id="acc-snake-canvas" class="showroom-canvas"></canvas>
 
                         <div class="acc-controls">
@@ -1337,29 +1327,29 @@
         const CONFIG = {
             cobra: {
                 pc: {
-                    espessuraInicial: 5.4, espessuraMaxima: 8.7, comprimentoInicial: 4, comprimentoMaximo: 430,
-                    velocidadeBase: 1.00, velocidadeTurbo: 1.6, velocidadeGiro: 0.050,
-                    distanciaGomos: 0.14, multiplicadorCabeca: 1.15, hitboxMult: 0.85
+                    espessuraInicial: 5.4, espessuraMaxima: 8.7, comprimentoInicial: 4, comprimentoMaximo: 630,
+                    velocidadeBase: 1.00, velocidadeTurbo: 1.8, velocidadeGiro: 0.047,
+                    distanciaGomos: 0.17, multiplicadorCabeca: 1.10, hitboxMult: 0.85
                 },
                 mobile: {
-                    espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 1, comprimentoMaximo: 430,
+                    espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 1, comprimentoMaximo: 630,
                     velocidadeBase: 0.50, velocidadeTurbo: 1.5, velocidadeGiro: 0.042,
-                    distanciaGomos: 0.24, multiplicadorCabeca: 1.15, hitboxMult: 0.85
+                    distanciaGomos: 0.17, multiplicadorCabeca: 1.10, hitboxMult: 0.85
                 },
-                pontosParaEngrossar: 1000, pontosParaCrescer: 1.0, pontosIniciais: 20,
+                pontosParaEngrossar: 2000, pontosParaCrescer: 1.0, pontosIniciais: 20,
                 turbo: { custo: 0.2, tamanhoOrbe: 3.5, chanceOrbe: 0.10, quantidadeOrbe: 1 },
                 captura: { raioBase: 10, raioMagnet: 220, forcaAtracao: 10 }
             },
             zoom: {
-                pc: { inicial: 5.10, minimo: 4.10, fatorAfastamento: 2.020, velocidadeTransica: 0.002 },
-                mobile: { inicial: 5.10, minimo: 4.10, fatorAfastamento: 2.020, velocidadeTransica: 0.002 }
+                pc: { inicial: 5.10, minimo: 4.10, fatorAfastamento: 2.020, velocidadeTransica: 0.007 },
+                mobile: { inicial: 5.10, minimo: 4.10, fatorAfastamento: 2.020, velocidadeTransica: 0.007 }
             },
             mundo: {
                 tamanhoRaioInicial: 3000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
-                pc: { quantidadeBots: 250, quantidadeComida: 30000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 13 },
-                mobile: { quantidadeBots: 100, quantidadeComida: 24000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 2 },
+                pc: { quantidadeBots: 150, quantidadeComida: 13000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 13 },
+                mobile: { quantidadeBots: 100, quantidadeComida: 13000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 2 },
                 distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
-                comida: { tamanhoMin: 1.80, tamanhoMax: 4.10, tamanhoMorte: 3.70, tamanhoMorteBonus: 4.10 }
+                comida: { tamanhoMin: 1.80, tamanhoMax: 4.10, tamanhoMorte: 2.70, tamanhoMorteBonus: 3.10 }
             },
             powerups: {
                 spawnTimerMin: 600, spawnTimerMax: 900, limiteNoMapa: 0,
@@ -1480,7 +1470,7 @@
             if (availableNames.length === 0) availableNames = BOT_NAMES; // fallback
             return availableNames[Math.floor(Math.random() * availableNames.length)];
         }
-        const PALETTE_COLORS = ['#ff0000', '#ff4500', '#ff8c00', '#ffd700', '#ffff00', '#9acd32', '#32cd32', '#00ff00', '#00fa9a', '#00ffff', '#00bfff', '#1e90ff', '#0000ff', '#8a2be2', '#ff00ff', '#ff1493', '#ff69b4', '#ffffff', '#cccccc', '#888888', '#444444', '#000000', '#8b4513', '#a0522d', '#cd853f', '#deb887', '#f5f5dc', '#00ff88', '#ff0055', '#7a28cb', '#111111', '#22cc22', '#00ccff', '#ff00cc', '#aa00ff'];
+        const PALETTE_COLORS = ['#ff0000', '#ff3300', '#ff6600', '#ff9900', '#ffcc00', '#ffff00', '#ccff00', '#99ff00', '#66ff00', '#33ff00', '#00ff00', '#00ff33', '#00ff66', '#00ff99', '#00ffcc', '#00ffff', '#00ccff', '#0099ff', '#0066ff', '#3333ff', '#6600ff', '#9900ff', '#cc00ff', '#ff00ff', '#ff00cc', '#ff0099', '#ff0066', '#ff0033', '#ffffff', '#ff0055', '#00ff88', '#22cc22', '#ff55aa', '#00eeff', '#ffee00'];
 
         let SKINS = [
             ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#009c3b', '#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222'], ['#000000', '#ffdf00'], ['#ff8c00', '#000000', '#ffffff'], ['#1a1a2e', '#16213e', '#0f3460', '#e94560'], ['#00ffcc', '#ff00ff', '#111111'], ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'], ['#8a2be2', '#4b0082', '#000000'], ['#00ffff', '#00cccc', '#009999', '#006666'], ['#ff0000', '#8b0000', '#000000'], ['#39ff14', '#000000', '#111111'], ['#ffffff', '#000000'], ['#ffd700', '#ffaa00'], ['#e0ffff', '#00ffff'], ['#ff4500', '#8b0000'], ['#00bfff', '#ffffff'], ['#ffff00', '#ff0000'], ['#f8f8ff', '#dcdcdc'], ['#ff8c00', '#ffd700'], ['#0000cd', '#1e90ff'], ['#228b22', '#32cd32'], ['#2f4f4f', '#000000']
@@ -2375,11 +2365,14 @@
         function updateSkinUI() {
             let req = SKIN_REQUIREMENTS[skinIndex]; let isLocked = false;
             if (req) { if (req.type === 'score' && PLAYER_STATS.highScore < req.val) isLocked = true; if (req.type === 'kills' && PLAYER_STATS.totalKills < req.val) isLocked = true; }
-            DOM.skinName.innerText = isLocked ? 'BLOQUEADA' : (SKIN_NAMES[skinIndex] || 'PERSONALIZADA');
-            DOM.skinLock.innerText = isLocked ? '🔒 ' + req.desc : 'DESBLOQUEADO';
-            DOM.skinLock.style.color = isLocked ? 'var(--danger)' : 'var(--success)';
+            if (DOM.skinName) DOM.skinName.innerText = isLocked ? 'BLOQUEADA' : (SKIN_NAMES[skinIndex] || 'PERSONALIZADA');
+            if (DOM.skinLock) {
+                DOM.skinLock.innerText = isLocked ? '🔒 ' + req.desc : 'DESBLOQUEADO';
+                DOM.skinLock.style.color = isLocked ? 'var(--danger)' : 'var(--success)';
+            }
             DOM.skinEquipBtn.style.opacity = isLocked ? '0.5' : '1';
             DOM.skinEquipBtn.style.pointerEvents = isLocked ? 'none' : 'auto';
+            DOM.skinEquipBtn.innerText = isLocked ? ('🔒 ' + req.desc) : 'OK';
             startGalleryPreview();
         }
         document.getElementById('btn-skin-prev').onclick = () => { skinIndex = (skinIndex - 1 + SKINS.length) % SKINS.length; updateSkinUI(); };
@@ -2424,9 +2417,9 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, w, h); builderPreviewTime += 0.07;
             const colors = customSkinBuilder; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.14; const spacing = segR * 0.45; const headX = w * 0.75; const centerY = h / 2;
-            const segs = []; const segCount = 20;
-            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(builderPreviewTime - i * 0.25) * (segR * 1.5); segs.push({ x: headX - i * spacing, y: centerY + wave }); }
+            const segR = h * 0.25; const spacing = segR * 0.30; const cy = h * 0.50; const headX = w * 0.80;
+            const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
+            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(builderPreviewTime - i * 0.22) * (segR * 0.7); segs.push({ x: headX - i * spacing, y: cy + wave }); }
             const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
             ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath();
             for (let i = segs.length - 1; i >= 1; i--) { const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue; ctx.moveTo(s.x + segR + 1.5, s.y); ctx.arc(s.x, s.y, segR + 1.5, 0, Math.PI * 2); }
@@ -2448,9 +2441,9 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, w, h); galleryPreviewTime += 0.07;
             const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.09; const spacing = segR * 0.45; const headX = w * 0.75; const centerY = h / 2;
-            const segs = []; const segCount = 24;
-            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(galleryPreviewTime - i * 0.25) * (segR * 1.5); segs.push({ x: headX - i * spacing, y: centerY + wave }); }
+            const segR = h * 0.20; const spacing = segR * 0.30; const cy = h * 0.50; const headX = w * 0.80;
+            const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
+            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(galleryPreviewTime - i * 0.22) * (segR * 0.7); segs.push({ x: headX - i * spacing, y: cy + wave }); }
             const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
             ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath();
             for (let i = segs.length - 1; i >= 1; i--) { const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue; ctx.moveTo(s.x + segR + 1.5, s.y); ctx.arc(s.x, s.y, segR + 1.5, 0, Math.PI * 2); }
@@ -2469,8 +2462,10 @@
 
         function updateAccUI() {
             const acc = ACCESSORIES[accIndex];
-            DOM.accName.innerText = acc.name.toUpperCase();
-            DOM.accRarity.innerText = ACC_RARITY_NAMES[acc.rarity]; DOM.accRarity.style.color = ACC_RARITY_COLORS[acc.rarity];
+            if (DOM.accName) DOM.accName.innerText = acc.name.toUpperCase();
+            if (DOM.accRarity) { DOM.accRarity.innerText = ACC_RARITY_NAMES[acc.rarity]; DOM.accRarity.style.color = ACC_RARITY_COLORS[acc.rarity]; }
+            const equipBtn = document.getElementById('acc-equip-btn');
+            if (equipBtn) equipBtn.innerText = `EQUIPAR ADEREÇO`;
             startAccPreview();
         }
 
@@ -2481,7 +2476,7 @@
             const w = canvas.width = canvas.parentElement.clientWidth; const h = canvas.height = canvas.parentElement.clientHeight;
             ctx.clearRect(0, 0, w, h); accPreviewTime += 0.04;
             const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.25; const spacing = segR * 0.30; const headX = w * 0.50; const cy = h * 0.50;
+            const segR = h * 0.25; const spacing = segR * 0.30; const headX = w * 0.80; const cy = h * 0.50;
             const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
             for (let i = 0; i <= segCount; i++) { const wave = Math.sin(accPreviewTime - i * 0.22) * (segR * 0.7); segs.push({ x: headX - i * spacing, y: cy + wave }); }
             const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
