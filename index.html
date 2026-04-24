@@ -1313,8 +1313,8 @@
         const CONFIG = {
             cobra: {
                 pc: {
-                    espessuraInicial: 5.8, espessuraMaxima: 8.7, comprimentoInicial: 1, comprimentoMaximo: 400,
-                    velocidadeBase: 0.99, velocidadeTurbo: 1.0, velocidadeGiro: 0.042,
+                    espessuraInicial: 5.7, espessuraMaxima: 8.7, comprimentoInicial: 1, comprimentoMaximo: 400,
+                    velocidadeBase: 1.00, velocidadeTurbo: 1.0, velocidadeGiro: 0.042,
                     distanciaGomos: 0.29, multiplicadorCabeca: 1.15, hitboxMult: 0.85
                 },
                 mobile: {
@@ -2321,7 +2321,7 @@
         function updateHUD() {
             if (gameState !== 'playing' || !player || !player.alive) return;
             DOM.score.innerText = Math.floor(player.score).toLocaleString();
-            
+
             let rank = snakes.length - snakes.indexOf(player);
             DOM.rank.innerText = rank; DOM.total.innerText = snakes.length;
 
@@ -2336,12 +2336,12 @@
             }
             mCtxElement.clearRect(0, 0, 140, 140); mCtxElement.beginPath(); mCtxElement.arc(70, 70, 70, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.05)'; mCtxElement.fill(); mCtxElement.strokeStyle = 'rgba(255,255,255,0.15)'; mCtxElement.lineWidth = 1; mCtxElement.stroke();
             let sc = 70 / currentArenaRadius;
-            for (let i = 0; i < snakes.length; i++) { 
+            for (let i = 0; i < snakes.length; i++) {
                 let s = snakes[i];
-                if (s === player) continue; 
-                let mX = 70 + (s.x - WORLD_CENTER) * sc; let mY = 70 + (s.y - WORLD_CENTER) * sc; let dist = Math.hypot(mX - 70, mY - 70); 
-                if (dist > 67) { let ag = Math.atan2(mY - 70, mX - 70); mX = 70 + Math.cos(ag) * 67; mY = 70 + Math.sin(ag) * 67; } 
-                mCtxElement.beginPath(); mCtxElement.arc(mX, mY, 1.5, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.35)'; mCtxElement.fill(); 
+                if (s === player) continue;
+                let mX = 70 + (s.x - WORLD_CENTER) * sc; let mY = 70 + (s.y - WORLD_CENTER) * sc; let dist = Math.hypot(mX - 70, mY - 70);
+                if (dist > 67) { let ag = Math.atan2(mY - 70, mX - 70); mX = 70 + Math.cos(ag) * 67; mY = 70 + Math.sin(ag) * 67; }
+                mCtxElement.beginPath(); mCtxElement.arc(mX, mY, 1.5, 0, Math.PI * 2); mCtxElement.fillStyle = 'rgba(255,255,255,0.35)'; mCtxElement.fill();
             }
             if (player && player.alive) { let pX = 70 + (player.x - WORLD_CENTER) * sc; let pY = 70 + (player.y - WORLD_CENTER) * sc; let dist = Math.hypot(pX - 70, pY - 70); if (dist > 65) { let ag = Math.atan2(pY - 70, pX - 70); pX = 70 + Math.cos(ag) * 65; pY = 70 + Math.sin(ag) * 65; } let pulse = 0.6 + Math.sin(performance.now() * 0.005) * 0.4; mCtxElement.beginPath(); mCtxElement.arc(pX, pY, 7, 0, Math.PI * 2); mCtxElement.fillStyle = `rgba(255,255,255,${0.15 * pulse})`; mCtxElement.fill(); mCtxElement.beginPath(); mCtxElement.arc(pX, pY, 3.5, 0, Math.PI * 2); mCtxElement.fillStyle = '#ffffff'; mCtxElement.fill(); }
         }
@@ -2551,7 +2551,7 @@
             }
 
             let writeS = 0; for (let i = 0; i < snakes.length; i++) { if (snakes[i].alive || snakes[i].isPlayer) snakes[writeS++] = snakes[i]; } snakes.length = writeS;
-            let maxParticles = PerformanceManager.getCfg().particles; 
+            let maxParticles = PerformanceManager.getCfg().particles;
             let writeP = 0;
             for (let i = 0; i < particles.length; i++) { particles[i].update(); if (particles[i].dead) { ParticlePool.recycle(particles[i]); } else { particles[writeP++] = particles[i]; } }
             particles.length = writeP;
