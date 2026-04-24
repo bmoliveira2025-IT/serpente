@@ -1211,7 +1211,7 @@
         <div id="modal-skins" class="modal-overlay">
             <div class="modal-content no-card">
                 <div class="modal-body" id="skins-carousel-view">
-                    <div class="showroom-stage" style="height: 120px;">
+                    <div class="showroom-stage" style="height: 200px;">
                         <canvas id="skingal-snake-canvas" class="showroom-canvas"></canvas>
                         <div class="acc-controls">
                             <div class="acc-arrow" id="btn-skin-prev">❮</div>
@@ -1249,7 +1249,7 @@
         <div id="modal-accs" class="modal-overlay">
             <div class="modal-content no-card">
                 <div class="modal-body" style="padding-bottom: 0;">
-                    <div class="showroom-stage" style="height: 120px;">
+                    <div class="showroom-stage" style="height: 200px;">
                         <canvas id="acc-snake-canvas" class="showroom-canvas"></canvas>
 
                         <div class="acc-controls">
@@ -1818,7 +1818,7 @@
         // ======================================================================
         // ADEREÇOS CACHED (ALTA PERFORMANCE: ZERO GRADIENTS EM RUNTIME)
         // ======================================================================
-        const STATIC_ACCS = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15]; // Adereços que não se mexem
+        const STATIC_ACCS = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 17, 18, 19, 20, 21, 22, 24, 25]; // Adereços que não se mexem
         function drawAccessory(ctx, x, y, r, angle, accId) {
             if (!accId) return;
             const mob = IS_MOBILE_CLIENT; const hQ = APP_SETTINGS.highGfx;
@@ -1865,6 +1865,136 @@
                 case 14: const ht = t * 1.2; if (!mob && hQ) glow('#FFF3B0', r * 1.2); ctx.strokeStyle = '#FFF3B0'; ctx.lineWidth = r * 0.08; ctx.beginPath(); ctx.ellipse(-r * 0.5, 0, r * 0.3, r * 1.3, 0, 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = r * 0.03; ctx.setLineDash([r * 0.1, r * 0.1]); ctx.lineDashOffset = ht * r; ctx.beginPath(); ctx.ellipse(-r * 0.5, 0, r * 0.4, r * 1.5, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); noGlow(); break;
                 case 15: fill('#EDF2F4'); ctx.beginPath(); ctx.moveTo(r * 0.3, -r * 0.6); ctx.lineTo(r * 0.9, -r * 0.4); ctx.lineTo(r * 0.9, r * 0.4); ctx.lineTo(r * 0.3, r * 0.6); ctx.fill(); fill('#2B2D42'); ctx.fillRect(r * 0.7, -r * 0.3, r * 0.25, r * 0.15); ctx.fillRect(r * 0.7, r * 0.15, r * 0.25, r * 0.15); if (!mob && hQ) glow('#E63946', r * 0.6); fill('#E63946'); circ(r * 0.8, -r * 0.22, r * 0.06); circ(r * 0.8, r * 0.22, r * 0.06); noGlow(); ctx.strokeStyle = '#8D99AE'; ctx.lineWidth = r * 0.05; ctx.beginPath(); ctx.moveTo(r * 0.9, -r * 0.1); ctx.lineTo(r * 0.9, r * 0.1); ctx.stroke(); ctx.beginPath(); ctx.moveTo(r * 0.9, -r * 0.4); ctx.lineTo(r * 1.1, -r * 0.3); ctx.stroke(); ctx.beginPath(); ctx.moveTo(r * 0.9, r * 0.4); ctx.lineTo(r * 1.1, r * 0.3); ctx.stroke(); break;
                 case 16: const wt = t * 3.0, flap = Math.sin(wt) * 0.3; if (!mob && hQ) glow('#FF5400', r * 0.8); const drawWing = (sy) => { ctx.fillStyle = 'rgba(255, 84, 0, 0.85)'; ctx.beginPath(); ctx.moveTo(-r * 0.2, 0); ctx.lineTo(-r * 0.8, sy * r * (1.0 + flap)); ctx.lineTo(r * 0.2, sy * r * (1.8 + flap * 1.5)); ctx.lineTo(-r * 0.4, sy * r * (0.8 + flap * 0.5)); ctx.fill(); ctx.strokeStyle = '#FFD000'; ctx.lineWidth = r * 0.06; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(-r * 0.2, 0); ctx.lineTo(-r * 0.8, sy * r * (1.0 + flap)); ctx.lineTo(r * 0.2, sy * r * (1.8 + flap * 1.5)); ctx.stroke(); }; drawWing(-1); drawWing(1); noGlow(); break;
+
+                // --- NARIZ DE PORCO (17) ---
+                case 17:
+                    fill('#FFB6C1'); ctx.beginPath(); ctx.ellipse(r * 0.85, 0, r * 0.45, r * 0.35, 0, 0, Math.PI * 2); ctx.fill();
+                    fill('#FF8FAA'); ctx.beginPath(); ctx.ellipse(r * 0.85, 0, r * 0.38, r * 0.28, 0, 0, Math.PI * 2); ctx.fill();
+                    fill('#2B2D42'); circ(r * 0.78, -r * 0.1, r * 0.08); circ(r * 0.78, r * 0.1, r * 0.08);
+                    fill('rgba(255,255,255,0.25)'); ctx.beginPath(); ctx.ellipse(r * 0.95, -r * 0.08, r * 0.08, r * 0.12, Math.PI * 0.2, 0, Math.PI * 2); ctx.fill();
+                    break;
+
+                // --- CARA DE MACACO (18) ---
+                case 18:
+                    fill('#8B5E3C'); ctx.beginPath(); ctx.ellipse(r * 0.7, 0, r * 0.55, r * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+                    fill('#D4A574'); ctx.beginPath(); ctx.ellipse(r * 0.8, 0, r * 0.35, r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+                    fill('#2B2D42'); circ(r * 0.75, -r * 0.08, r * 0.04); circ(r * 0.75, r * 0.08, r * 0.04);
+                    fill('#8B5E3C'); circ(r * 0.3, -r * 0.7, r * 0.2); circ(r * 0.3, r * 0.7, r * 0.2);
+                    fill('#D4A574'); circ(r * 0.3, -r * 0.7, r * 0.12); circ(r * 0.3, r * 0.7, r * 0.12);
+                    ctx.strokeStyle = '#2B2D42'; ctx.lineWidth = r * 0.04; ctx.beginPath(); ctx.arc(r * 0.85, 0, r * 0.12, 0.2, Math.PI - 0.2); ctx.stroke();
+                    break;
+
+                // --- TENTÁCULOS DE LULA (19) ---
+                case 19:
+                    const tentColors = ['#7B2D8E', '#9B4DCA', '#6A1B9A', '#AB47BC'];
+                    for (let i = 0; i < 6; i++) {
+                        let ang = (i - 2.5) * 0.35; let len = r * (1.2 + (i % 2) * 0.3);
+                        ctx.strokeStyle = tentColors[i % tentColors.length]; ctx.lineWidth = r * 0.12; ctx.lineCap = 'round';
+                        ctx.beginPath(); ctx.moveTo(r * 0.6, ang * r * 0.5);
+                        ctx.quadraticCurveTo(r * 0.8 + len * 0.3, ang * r * 0.8, r * 0.5 + len, ang * r * 1.1);
+                        ctx.stroke();
+                        fill(tentColors[i % tentColors.length]); circ(r * 0.5 + len, ang * r * 1.1, r * 0.06);
+                    }
+                    break;
+
+                // --- CORRENTE (20) ---
+                case 20:
+                    ctx.strokeStyle = '#C0C0C0'; ctx.lineWidth = r * 0.1; ctx.lineCap = 'round';
+                    for (let i = 0; i < 5; i++) {
+                        let cx = r * (-0.4 + i * 0.35); let cy = (i % 2 === 0 ? -1 : 1) * r * 0.15;
+                        ctx.beginPath(); ctx.ellipse(cx, cy, r * 0.15, r * 0.22, (i % 2) * Math.PI * 0.3, 0, Math.PI * 2); ctx.stroke();
+                        fill('rgba(255,255,255,0.3)'); circ(cx - r * 0.05, cy - r * 0.08, r * 0.04);
+                    }
+                    fill('#A0A0A0'); ctx.strokeStyle = '#808080'; ctx.lineWidth = r * 0.06;
+                    ctx.beginPath(); ctx.ellipse(r * 0.95, 0, r * 0.2, r * 0.25, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    break;
+
+                // --- FOCINHO DE LOBO (21) ---
+                case 21:
+                    fill('#5C4033'); ctx.beginPath(); ctx.moveTo(r * 0.4, -r * 0.5); ctx.lineTo(r * 1.3, -r * 0.15); ctx.lineTo(r * 1.3, r * 0.15); ctx.lineTo(r * 0.4, r * 0.5); ctx.quadraticCurveTo(r * 0.6, 0, r * 0.4, -r * 0.5); ctx.fill();
+                    fill('#3E2723'); ctx.beginPath(); ctx.ellipse(r * 1.2, 0, r * 0.15, r * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+                    fill('#1A1A1A'); circ(r * 1.2, 0, r * 0.07);
+                    fill('#FFFFFF'); ctx.beginPath(); ctx.moveTo(r * 0.9, r * 0.15); ctx.lineTo(r * 0.85, r * 0.35); ctx.lineTo(r * 0.95, r * 0.15); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(r * 1.05, r * 0.15); ctx.lineTo(r * 1.0, r * 0.32); ctx.lineTo(r * 1.1, r * 0.15); ctx.fill();
+                    fill('#5C4033'); ctx.beginPath(); ctx.moveTo(r * 0.1, -r * 0.5); ctx.lineTo(-r * 0.15, -r * 1.1); ctx.lineTo(r * 0.35, -r * 0.6); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(r * 0.1, r * 0.5); ctx.lineTo(-r * 0.15, r * 1.1); ctx.lineTo(r * 0.35, r * 0.6); ctx.fill();
+                    break;
+
+                // --- MÁSCARA DE GÁS (22) ---
+                case 22:
+                    fill('#2B2D42'); ctx.beginPath(); ctx.ellipse(r * 0.5, 0, r * 0.7, r * 0.75, 0, 0, Math.PI * 2); ctx.fill();
+                    fill('#3D405B'); ctx.beginPath(); ctx.ellipse(r * 0.5, -r * 0.3, r * 0.25, r * 0.2, 0.1, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.5, r * 0.3, r * 0.25, r * 0.2, -0.1, 0, Math.PI * 2); ctx.fill();
+                    fill('rgba(120,200,255,0.3)'); ctx.beginPath(); ctx.ellipse(r * 0.5, -r * 0.3, r * 0.18, r * 0.14, 0.1, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.5, r * 0.3, r * 0.18, r * 0.14, -0.1, 0, Math.PI * 2); ctx.fill();
+                    fill('#4A4E69'); ctx.beginPath(); ctx.roundRect(r * 0.85, -r * 0.2, r * 0.35, r * 0.4, r * 0.08); ctx.fill();
+                    ctx.strokeStyle = '#6B705C'; ctx.lineWidth = r * 0.04;
+                    for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(r * 0.9, -r * 0.12 + i * r * 0.08); ctx.lineTo(r * 1.15, -r * 0.12 + i * r * 0.08); ctx.stroke(); }
+                    fill('#2B2D42'); ctx.strokeStyle = '#555'; ctx.lineWidth = r * 0.03;
+                    ctx.beginPath(); ctx.moveTo(r * 0.2, -r * 0.7); ctx.quadraticCurveTo(r * 0.0, -r * 0.75, -r * 0.2, -r * 0.6); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r * 0.2, r * 0.7); ctx.quadraticCurveTo(r * 0.0, r * 0.75, -r * 0.2, r * 0.6); ctx.stroke();
+                    break;
+
+                // --- ANTENAS ALIEN (23) ---
+                case 23:
+                    const alienT = t * 2.5;
+                    ctx.strokeStyle = '#00FF88'; ctx.lineWidth = r * 0.06; ctx.lineCap = 'round';
+                    ctx.beginPath(); ctx.moveTo(-r * 0.1, -r * 0.4); ctx.quadraticCurveTo(-r * 0.5, -r * 1.5, -r * 0.8, -r * 1.3); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-r * 0.1, r * 0.4); ctx.quadraticCurveTo(-r * 0.5, r * 1.5, -r * 0.8, r * 1.3); ctx.stroke();
+                    if (!mob && hQ) glow('#00FF88', r * 0.6);
+                    let alienPulse = 0.7 + Math.sin(alienT) * 0.3;
+                    fill(`rgba(0, 255, 136, ${alienPulse})`); circ(-r * 0.8, -r * 1.3, r * 0.12); circ(-r * 0.8, r * 1.3, r * 0.12);
+                    fill('#FFFFFF'); circ(-r * 0.8, -r * 1.3, r * 0.05); circ(-r * 0.8, r * 1.3, r * 0.05);
+                    noGlow();
+                    break;
+
+                // --- CHIFRES DE DEMÔNIO (24) ---
+                case 24:
+                    if (!mob && hQ) glow('#FF2200', r * 0.5);
+                    fill('#8B0000'); ctx.beginPath(); ctx.moveTo(r * 0.1, -r * 0.5); ctx.quadraticCurveTo(-r * 0.1, -r * 1.4, -r * 0.6, -r * 1.5); ctx.quadraticCurveTo(-r * 0.3, -r * 1.0, r * 0.1, -r * 0.7); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(r * 0.1, r * 0.5); ctx.quadraticCurveTo(-r * 0.1, r * 1.4, -r * 0.6, r * 1.5); ctx.quadraticCurveTo(-r * 0.3, r * 1.0, r * 0.1, r * 0.7); ctx.fill();
+                    fill('#CC0000'); ctx.beginPath(); ctx.moveTo(r * 0.1, -r * 0.55); ctx.quadraticCurveTo(-r * 0.05, -r * 1.2, -r * 0.45, -r * 1.35); ctx.quadraticCurveTo(-r * 0.2, -r * 0.9, r * 0.1, -r * 0.7); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(r * 0.1, r * 0.55); ctx.quadraticCurveTo(-r * 0.05, r * 1.2, -r * 0.45, r * 1.35); ctx.quadraticCurveTo(-r * 0.2, r * 0.9, r * 0.1, r * 0.7); ctx.fill();
+                    fill('#FF4400'); circ(-r * 0.6, -r * 1.5, r * 0.08); circ(-r * 0.6, r * 1.5, r * 0.08);
+                    noGlow();
+                    break;
+
+                // --- MÁSCARA SAMURAI (25) ---
+                case 25:
+                    fill('#1A1A2E'); ctx.beginPath(); ctx.moveTo(r * 0.2, -r * 0.7); ctx.lineTo(r * 1.0, -r * 0.5); ctx.lineTo(r * 1.1, 0); ctx.lineTo(r * 1.0, r * 0.5); ctx.lineTo(r * 0.2, r * 0.7); ctx.fill();
+                    fill('#C0392B'); ctx.beginPath(); ctx.moveTo(r * 0.3, -r * 0.6); ctx.lineTo(r * 0.9, -r * 0.4); ctx.lineTo(r * 1.0, 0); ctx.lineTo(r * 0.9, r * 0.4); ctx.lineTo(r * 0.3, r * 0.6); ctx.fill();
+                    fill('#FFD700'); ctx.fillRect(r * 0.3, -r * 0.04, r * 0.7, r * 0.08);
+                    fill('#1A1A2E'); ctx.beginPath(); ctx.ellipse(r * 0.6, -r * 0.25, r * 0.18, r * 0.08, 0.15, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.6, r * 0.25, r * 0.18, r * 0.08, -0.15, 0, Math.PI * 2); ctx.fill();
+                    if (!mob && hQ) glow('#FFD700', r * 0.4);
+                    fill('#FFD700'); circ(r * 0.6, -r * 0.25, r * 0.04); circ(r * 0.6, r * 0.25, r * 0.04); noGlow();
+                    fill('#FFD700'); ctx.beginPath(); ctx.moveTo(-r * 0.1, -r * 0.6); ctx.lineTo(-r * 0.6, -r * 1.2); ctx.lineTo(-r * 0.3, -r * 0.5); ctx.fill();
+                    fill('#C0392B'); ctx.beginPath(); ctx.moveTo(r * 0.85, r * 0.25); ctx.lineTo(r * 0.7, r * 0.5); ctx.lineTo(r * 0.95, r * 0.45); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(r * 0.85, -r * 0.25); ctx.lineTo(r * 0.7, -r * 0.5); ctx.lineTo(r * 0.95, -r * 0.45); ctx.fill();
+                    break;
+
+                // --- CAVEIRA FLAMEJANTE (26) ---
+                case 26:
+                    const skT = t * 3.0;
+                    fill('#E8E8E8'); ctx.beginPath(); ctx.ellipse(r * 0.5, 0, r * 0.6, r * 0.55, 0, 0, Math.PI * 2); ctx.fill();
+                    fill('#D0D0D0'); ctx.beginPath(); ctx.ellipse(r * 0.55, 0, r * 0.5, r * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+                    fill('#1A1A1A'); ctx.beginPath(); ctx.ellipse(r * 0.55, -r * 0.18, r * 0.15, r * 0.12, 0.1, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(r * 0.55, r * 0.18, r * 0.15, r * 0.12, -0.1, 0, Math.PI * 2); ctx.fill();
+                    fill('#1A1A1A'); ctx.beginPath(); ctx.moveTo(r * 0.8, -r * 0.06); ctx.lineTo(r * 0.85, 0); ctx.lineTo(r * 0.8, r * 0.06); ctx.fill();
+                    fill('#1A1A1A'); ctx.fillRect(r * 0.65, r * 0.3, r * 0.06, r * 0.08);
+                    ctx.fillRect(r * 0.55, r * 0.3, r * 0.06, r * 0.08);
+                    ctx.fillRect(r * 0.45, r * 0.3, r * 0.06, r * 0.08);
+                    if (!mob && hQ) glow('#FF6600', r * 0.8);
+                    for (let i = 0; i < 5; i++) {
+                        let fx = r * (0.1 + i * 0.2) + Math.sin(skT + i) * r * 0.1;
+                        let fy = -r * 0.5 - Math.abs(Math.sin(skT * 1.5 + i * 1.3)) * r * 0.6;
+                        let fs = r * (0.12 + Math.sin(skT + i * 0.7) * 0.05);
+                        fill(i % 2 === 0 ? '#FF4400' : '#FF8800');
+                        ctx.beginPath(); ctx.moveTo(fx - fs, -r * 0.4); ctx.quadraticCurveTo(fx, fy, fx + fs, -r * 0.4); ctx.fill();
+                    }
+                    fill('#FFCC00'); for (let i = 0; i < 3; i++) { let fx = r * (0.25 + i * 0.2); let fy = -r * 0.5 - Math.abs(Math.sin(skT * 2 + i)) * r * 0.3; circ(fx, fy, r * 0.04); }
+                    noGlow();
+                    break;
             }
         }
 
@@ -2422,7 +2552,7 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, w, h); builderPreviewTime += 0.07;
             const colors = customSkinBuilder; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.18; const spacing = segR * 0.35; const cy = h * 0.50;
+            const segR = h * 0.13; const spacing = segR * 0.35; const cy = h * 0.50;
             const segCount = 18; const headX = (w / 2) + (segCount * spacing) / 2;
             const segs = [];
             for (let i = 0; i <= segCount; i++) { const wave = Math.sin(builderPreviewTime - i * 0.22) * (segR * 0.9); segs.push({ x: headX - i * spacing, y: cy + wave }); }
@@ -2447,7 +2577,7 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, w, h); galleryPreviewTime += 0.07;
             const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.18; const spacing = segR * 0.35; const cy = h * 0.50;
+            const segR = h * 0.13; const spacing = segR * 0.35; const cy = h * 0.50;
             const segCount = 18; const headX = (w / 2) + (segCount * spacing) / 2;
             const segs = [];
             for (let i = 0; i <= segCount; i++) { const wave = Math.sin(galleryPreviewTime - i * 0.22) * (segR * 0.9); segs.push({ x: headX - i * spacing, y: cy + wave }); }
@@ -2481,9 +2611,9 @@
             if (!canvas || gameState !== 'acc-menu') { accPreviewRAF = null; return; }
             const ctx = canvas.getContext('2d');
             const w = canvas.width = canvas.parentElement.clientWidth; const h = canvas.height = canvas.parentElement.clientHeight;
-            ctx.clearRect(0, 0, w, h); accPreviewTime += 0.04;
+            ctx.clearRect(0, 0, w, h); accPreviewTime += 0.07;
             const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.18; const spacing = segR * 0.35; const cy = h * 0.50;
+            const segR = h * 0.13; const spacing = segR * 0.35; const cy = h * 0.50;
             const segCount = 18; const headX = (w / 2) + (segCount * spacing) / 2;
             const segs = [];
             for (let i = 0; i <= segCount; i++) { const wave = Math.sin(accPreviewTime - i * 0.22) * (segR * 0.9); segs.push({ x: headX - i * spacing, y: cy + wave }); }
