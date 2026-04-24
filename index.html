@@ -130,6 +130,7 @@
             font-weight: 900;
             letter-spacing: -2px;
             background: linear-gradient(to bottom, #FFFFFF 0%, #A0E5FF 100%);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.4));
@@ -636,10 +637,10 @@
 
         .modal-content {
             background: linear-gradient(180deg, rgba(15, 20, 40, 0.8) 0%, rgba(5, 8, 20, 0.95) 100%);
-            border: 1px solid var(--glass-border);
+            border: none;
             border-radius: 24px;
             width: 90%;
-            max-width: 600px;
+            max-width: 850px;
             max-height: 90dvh;
             display: flex;
             flex-direction: column;
@@ -1205,19 +1206,41 @@
                     <div class="modal-title">Galeria de Skins</div>
                     <button class="btn-close" onclick="closeModal('modal-skins')">✕</button>
                 </div>
-                <div class="modal-body">
-                    <div class="showroom-stage">
+                <div class="modal-body" id="skins-carousel-view">
+                    <div class="showroom-stage" style="height: 250px;">
                         <div class="item-info">
                             <div class="item-name" id="skin-name-display">PELE ORIGINAL</div>
                             <div class="item-rarity" id="skin-lock-display" style="color: var(--success);">DESBLOQUEADO
                             </div>
                         </div>
                         <canvas id="skingal-snake-canvas" class="showroom-canvas"></canvas>
+                        <div class="acc-controls">
+                            <div class="acc-arrow" id="btn-skin-prev">❮</div>
+                            <div class="acc-arrow" id="btn-skin-next">❯</div>
+                        </div>
                     </div>
-                    <div class="skin-grid" id="skin-gallery-grid"></div>
                 </div>
-                <div class="modal-footer">
-                    <button id="skin-equip-btn" class="btn-premium" style="width: 100%;">EQUIPAR SKIN</button>
+                <div class="modal-footer" id="skins-carousel-footer"
+                    style="display:flex; justify-content: space-between; gap: 10px;">
+                    <button id="skin-equip-btn" class="btn-premium" style="flex: 1;">OK</button>
+                    <button id="btn-go-build" class="btn-premium"
+                        style="flex: 1; border-color: #4b0082; color: #b9a4ff;">Build a Slither</button>
+                </div>
+
+                <div class="modal-body hidden" id="skins-builder-view">
+                    <div id="builder-palette"
+                        style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px;">
+                    </div>
+                    <div class="showroom-stage"
+                        style="height: 150px; background: transparent; border: none; box-shadow: none;">
+                        <canvas id="builder-snake-canvas" class="showroom-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="modal-footer hidden" id="skins-builder-footer"
+                    style="display:flex; justify-content: center; gap: 10px;">
+                    <button id="btn-builder-apagar" class="btn-premium"
+                        style="flex: 1; background: var(--glass-bg); color: var(--text-main);">Apagar</button>
+                    <button id="btn-builder-ok" class="btn-premium" style="flex: 1;">OK</button>
                 </div>
             </div>
         </div>
@@ -1313,17 +1336,17 @@
         const CONFIG = {
             cobra: {
                 pc: {
-                    espessuraInicial: 5.4, espessuraMaxima: 8.7, comprimentoInicial: 0.01, comprimentoMaximo: 400,
+                    espessuraInicial: 5.4, espessuraMaxima: 8.7, comprimentoInicial: 2, comprimentoMaximo: 400,
                     velocidadeBase: 1.00, velocidadeTurbo: 1.6, velocidadeGiro: 0.045,
-                    distanciaGomos: 0.29, multiplicadorCabeca: 1.15, hitboxMult: 0.85
+                    distanciaGomos: 0.13, multiplicadorCabeca: 1.15, hitboxMult: 0.85
                 },
                 mobile: {
                     espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 1, comprimentoMaximo: 400,
                     velocidadeBase: 0.50, velocidadeTurbo: 1.5, velocidadeGiro: 0.042,
-                    distanciaGomos: 0.29, multiplicadorCabeca: 1.15, hitboxMult: 0.85
+                    distanciaGomos: 0.24, multiplicadorCabeca: 1.15, hitboxMult: 0.85
                 },
                 pontosParaEngrossar: 1000, pontosParaCrescer: 1.0, pontosIniciais: 20,
-                turbo: { custo: 0.2, tamanhoOrbe: 4.5, chanceOrbe: 0.15, quantidadeOrbe: 1 },
+                turbo: { custo: 0.2, tamanhoOrbe: 3.5, chanceOrbe: 0.10, quantidadeOrbe: 1 },
                 captura: { raioBase: 10, raioMagnet: 220, forcaAtracao: 10 }
             },
             zoom: {
@@ -1394,7 +1417,14 @@
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         // Binds de Menus
-        document.getElementById('btn-open-skins').onclick = () => { openModal('modal-skins'); gameState = 'skin-menu'; buildSkinGallery(); };
+        document.getElementById('btn-open-skins').onclick = () => {
+            openModal('modal-skins'); gameState = 'skin-menu';
+            document.getElementById('skins-carousel-view').classList.remove('hidden');
+            document.getElementById('skins-carousel-footer').classList.remove('hidden');
+            document.getElementById('skins-builder-view').classList.add('hidden');
+            document.getElementById('skins-builder-footer').classList.add('hidden');
+            updateSkinUI();
+        };
         document.getElementById('btn-open-accs').onclick = () => { openModal('modal-accs'); gameState = 'acc-menu'; updateAccUI(); };
         document.getElementById('btn-open-options').onclick = () => { openModal('modal-options'); updateOptionsUI(); };
 
@@ -1449,10 +1479,10 @@
             if (availableNames.length === 0) availableNames = BOT_NAMES; // fallback
             return availableNames[Math.floor(Math.random() * availableNames.length)];
         }
-        const PALETTE_COLORS = ['#39ff14', '#00ffff', '#ff00ff', '#007bff', '#ff4500', '#ff8800', '#8a2be2', '#ff69b4', '#ffdf00', '#ffffff', '#00ff88', '#7a28cb', '#ff0055'];
+        const PALETTE_COLORS = ['#ff0000', '#ff4500', '#ff8c00', '#ffd700', '#ffff00', '#9acd32', '#32cd32', '#00ff00', '#00fa9a', '#00ffff', '#00bfff', '#1e90ff', '#0000ff', '#8a2be2', '#ff00ff', '#ff1493', '#ff69b4', '#ffffff', '#cccccc', '#888888', '#444444', '#000000', '#8b4513', '#a0522d', '#cd853f', '#deb887', '#f5f5dc', '#00ff88', '#ff0055', '#7a28cb', '#111111', '#22cc22', '#00ccff', '#ff00cc', '#aa00ff'];
 
         let SKINS = [
-            ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#009c3b', '#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222'], ['#000000', '#ffdf00'], ['#ff8c00', '#000000', '#ffffff'], ['#1a1a2e', '#16213e', '#0f3460', '#e94560'], ['#00ffcc', '#ff00ff', '#111111'], ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'], ['#8a2be2', '#4b0082', '#000000'], ['#00ffff', '#00cccc', '#009999', '#006666'], ['#ff0000', '#8b0000', '#000000'], ['#39ff14', '#000000', '#111111'], ['#ffffff', '#000000']
+            ['#ffdf00', '#ffdf00', '#ffffff', '#ffffff'], ['#ffdf00', '#ffcc00', '#ffffff'], ['#00ff88', '#66ff66', '#22cc22'], ['#ffffff', '#eeeeee', '#cccccc'], ['#ffaa00', '#ff5500', '#ff0000', '#000000'], ['#222222', '#000000', '#ffdf00'], ['#0044ff', '#0088ff', '#ffffff', '#00ccff'], ['#ff0055', '#ff0088', '#ff00cc', '#aa00ff'], ['#00ff00', '#aaff00', '#ffff00', '#ff8800', '#ff0000', '#ff00cc', '#aa00ff', '#0000ff', '#00ffff'], ['#009c3b', '#ffdf00', '#002776', '#ffffff'], ['#00ffff', '#ff00ff', '#000000', '#111111'], ['#330000', '#ff0000', '#ff6600', '#ffff00'], ['#e6e6fa', '#d8bfd8', '#dda0dd', '#ee82ee'], ['#000000', '#00ff00', '#003300'], ['#0b0c10', '#45a29e', '#66fcf1'], ['#FF0000', '#FFFFFF', '#0000FF'], ['#FF0000', '#FFFF00', '#FF0000'], ['#0000FF', '#FF0000', '#FFFFFF', '#FF0000', '#0000FF'], ['#FF0000', '#00FF00'], ['#7A28CB', '#7A28CB', '#5C1D99', '#5C1D99'], ['#FF0000', '#FF0000', '#222222', '#222222'], ['#0044FF', '#0044FF', '#222222', '#222222'], ['#7BC8F6', '#7BC8F6', '#FFFFFF', '#FFFFFF', '#7BC8F6', '#7BC8F6'], ['#009c3b', '#009c3b', '#009c3b', '#009c3b', '#009c3b', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#002776-stars', '#ffdf00', '#ffdf00', '#ffdf00', '#ffdf00'], ['#FF0000', '#FF0000', '#FFFFFF', '#FFFFFF', '#0000FF', '#0000FF'], ['#FF8C00', '#FF8C00', '#4B0082', '#4B0082'], ['#E32222', '#C41D1D'], ['#EE3333', '#CC2222'], ['#000000', '#ffdf00'], ['#ff8c00', '#000000', '#ffffff'], ['#1a1a2e', '#16213e', '#0f3460', '#e94560'], ['#00ffcc', '#ff00ff', '#111111'], ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'], ['#8a2be2', '#4b0082', '#000000'], ['#00ffff', '#00cccc', '#009999', '#006666'], ['#ff0000', '#8b0000', '#000000'], ['#39ff14', '#000000', '#111111'], ['#ffffff', '#000000'], ['#ffd700', '#ffaa00'], ['#e0ffff', '#00ffff'], ['#ff4500', '#8b0000'], ['#00bfff', '#ffffff'], ['#ffff00', '#ff0000'], ['#f8f8ff', '#dcdcdc'], ['#ff8c00', '#ffd700'], ['#0000cd', '#1e90ff'], ['#228b22', '#32cd32'], ['#2f4f4f', '#000000']
         ];
         let SKIN_NAMES = ["Original", "Rei Dourado", "Natureza", "Branca", "Fogo", "Ouro", "Safira", "Rosa", "Arco-Íris", "Noite", "Cyberpunk", "Magma", "Ametista", "Toxina", "Neon Tech", "EUA", "Espanha", "Nepal", "Ciclope", "Espiral", "Rubi Negro", "Safira Safira", "Argentina", "Brasil", "Patriota", "Bruxas", "Estrela", "Saltados", "Ouro Negro", "Tigre", "Galáxia", "Ciborgue", "Algodão Doce", "Vazio", "Abissal", "Vampiro", "Matriz", "Zebra", "👑 LENDÁRIO", "💎 CRISTAL", "🔥 INFERNO", "❄️ GELO", "⚡ RELÂMPAGO", "🌙 LUNAR", "☀️ SOLAR", "🌊 OCEANO", "🍃 FLORESTA", "💀 CAVEIRA"];
 
@@ -2282,14 +2312,8 @@
                 drawAccessory(ctx, this.x, this.y, headR, this.angle, this.accId);
 
                 ctx.globalAlpha = 1;
-                ctx.save(); let _nS = IS_MOBILE_CLIENT ? 4 : 5; ctx.font = `600 ${_nS}px Inter,sans-serif`; ctx.textAlign = 'center'; ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 3; ctx.fillStyle = 'rgba(255,255,255,0.52)'; ctx.fillText(this.name, this.x, this.y - headR - 9); ctx.shadowBlur = 0;
-                if (this.isKing) {
-                    let now = performance.now(); ctx.globalAlpha = 0.5; let bob = Math.sin(now * 0.004) * 1.5; let cx = this.x, cy = this.y - headR - 28 + bob; let cr = 5;
-                    let glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr * 2.5); glow.addColorStop(0, `rgba(255,223,0,${0.35 + Math.sin(now * 0.006) * 0.15})`); glow.addColorStop(1, 'rgba(255,223,0,0)');
-                    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, cr * 2.5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffdf00'; ctx.strokeStyle = '#cc9900'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cx - cr, cy + cr * 0.5); ctx.lineTo(cx - cr, cy - cr * 0.3); ctx.lineTo(cx - cr * 0.45, cy + cr * 0.1); ctx.lineTo(cx, cy - cr); ctx.lineTo(cx + cr * 0.45, cy + cr * 0.1); ctx.lineTo(cx + cr, cy - cr * 0.3); ctx.lineTo(cx + cr, cy + cr * 0.5); ctx.closePath(); ctx.fill(); ctx.stroke();
-                    let gems = [[cx, cy - cr - 3], [cx - cr - 2, cy - cr * 0.3 - 2], [cx + cr + 2, cy - cr * 0.3 - 2]]; let gemColors = ['#ff4444', '#44aaff', '#44ff88'];
-                    for (let g = 0; g < gems.length; g++) { ctx.fillStyle = gemColors[g]; ctx.beginPath(); ctx.arc(gems[g][0], gems[g][1], 1.5, 0, Math.PI * 2); ctx.fill(); }
-                } ctx.restore();
+                ctx.save(); let _nS = IS_MOBILE_CLIENT ? 3.5 : 4; ctx.font = `600 ${_nS}px Inter,sans-serif`; ctx.textAlign = 'center'; ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 3; ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillText(this.name, this.x, this.y - headR - 9); ctx.shadowBlur = 0;
+                ctx.restore();
             }
         }
 
@@ -2347,42 +2371,85 @@
         }
 
         // --- MODAIS DE ESCOLHA (SHOWROOMS) ---
-        function buildSkinGallery() {
-            const grid = document.getElementById('skin-gallery-grid');
-            if (!grid) return; grid.innerHTML = '';
-            SKINS.forEach((colors, i) => {
-                let req = SKIN_REQUIREMENTS[i]; let isLocked = false;
-                if (req) { if (req.type === 'score' && PLAYER_STATS.highScore < req.val) isLocked = true; if (req.type === 'kills' && PLAYER_STATS.totalKills < req.val) isLocked = true; }
-                let wrap = document.createElement('div');
-                wrap.className = 'skin-orb' + (i === skinIndex ? ' selected' : '') + (isLocked ? ' locked' : '');
-                wrap.title = (isLocked && SKIN_REQUIREMENTS[i]) ? '🔒 ' + SKIN_REQUIREMENTS[i].desc : (SKIN_NAMES[i] || '');
-                let c = document.createElement('canvas'); c.width = 62; c.height = 62; let ctx2 = c.getContext('2d');
-                let primaryColor = (colors[0] || '#ff0000').replace(/-\w+$/, ''); if (!/^#[0-9a-fA-F]{6}$/.test(primaryColor)) primaryColor = '#ff0000';
-                try { ctx2.drawImage(TextureManager.getSegment(primaryColor), 0, 0, 62, 62); } catch (e) { }
-                wrap.appendChild(c);
-                wrap.onclick = () => {
-                    if (isLocked) return; skinIndex = i;
-                    grid.querySelectorAll('.skin-orb').forEach((o, j) => o.classList.toggle('selected', j === i));
-                    DOM.skinName.innerText = SKIN_NAMES[i] || ''; DOM.skinLock.innerText = 'DESBLOQUEADO'; DOM.skinLock.style.color = 'var(--success)';
-                    DOM.skinEquipBtn.style.opacity = '1'; DOM.skinEquipBtn.style.pointerEvents = 'auto';
-                    startGalleryPreview();
-                };
-                grid.appendChild(wrap);
-            });
+        function updateSkinUI() {
+            let req = SKIN_REQUIREMENTS[skinIndex]; let isLocked = false;
+            if (req) { if (req.type === 'score' && PLAYER_STATS.highScore < req.val) isLocked = true; if (req.type === 'kills' && PLAYER_STATS.totalKills < req.val) isLocked = true; }
+            DOM.skinName.innerText = isLocked ? 'BLOQUEADA' : (SKIN_NAMES[skinIndex] || 'PERSONALIZADA');
+            DOM.skinLock.innerText = isLocked ? '🔒 ' + req.desc : 'DESBLOQUEADO';
+            DOM.skinLock.style.color = isLocked ? 'var(--danger)' : 'var(--success)';
+            DOM.skinEquipBtn.style.opacity = isLocked ? '0.5' : '1';
+            DOM.skinEquipBtn.style.pointerEvents = isLocked ? 'none' : 'auto';
             startGalleryPreview();
         }
+        document.getElementById('btn-skin-prev').onclick = () => { skinIndex = (skinIndex - 1 + SKINS.length) % SKINS.length; updateSkinUI(); };
+        document.getElementById('btn-skin-next').onclick = () => { skinIndex = (skinIndex + 1) % SKINS.length; updateSkinUI(); };
+
+        let customSkinBuilder = [];
+        document.getElementById('btn-go-build').onclick = () => {
+            document.getElementById('skins-carousel-view').classList.add('hidden');
+            document.getElementById('skins-carousel-footer').classList.add('hidden');
+            document.getElementById('skins-builder-view').classList.remove('hidden');
+            document.getElementById('skins-builder-footer').classList.remove('hidden');
+            customSkinBuilder = ['#ffffff']; buildPaletteUI(); startBuilderPreview();
+        };
+
+        function buildPaletteUI() {
+            const palette = document.getElementById('builder-palette'); palette.innerHTML = '';
+            PALETTE_COLORS.forEach(c => {
+                let btn = document.createElement('div');
+                btn.style.width = '30px'; btn.style.height = '30px';
+                btn.style.borderRadius = '50%'; btn.style.background = c;
+                btn.style.cursor = 'pointer'; btn.style.border = '2px solid rgba(255,255,255,0.2)';
+                btn.style.boxShadow = 'inset -3px -3px 6px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5)';
+                btn.onclick = () => { customSkinBuilder.push(c); };
+                palette.appendChild(btn);
+            });
+        }
+        document.getElementById('btn-builder-apagar').onclick = () => { if (customSkinBuilder.length > 1) customSkinBuilder.pop(); };
+        document.getElementById('btn-builder-ok').onclick = () => {
+            if (!SKIN_NAMES.includes('Minha Cobra')) { SKINS.push([...customSkinBuilder]); SKIN_NAMES.push('Minha Cobra'); skinIndex = SKINS.length - 1; }
+            else { let idx = SKIN_NAMES.indexOf('Minha Cobra'); SKINS[idx] = [...customSkinBuilder]; skinIndex = idx; }
+            document.getElementById('skins-builder-view').classList.add('hidden'); document.getElementById('skins-builder-footer').classList.add('hidden');
+            document.getElementById('skins-carousel-view').classList.remove('hidden'); document.getElementById('skins-carousel-footer').classList.remove('hidden');
+            updateSkinUI();
+        };
+
+        let builderPreviewRAF = null, builderPreviewTime = 0;
+        function drawBuilderPreview() {
+            const canvas = document.getElementById('builder-snake-canvas');
+            if (!canvas || document.getElementById('skins-builder-view').classList.contains('hidden')) { builderPreviewRAF = null; return; }
+            const w = canvas.width = canvas.parentElement.clientWidth; const h = canvas.height = canvas.parentElement.clientHeight;
+            if (!w || !h) { builderPreviewRAF = requestAnimationFrame(drawBuilderPreview); return; }
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, w, h); builderPreviewTime += 0.07;
+            const colors = customSkinBuilder; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
+            const segR = h * 0.18; const spacing = segR * 0.40; const headX = w * 0.80; const centerY = h / 2;
+            const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
+            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(builderPreviewTime - i * 0.22) * (segR * 1.1); segs.push({ x: headX - i * spacing, y: centerY + wave }); }
+            const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
+            ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath();
+            for (let i = segs.length - 1; i >= 1; i--) { const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue; ctx.moveTo(s.x + segR + 1.5, s.y); ctx.arc(s.x, s.y, segR + 1.5, 0, Math.PI * 2); }
+            ctx.fill(); ctx.save(); ctx.translate(segs[0].x, segs[0].y); ctx.rotate(headAngle); ctx.beginPath(); if (ctx.ellipse) ctx.ellipse(0, 0, segR * cabecaMult + 1.2, segR + 1.2, 0, 0, Math.PI * 2); else ctx.arc(0, 0, segR + 1.2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+            for (let i = segs.length - 1; i >= 1; i--) { const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue; const ang = Math.atan2(segs[i - 1].y - s.y, segs[i - 1].x - s.x); const rawColor = (colors[i % colors.length] || '#ffffff').replace(/-\w+$/, ''); const color = /^#[0-9a-fA-F]{6}$/i.test(rawColor) ? rawColor : '#ffffff'; ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(ang); try { ctx.drawImage(TextureManager.getSegment(color), -segR, -segR, segR * 2, segR * 2); } catch (e) { } ctx.restore(); }
+            const rawHead = (colors[0] || '#ffffff').replace(/-\w+$/, ''); const headColor = /^#[0-9a-fA-F]{6}$/i.test(rawHead) ? rawHead : '#ffffff';
+            ctx.save(); ctx.translate(segs[0].x, segs[0].y); ctx.rotate(headAngle); try { ctx.drawImage(TextureManager.getSegment(headColor, true), -segR * cabecaMult, -segR, segR * cabecaMult * 2, segR * 2); } catch (e) { } ctx.restore();
+            drawPremiumEyes(ctx, segs[0].x, segs[0].y, segR, headAngle, headAngle, skinIndex, false, false);
+            builderPreviewRAF = requestAnimationFrame(drawBuilderPreview);
+        }
+        function startBuilderPreview() { if (builderPreviewRAF) { cancelAnimationFrame(builderPreviewRAF); } drawBuilderPreview(); }
 
         let galleryPreviewRAF = null, galleryPreviewTime = 0;
         function drawGalleryPreview() {
             const canvas = document.getElementById('skingal-snake-canvas');
             if (!canvas || gameState !== 'skin-menu') { galleryPreviewRAF = null; return; }
-            const ctx = canvas.getContext('2d');
             const w = canvas.width = canvas.parentElement.clientWidth; const h = canvas.height = canvas.parentElement.clientHeight;
-            ctx.clearRect(0, 0, w, h); galleryPreviewTime += 0.045;
+            if (!w || !h) { galleryPreviewRAF = requestAnimationFrame(drawGalleryPreview); return; }
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, w, h); galleryPreviewTime += 0.07;
             const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.20; const spacing = segR * 0.30; const headX = w * 0.80; const centerY = h / 2;
+            const segR = h * 0.15; const spacing = segR * 0.40; const headX = w * 0.80; const centerY = h / 2;
             const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
-            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(galleryPreviewTime - i * 0.18) * (segR * 0.72); segs.push({ x: headX - i * spacing, y: centerY + wave }); }
+            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(galleryPreviewTime - i * 0.22) * (segR * 1.1); segs.push({ x: headX - i * spacing, y: centerY + wave }); }
             const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
             ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath();
             for (let i = segs.length - 1; i >= 1; i--) { const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue; ctx.moveTo(s.x + segR + 1.5, s.y); ctx.arc(s.x, s.y, segR + 1.5, 0, Math.PI * 2); }
@@ -2582,14 +2649,16 @@
             const camMinX = camera.x - (vpWidth / camera.zoom / 2) - frustumMargin; const camMaxX = camera.x + (vpWidth / camera.zoom / 2) + frustumMargin;
             const camMinY = camera.y - (vpHeight / camera.zoom / 2) - frustumMargin; const camMaxY = camera.y + (vpHeight / camera.zoom / 2) + frustumMargin;
 
-            for (let i = 0; i < foods.length; i++) { let f = foods[i]; if (!f.dead && f.x > camMinX && f.x < camMaxX && f.y > camMinY && f.y < camMaxY) { f.draw(mainCtx, time, camera.zoom); } }
-            for (let i = 0; i < powerUps.length; i++) { let pu = powerUps[i]; if (pu.x > camMinX && pu.x < camMaxX && pu.y > camMinY && pu.y < camMaxY) pu.draw(mainCtx, time, camera.zoom); }
-            for (let i = 0; i < fireflies.length; i++) { let ff = fireflies[i]; if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
-            for (let i = 0; i < butterflies.length; i++) { let b = butterflies[i]; if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
-            for (let i = 0; i < particles.length; i++) { let p = particles[i]; if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
+            if (gameState === 'playing' || gameState === 'dead') {
+                for (let i = 0; i < foods.length; i++) { let f = foods[i]; if (!f.dead && f.x > camMinX && f.x < camMaxX && f.y > camMinY && f.y < camMaxY) { f.draw(mainCtx, time, camera.zoom); } }
+                for (let i = 0; i < powerUps.length; i++) { let pu = powerUps[i]; if (pu.x > camMinX && pu.x < camMaxX && pu.y > camMinY && pu.y < camMaxY) pu.draw(mainCtx, time, camera.zoom); }
+                for (let i = 0; i < fireflies.length; i++) { let ff = fireflies[i]; if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
+                for (let i = 0; i < butterflies.length; i++) { let b = butterflies[i]; if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
+                for (let i = 0; i < particles.length; i++) { let p = particles[i]; if (Math.hypot(p.x - camera.x, p.y - camera.y) < cullingDist) p.draw(mainCtx); }
 
-            snakes.sort((a, b) => a.score - b.score);
-            for (let i = 0; i < snakes.length; i++) { let s = snakes[i]; let pixelLength = s.segments.length * (s.radius * s.conf.distanciaGomos); let bboxHalf = (pixelLength + s.radius * 2); if (s.x + bboxHalf < camMinX || s.x - bboxHalf > camMaxX || s.y + bboxHalf < camMinY || s.y - bboxHalf > camMaxY) continue; s.draw(mainCtx); }
+                snakes.sort((a, b) => a.score - b.score);
+                for (let i = 0; i < snakes.length; i++) { let s = snakes[i]; let pixelLength = s.segments.length * (s.radius * s.conf.distanciaGomos); let bboxHalf = (pixelLength + s.radius * 2); if (s.x + bboxHalf < camMinX || s.x - bboxHalf > camMaxX || s.y + bboxHalf < camMinY || s.y - bboxHalf > camMaxY) continue; s.draw(mainCtx); }
+            }
             mainCtx.restore();
 
             if (gameState === 'playing' && frameCount % 6 === 0) updatePowerupHUD();
