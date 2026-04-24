@@ -657,11 +657,9 @@
 
         .modal-header {
             padding: 20px 24px;
-            border-bottom: 1px solid var(--glass-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.2);
         }
 
         .modal-title {
@@ -700,8 +698,6 @@
 
         .modal-footer {
             padding: 20px 24px;
-            border-top: 1px solid var(--glass-border);
-            background: rgba(0, 0, 0, 0.2);
             display: flex;
             justify-content: flex-end;
         }
@@ -1332,8 +1328,8 @@
                     distanciaGomos: 0.17, multiplicadorCabeca: 1.10, hitboxMult: 0.85
                 },
                 mobile: {
-                    espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 1, comprimentoMaximo: 630,
-                    velocidadeBase: 0.50, velocidadeTurbo: 1.5, velocidadeGiro: 0.042,
+                    espessuraInicial: 1.9, espessuraMaxima: 3.4, comprimentoInicial: 2, comprimentoMaximo: 630,
+                    velocidadeBase: 0.50, velocidadeTurbo: 1.5, velocidadeGiro: 0.040,
                     distanciaGomos: 0.17, multiplicadorCabeca: 1.10, hitboxMult: 0.85
                 },
                 pontosParaEngrossar: 2000, pontosParaCrescer: 1.0, pontosIniciais: 20,
@@ -2417,9 +2413,10 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, w, h); builderPreviewTime += 0.07;
             const colors = customSkinBuilder; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.25; const spacing = segR * 0.30; const cy = h * 0.50; const headX = w * 0.80;
-            const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
-            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(builderPreviewTime - i * 0.22) * (segR * 0.7); segs.push({ x: headX - i * spacing, y: cy + wave }); }
+            const segR = h * 0.18; const spacing = segR * 0.35; const cy = h * 0.50;
+            const segCount = 18; const headX = (w / 2) + (segCount * spacing) / 2;
+            const segs = [];
+            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(builderPreviewTime - i * 0.22) * (segR * 0.9); segs.push({ x: headX - i * spacing, y: cy + wave }); }
             const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
             ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath();
             for (let i = segs.length - 1; i >= 1; i--) { const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue; ctx.moveTo(s.x + segR + 1.5, s.y); ctx.arc(s.x, s.y, segR + 1.5, 0, Math.PI * 2); }
@@ -2441,9 +2438,10 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, w, h); galleryPreviewTime += 0.07;
             const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.20; const spacing = segR * 0.30; const cy = h * 0.50; const headX = w * 0.80;
-            const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
-            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(galleryPreviewTime - i * 0.22) * (segR * 0.7); segs.push({ x: headX - i * spacing, y: cy + wave }); }
+            const segR = h * 0.18; const spacing = segR * 0.35; const cy = h * 0.50;
+            const segCount = 18; const headX = (w / 2) + (segCount * spacing) / 2;
+            const segs = [];
+            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(galleryPreviewTime - i * 0.22) * (segR * 0.9); segs.push({ x: headX - i * spacing, y: cy + wave }); }
             const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
             ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath();
             for (let i = segs.length - 1; i >= 1; i--) { const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue; ctx.moveTo(s.x + segR + 1.5, s.y); ctx.arc(s.x, s.y, segR + 1.5, 0, Math.PI * 2); }
@@ -2476,9 +2474,10 @@
             const w = canvas.width = canvas.parentElement.clientWidth; const h = canvas.height = canvas.parentElement.clientHeight;
             ctx.clearRect(0, 0, w, h); accPreviewTime += 0.04;
             const colors = SKINS[skinIndex] || ['#ffdf00']; const cabecaMult = CONFIG.cobra.pc.multiplicadorCabeca || 1.05;
-            const segR = h * 0.25; const spacing = segR * 0.30; const headX = w * 0.80; const cy = h * 0.50;
-            const segs = []; const segCount = Math.ceil((w + segR * 4) / spacing);
-            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(accPreviewTime - i * 0.22) * (segR * 0.7); segs.push({ x: headX - i * spacing, y: cy + wave }); }
+            const segR = h * 0.18; const spacing = segR * 0.35; const cy = h * 0.50;
+            const segCount = 18; const headX = (w / 2) + (segCount * spacing) / 2;
+            const segs = [];
+            for (let i = 0; i <= segCount; i++) { const wave = Math.sin(accPreviewTime - i * 0.22) * (segR * 0.9); segs.push({ x: headX - i * spacing, y: cy + wave }); }
             const headAngle = segs.length > 1 ? Math.atan2(segs[0].y - segs[1].y, segs[0].x - segs[1].x) : 0;
             ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath();
             for (let i = segs.length - 1; i >= 1; i--) { const s = segs[i]; if (s.x < -segR || s.x > w + segR) continue; ctx.moveTo(s.x + segR + 1.5, s.y); ctx.arc(s.x, s.y, segR + 1.5, 0, Math.PI * 2); }
