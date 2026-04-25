@@ -1689,7 +1689,7 @@
         const ParticlePool = { pool: [], get: function (x, y, color, s) { let p; if (this.pool.length > 0) { p = this.pool.pop(); p.init(x, y, color, s); } else { p = new Particle(x, y, color, s); } return p; }, recycle: function (p) { if (this.pool.length < 500) this.pool.push(p); } };
         function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2)); for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2)); }
         const OrbSystem = {
-            gridSize: 120,
+            gridSize: 200,
             densityGrid: new Map(),
 
             getGridKey(x, y) {
@@ -1704,8 +1704,9 @@
 
                 // Mais denso no centro, menos nas bordas
                 let factor = 1.0;
-                if (normalizedDist < 0.3) factor = 1.8; // Hotspot central
-                else if (normalizedDist > 0.8) factor = 0.4; // Deserto periférico
+                if (normalizedDist < 0.3) factor = 2.2; // Hotspot central denso
+                else if (normalizedDist < 0.6) factor = 1.4; // Zona média rica
+                else if (normalizedDist > 0.85) factor = 0.5; // Deserto periférico
 
                 return CONFIG.mundo.comida.densidadeBase * factor;
             },
@@ -1713,7 +1714,7 @@
             canSpawnAt(x, y) {
                 const key = this.getGridKey(x, y);
                 const count = this.densityGrid.get(key) || 0;
-                const targetDensity = this.getDensityAt(x, y) * 10; // Escala arbitrária para o grid
+                const targetDensity = this.getDensityAt(x, y) * 30; // Limite muito mais permissivo
                 return count < targetDensity;
             },
 
@@ -1745,7 +1746,8 @@
         function spawnFood(count) {
             let spawned = 0;
             let attempts = 0;
-            while (spawned < count && attempts < count * 3) {
+            const maxAttempts = count * 4;
+            while (spawned < count && attempts < maxAttempts) {
                 attempts++;
                 let p = getRandomPosInCircle(20, 400);
 
@@ -1758,9 +1760,9 @@
                     OrbSystem.registerSpawn(p.x, p.y);
                     spawned++;
 
-                    // Pequena chance de criar um micro-cluster orgânico
-                    if (Math.random() < 0.05) {
-                        OrbSystem.spawnCluster(p.x, p.y, 40, 3 + Math.floor(Math.random() * 4), 0, size * 0.8, color);
+                    // Chance maior de criar micro-clusters orgânicos para preencher o mapa
+                    if (Math.random() < 0.08) {
+                        OrbSystem.spawnCluster(p.x, p.y, 50, 3 + Math.floor(Math.random() * 5), 0, size * 0.8, color);
                     }
                 }
             }
@@ -3101,10 +3103,12 @@
             // Os orbs soltos pelo turbo (type === 2) agora não desaparecem com o tempo.
             // (A linha de decaimento f.life -= 0.006 foi removida)
             if (frameCount % 60 === 0) { let writeF = 0; for (let i = 0; i < foods.length; i++) { if (!foods[i].dead) foods[writeF++] = foods[i]; } foods.length = writeF; }
-            if (frameCount % 45 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) cnt++; window._activeFoodCount = cnt; }
+            if (frameCount % 30 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) cnt++; window._activeFoodCount = cnt; }
             if ((window._activeFoodCount || 0) < cfgMundo.quantidadeComida) {
-                spawnFood(IS_MOBILE_CLIENT ? 12 : 25);
-                window._activeFoodCount = (window._activeFoodCount || 0) + (IS_MOBILE_CLIENT ? 12 : 25);
+                let deficit = cfgMundo.quantidadeComida - (window._activeFoodCount || 0);
+                let batch = Math.min(deficit, IS_MOBILE_CLIENT ? 80 : 150);
+                spawnFood(batch);
+                window._activeFoodCount = (window._activeFoodCount || 0) + batch;
             }
             if (butterflies.length < cfgMundo.quantidadeInsetos && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
@@ -3117,7 +3121,7 @@
                 for (let s of snakes) { if (!s.alive) continue; let dx = s.x - pu.x, dy = s.y - pu.y; let hit = s.radius + pu.radius; if (dx * dx + dy * dy < hit * hit) { applyPowerUp(s, pu.type); powerUps.splice(i, 1); break; } }
             }
 
-            if (frameCount % 120 === 0) OrbSystem.clearGrid(); // Limpeza periódica do grid de densidade
+            if (frameCount % 60 === 0) OrbSystem.clearGrid(); // Limpeza mais frequente para manter densidade atualizada
             if (frameCount % 2 === 0) { rebuildFoodGrid(); rebuildSegmentGrid(); }
             for (let i = 0; i < snakes.length; i++) snakes[i].update(); for (let i = 0; i < butterflies.length; i++) butterflies[i].update();
 
@@ -3231,6 +3235,9 @@
         document.addEventListener('visibilitychange', () => { if (!document.hidden) lastFrameTime = performance.now(); });
 
         let cfgMundoInitial = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
+        // BURST INICIAL: Preencher o mundo com comida imediatamente para eliminar espaços vazios
+        spawnFood(Math.min(cfgMundoInitial.quantidadeComida, IS_MOBILE_CLIENT ? 8000 : 12000));
+        window._activeFoodCount = foods.length;
         for (let i = 0; i < cfgMundoInitial.quantidadeBots; i++) {
             let sI = Math.floor(Math.random() * SKINS.length);
             let aI = Math.random() < 0.2 ? Math.floor(Math.random() * ACCESSORIES.length) : 0;
