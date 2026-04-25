@@ -2876,8 +2876,12 @@
                         f.x -= (dx / dist) * f.attractSpeed * pullStrength; f.y -= (dy / dist) * f.attractSpeed * pullStrength;
                         if (distSq < hitDistSq) {
                             this.score += f.value; this.eatTimer = 15; f.dead = true;
+                            if (window._activeFoodCount > 0) window._activeFoodCount--; // Track em tempo real
                             if (this.isPlayer) { PLAYER_STATS.totalFood++; if (frameCount % 6 === 0) AudioSys.play('eat'); if (this.score % 100 < 5) Haptic.soft(); }
                         }
+                    } else {
+                        // Decai attractSpeed quando fora do raio — evita efeito aspirador residual
+                        if (f.attractSpeed > 0) f.attractSpeed *= 0.85;
                     }
                 }
 
@@ -3333,11 +3337,17 @@
                 foods.length = writeF;
                 rebuildFoodGrid(); // Rebuild imediato após compactação para evitar índices fantasmas
             }
-            if (frameCount % 45 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead) cnt++; window._activeFoodCount = cnt; }
-            if ((window._activeFoodCount || 0) < cfgMundo.quantidadeComida) {
+            // Recount real a cada 30 frames para corrigir drift
+            if (frameCount % 30 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead) cnt++; window._activeFoodCount = cnt; }
+            // Spawn agressivo: múltiplos batches por frame se necessário
+            const _foodDeficit = cfgMundo.quantidadeComida - (window._activeFoodCount || 0);
+            if (_foodDeficit > 0) {
                 const _spawnBatch = CONFIG.dynamic.getSpawnBatch();
-                spawnFood(_spawnBatch);
-                window._activeFoodCount = (window._activeFoodCount || 0) + _spawnBatch;
+                const _batchCount = Math.min(3, Math.ceil(_foodDeficit / _spawnBatch)); // Até 3 batches/frame
+                for (let _b = 0; _b < _batchCount; _b++) {
+                    spawnFood(_spawnBatch);
+                    window._activeFoodCount = (window._activeFoodCount || 0) + _spawnBatch;
+                }
             }
             if (butterflies.length < cfgMundo.quantidadeInsetos && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
