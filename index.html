@@ -1320,52 +1320,160 @@
 
         // ======================================================================
         // ⚙️ CONFIGURAÇÕES MESTRAS DO JOGO (SUPER PAINEL DE CONTROLO)
+        // ──────────────────────────────────────────────────────────────────────
+        // COMO FUNCIONA:
+        // • Cada secção tem configs separadas para 'pc' e 'mobile'
+        // • O sistema dinâmico (DynamicConfig) lê DAQUI como base
+        // • Altere os valores abaixo para ajustar o gameplay manualmente
+        // • O DynamicConfig aplica multiplicadores de escala em cima destes valores
         // ======================================================================
         const CONFIG = {
+            // ─── COBRA ─────────────────────────────────────────────────────────
+            // Controla tamanho, velocidade e física da cobra
             cobra: {
                 pc: {
-                    espessuraInicial: 5.2, espessuraMaxima: 6.7, comprimentoInicial: 4.4, comprimentoMaximo: 730,
-                    velocidadeBase: 0.91, velocidadeTurbo: 1.5, velocidadeGiro: 0.039,
-                    distanciaGomos: 0.17, multiplicadorCabeca: 1.02, hitboxMult: 0.85
+                    espessuraInicial: 5.2,      // Raio inicial da cobra (px em unidades de mundo)
+                    espessuraMaxima: 6.7,        // Raio máximo ao engordar
+                    comprimentoInicial: 4.4,     // Segmentos iniciais (quantidade)
+                    comprimentoMaximo: 730,      // Segmentos máximos possíveis
+                    velocidadeBase: 0.91,         // Velocidade normal (px/frame)
+                    velocidadeTurbo: 1.5,         // Velocidade com boost ativado
+                    velocidadeGiro: 0.039,        // Velocidade de rotação (rad/frame) — maior = gira mais rápido
+                    distanciaGomos: 0.17,         // Espaçamento entre segmentos (fração do raio)
+                    multiplicadorCabeca: 1.02,    // Escala da cabeça vs corpo (1.0 = igual)
+                    hitboxMult: 0.85              // Multiplicador da hitbox (menor = mais perdão)
                 },
                 mobile: {
-                    espessuraInicial: 1.9, espessuraMaxima: 3.3, comprimentoInicial: 6, comprimentoMaximo: 730,
-                    velocidadeBase: 0.39, velocidadeTurbo: 1.5, velocidadeGiro: 0.033,
-                    distanciaGomos: 0.17, multiplicadorCabeca: 1.02, hitboxMult: 0.85
+                    espessuraInicial: 1.9,        // Menor que PC — tela menor precisa cobra menor
+                    espessuraMaxima: 3.3,
+                    comprimentoInicial: 6,
+                    comprimentoMaximo: 730,
+                    velocidadeBase: 0.39,          // Mais lento que PC — menos espaço para manobrar
+                    velocidadeTurbo: 1.5,
+                    velocidadeGiro: 0.033,
+                    distanciaGomos: 0.17,
+                    multiplicadorCabeca: 1.02,
+                    hitboxMult: 0.85
                 },
-                pontosParaEngrossar: 3400, pontosParaCrescer: 1.0, pontosIniciais: 20,
-                turbo: { custo: 0.2, tamanhoOrbe: 3.5, chanceOrbe: 0.10, quantidadeOrbe: 1 },
-                captura: { raioBase: 10, raioMagnet: 220, forcaAtracao: 8 }
-            },
-            zoom: {
-                pc: { inicial: 5.10, minimo: 4.50, fatorAfastamento: 1.620, velocidadeTransica: 0.011 },
-                mobile: { inicial: 7.10, minimo: 4.50, fatorAfastamento: 1.620, velocidadeTransica: 0.011 }
-            },
-            mundo: {
-                tamanhoRaioInicial: 3000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
-                pc: { quantidadeBots: 150, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 12 },
-                mobile: { quantidadeBots: 100, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 2 },
-                distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
-                comida: {
-                    tamanhoMin: 2.00, tamanhoMax: 4.10, tamanhoMorte: 3.10, tamanhoMorteBonus: 1.60,
-                    densidadeBase: 0.15, densidadeCentro: 0.35, densidadeBorda: 0.05
+                // ─── Compartilhado PC/Mobile ───
+                pontosParaEngrossar: 3400,    // Pontos necessários para +1 de espessura
+                pontosParaCrescer: 1.0,       // Pontos por segmento novo
+                pontosIniciais: 20,           // Score ao nascer
+                turbo: {
+                    custo: 0.2,               // Pontos perdidos por frame no turbo
+                    tamanhoOrbe: 3.5,         // Tamanho do orb deixado pelo turbo
+                    chanceOrbe: 0.10,         // Chance (0-1) de soltar orb por frame
+                    quantidadeOrbe: 1          // Orbs por drop
+                },
+                captura: {
+                    raioBase: 10,             // Raio extra de atração além do raio da cobra
+                    raioMagnet: 220,          // Raio quando power-up magneto ativo
+                    forcaAtracao: 8            // Velocidade mínima de atração
                 }
             },
+
+            // ─── ZOOM / CÂMERA ─────────────────────────────────────────────────
+            // Controla quanto do mundo o jogador vê
+            zoom: {
+                pc: {
+                    inicial: 5.10,            // Zoom ao iniciar (maior = mais perto)
+                    minimo: 4.50,             // Zoom mínimo quando cobra cresce
+                    fatorAfastamento: 1.620,  // Quanto o zoom recua por px de raio ganho
+                    velocidadeTransica: 0.011 // Suavização da transição de zoom (0-1)
+                },
+                mobile: {
+                    inicial: 7.10,            // Mais zoom no mobile — tela menor
+                    minimo: 4.50,
+                    fatorAfastamento: 1.620,
+                    velocidadeTransica: 0.011
+                }
+            },
+
+            // ─── MUNDO / MAPA ──────────────────────────────────────────────────
+            // Arena, densidade de entidades, fundo
+            mundo: {
+                tamanhoRaioInicial: 3000,     // Raio base da arena em unidades
+                expansaoPorPonto: 28,         // Cada X pontos no mapa = +1 de raio
+                taxaExpansao: 0.005,          // Suavização da expansão (lerp)
+                distanciaSeguraSpawn: 1200,   // Distância mínima de cobras ao nascer
+                pc: {
+                    quantidadeBots: 150,      // Bots simultâneos na arena
+                    quantidadeComida: 15000,  // Orbs de comida no mapa
+                    quantidadeInsetos: 2,     // Borboletas especiais
+                    corGrade: '#242424',      // Cor das linhas do grid
+                    corFundo: '#000000',      // Cor do fundo
+                    tamanhoHexagono: 12       // Tamanho das células do grid
+                },
+                mobile: {
+                    quantidadeBots: 100,      // Menos bots no mobile — performance
+                    quantidadeComida: 15000,
+                    quantidadeInsetos: 2,
+                    corGrade: '#242424',
+                    corFundo: '#000000',
+                    tamanhoHexagono: 2        // Grid menor no mobile — menos overhead
+                },
+                distribuicaoBots: {
+                    probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 },
+                    pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] }
+                },
+                comida: {
+                    tamanhoMin: 2.00,         // Tamanho mínimo de orb
+                    tamanhoMax: 4.10,         // Tamanho máximo (orbs raras)
+                    tamanhoMorte: 3.10,       // Tamanho de orbs soltos ao morrer
+                    tamanhoMorteBonus: 1.60,  // Bônus de tamanho para drops grandes
+                    densidadeBase: 0.15,      // Densidade padrão de orbs
+                    densidadeCentro: 0.35,    // Densidade no centro do mapa (hotspot)
+                    densidadeBorda: 0.05      // Densidade nas bordas (deserto)
+                }
+            },
+
+            // ─── POWER-UPS ─────────────────────────────────────────────────────
             powerups: {
-                spawnTimerMin: 600, spawnTimerMax: 900, limiteNoMapa: 0,
-                duracao: { shield: 600, magnet: 540, ghost: 360, mega: 300 }
+                spawnTimerMin: 600,           // Frames mínimo entre spawns
+                spawnTimerMax: 900,           // Frames máximo entre spawns
+                limiteNoMapa: 0,              // 0 = sem limite
+                duracao: {
+                    shield: 600,              // Duração em frames (60fps ≈ 10s)
+                    magnet: 540,
+                    ghost: 360,
+                    mega: 300
+                }
             },
+
+            // ─── CONTROLES ─────────────────────────────────────────────────────
             controles: {
-                mobile: { joystickDeadzone: 8, joystickMaxRadius: 58, lerpFactor: 0.52 }
+                pc: {
+                    // Mouse direto — sem suavização extra
+                },
+                mobile: {
+                    joystickDeadzone: 8,      // Zona morta do joystick (px)
+                    joystickMaxRadius: 58,    // Raio máximo do joystick (px)
+                    lerpFactor: 0.52          // Suavização do ângulo (0-1) — maior = mais responsivo
+                }
             },
+
+            // ─── VISUAL / RENDERIZAÇÃO ─────────────────────────────────────────
             visual: {
-                balancoComida: 410.0, velocidadeAnimacaoComida: 0.04, vagalumesAtuais: 30,
-                pc: { vagalumes: 30, distanciaFugaVagalumes: 150, dRender: 550 },
-                mobile: { vagalumes: 30, distanciaFugaVagalumes: 120, dRender: 400 }
+                balancoComida: 410.0,         // Amplitude do balanço dos orbs
+                velocidadeAnimacaoComida: 0.04, // Velocidade da animação de pulse
+                vagalumesAtuais: 30,          // Quantidade total de vagalumes
+                pc: {
+                    vagalumes: 30,            // Vagalumes renderizados
+                    distanciaFugaVagalumes: 150, // Raio de detecção de cobras
+                    dRender: 550              // Distância extra de renderização (frustum margin)
+                },
+                mobile: {
+                    vagalumes: 30,
+                    distanciaFugaVagalumes: 120,
+                    dRender: 400              // Menor no mobile — menos objetos fora da tela
+                }
             },
+
+            // ─── IA DOS BOTS ───────────────────────────────────────────────────
             ai: {
                 intervaloBaseDecisao: { hunter: 3, king: 4, cowards: 7 },
-                distanciaPerigo: 1.8, raioScanMultiplicador: 10
+                distanciaPerigo: 1.8,         // Multiplicador do raio de perigo
+                raioScanMultiplicador: 10     // Alcance de scan (× raio da cobra)
             }
         };
 
@@ -1460,33 +1568,35 @@
                     velocidadeTransica: zoomBase.velocidadeTransica,
                 };
 
-                // ── 5. MUNDO (densidade proporcional à área visível) ──────────
+                // ── 5. MUNDO (lê do SUPER PAINEL, aplica escala de densidade) ──
+                const mundoBase = isMobile ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
                 const areaVisivelRef = (REF_W / REF.zoomInicial) * (REF_H / REF.zoomInicial);
                 const areaVisivel = (vW / zoom.inicial) * (vH / zoom.inicial);
                 const densityRatio = clamp(areaVisivel / areaVisivelRef, 0.3, 2.5);
 
                 const mundo = {
-                    quantidadeBots: Math.round(clamp(REF.quantidadeBots * densityRatio, 40, 200)),
-                    quantidadeComida: Math.round(clamp(REF.quantidadeComida * densityRatio, 3000, 25000)),
-                    quantidadeInsetos: REF.quantidadeInsetos,
-                    corGrade: '#242424',
-                    corFundo: '#000000',
-                    // Tamanho do hexágono escalado pelo dispositivo
-                    tamanhoHexagono: Math.max(2, Math.round(REF.tamanhoHexagono * clamp(scaleEfetivo, 0.2, 1.5))),
+                    quantidadeBots: Math.round(clamp(mundoBase.quantidadeBots * densityRatio, 40, 300)),
+                    quantidadeComida: Math.round(clamp(mundoBase.quantidadeComida * densityRatio, 3000, 30000)),
+                    quantidadeInsetos: mundoBase.quantidadeInsetos,
+                    corGrade: mundoBase.corGrade,
+                    corFundo: mundoBase.corFundo,
+                    tamanhoHexagono: Math.max(2, Math.round(mundoBase.tamanhoHexagono * clamp(scaleEfetivo, 0.2, 1.5))),
                 };
 
-                // ── 6. VISUAL (escalonamento dinâmico) ────────────────────────
+                // ── 6. VISUAL (lê do SUPER PAINEL, aplica escala) ──────────────
+                const visualBase = isMobile ? CONFIG.visual.mobile : CONFIG.visual.pc;
                 const visual = {
-                    vagalumes: Math.round(REF.vagalumes * clamp(scaleEfetivo, 0.0, 1.0)),
-                    distanciaFugaVagalumes: Math.round(REF.distanciaFugaVagalumes * scaleEfetivo),
-                    dRender: Math.round(REF.dRender * clamp(scaleEfetivo, 0.5, 1.5)),
+                    vagalumes: Math.round(visualBase.vagalumes * clamp(scaleEfetivo, 0.0, 1.0)),
+                    distanciaFugaVagalumes: Math.round(visualBase.distanciaFugaVagalumes * scaleEfetivo),
+                    dRender: Math.round(visualBase.dRender * clamp(scaleEfetivo, 0.5, 1.5)),
                 };
 
-                // ── 7. CAPTURA (raios proporcionais) ──────────────────────────
+                // ── 7. CAPTURA (lê do SUPER PAINEL, aplica escala) ─────────────
+                const capturaBase = CONFIG.cobra.captura;
                 const captura = {
-                    raioBase: REF.capturaRaioBase * scaleEfetivo,
-                    raioMagnet: REF.capturaMagnet * scaleEfetivo,
-                    forcaAtracao: REF.capturaForca * scaleEfetivo,
+                    raioBase: capturaBase.raioBase * scaleEfetivo,
+                    raioMagnet: capturaBase.raioMagnet * scaleEfetivo,
+                    forcaAtracao: capturaBase.forcaAtracao * scaleEfetivo,
                 };
 
                 // ── 8. COMIDA (tamanhos proporcionais) ────────────────────────
