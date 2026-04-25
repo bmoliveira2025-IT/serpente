@@ -1394,7 +1394,7 @@
                 multiplicadorCabeca: 1.02,
                 hitboxMult: 0.85,
                 zoomInicial: 5.10,
-                zoomMinimo: 4.50,
+                zoomMinimo: 4.30,
                 zoomFatorAfastamento: 1.620,
                 zoomVelTransicao: 0.011,
                 quantidadeBots: 150,
@@ -1545,7 +1545,7 @@
                     const vH = window.innerHeight;
                     const rawDPR = window.devicePixelRatio || 1;
                     let tier = 'HIGH';
-                    try { tier = PerformanceManager.tier; } catch(e) { /* Not yet initialized */ }
+                    try { tier = PerformanceManager.tier; } catch (e) { /* Not yet initialized */ }
                     return compute(vW, vH, rawDPR, IS_MOBILE_CLIENT, tier);
                 },
 
