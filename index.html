@@ -1326,22 +1326,22 @@
         const CONFIG = {
             cobra: {
                 pc: {
-                    espessuraInicial: 5.2, espessuraMaxima: 6.7, comprimentoInicial: 4.2, comprimentoMaximo: 730,
-                    velocidadeBase: 0.91, velocidadeTurbo: 1.5, velocidadeGiro: 0.040,
-                    distanciaGomos: 0.17, multiplicadorCabeca: 1.05, hitboxMult: 0.85
+                    espessuraInicial: 5.2, espessuraMaxima: 6.7, comprimentoInicial: 4.4, comprimentoMaximo: 730,
+                    velocidadeBase: 0.91, velocidadeTurbo: 1.5, velocidadeGiro: 0.039,
+                    distanciaGomos: 0.17, multiplicadorCabeca: 1.02, hitboxMult: 0.85
                 },
                 mobile: {
                     espessuraInicial: 1.9, espessuraMaxima: 3.3, comprimentoInicial: 6, comprimentoMaximo: 730,
-                    velocidadeBase: 0.39, velocidadeTurbo: 1.5, velocidadeGiro: 0.036,
-                    distanciaGomos: 0.17, multiplicadorCabeca: 1.05, hitboxMult: 0.85
+                    velocidadeBase: 0.39, velocidadeTurbo: 1.5, velocidadeGiro: 0.033,
+                    distanciaGomos: 0.17, multiplicadorCabeca: 1.02, hitboxMult: 0.85
                 },
                 pontosParaEngrossar: 3400, pontosParaCrescer: 1.0, pontosIniciais: 20,
                 turbo: { custo: 0.2, tamanhoOrbe: 3.5, chanceOrbe: 0.10, quantidadeOrbe: 1 },
                 captura: { raioBase: 10, raioMagnet: 220, forcaAtracao: 8 }
             },
             zoom: {
-                pc: { inicial: 5.10, minimo: 4.70, fatorAfastamento: 1.620, velocidadeTransica: 0.011 },
-                mobile: { inicial: 5.10, minimo: 4.70, fatorAfastamento: 1.620, velocidadeTransica: 0.011 }
+                pc: { inicial: 5.10, minimo: 4.50, fatorAfastamento: 1.620, velocidadeTransica: 0.011 },
+                mobile: { inicial: 5.10, minimo: 4.50, fatorAfastamento: 1.620, velocidadeTransica: 0.011 }
             },
             mundo: {
                 tamanhoRaioInicial: 3000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
@@ -1970,7 +1970,7 @@
                 grad.addColorStop(0.3, baseColor);
                 grad.addColorStop(0.6, hexAlpha(baseColor, 0.4));
                 grad.addColorStop(1, 'rgba(0,0,0,0)');
-                
+
                 cx.fillStyle = grad;
                 cx.beginPath();
                 cx.arc(r, r, r * 0.75, 0, Math.PI * 2);
