@@ -1305,8 +1305,6 @@
                 </div>
 
                 <div class="death-actions">
-                    <button id="share-btn" class="btn-premium"
-                        style="background: rgba(255,255,255,0.05); color: #FFF; border-color: rgba(255,255,255,0.2);">COMPARTILHAR</button>
                     <button id="play-again-btn" class="btn-premium">RECOMEÇAR</button>
                 </div>
             </div>
@@ -1394,10 +1392,10 @@
                 multiplicadorCabeca: 1.02,
                 hitboxMult: 0.85,
                 zoomInicial: 5.10,
-                zoomMinimo: 4.30,
-                zoomFatorAfastamento: 1.620,
+                zoomMinimo: 4.00,
+                zoomFatorAfastamento: 0.620,
                 zoomVelTransicao: 0.011,
-                quantidadeBots: 150,
+                quantidadeBots: 250,
                 quantidadeComida: 15000,
                 quantidadeInsetos: 2,
                 tamanhoHexagono: 12,
@@ -3321,8 +3319,21 @@
 
             // Os orbs soltos pelo turbo (type === 2) agora não desaparecem com o tempo.
             // (A linha de decaimento f.life -= 0.006 foi removida)
-            if (frameCount % 60 === 0) { let writeF = 0; for (let i = 0; i < foods.length; i++) { if (!foods[i].dead) foods[writeF++] = foods[i]; } foods.length = writeF; }
-            if (frameCount % 45 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) cnt++; window._activeFoodCount = cnt; }
+            if (frameCount % 60 === 0) {
+                let writeF = 0;
+                const arenaRSq = currentArenaRadius * currentArenaRadius;
+                for (let i = 0; i < foods.length; i++) {
+                    const f = foods[i];
+                    if (f.dead) continue;
+                    // Cull orbs que ficaram fora da arena (contração do mapa)
+                    const fdx = f.x - WORLD_CENTER, fdy = f.y - WORLD_CENTER;
+                    if ((fdx * fdx + fdy * fdy) > arenaRSq) { f.dead = true; continue; }
+                    foods[writeF++] = f;
+                }
+                foods.length = writeF;
+                rebuildFoodGrid(); // Rebuild imediato após compactação para evitar índices fantasmas
+            }
+            if (frameCount % 45 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead) cnt++; window._activeFoodCount = cnt; }
             if ((window._activeFoodCount || 0) < cfgMundo.quantidadeComida) {
                 const _spawnBatch = CONFIG.dynamic.getSpawnBatch();
                 spawnFood(_spawnBatch);
@@ -3402,10 +3413,7 @@
         // ======================================================================
         // EVENTOS E INTERAÇÕES
         // ======================================================================
-        document.getElementById('share-btn').addEventListener('click', () => {
-            const text = `🐍 Fiz ${Math.floor(player.score).toLocaleString()} pontos e destruí ${playerKills} inimigos no Serpente - O Conto do Rei! Consegues bater o meu recorde?`;
-            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text); document.getElementById('share-btn').innerText = "COPIADO!"; setTimeout(() => document.getElementById('share-btn').innerText = "COMPARTILHAR", 2000); } else { let input = document.createElement('textarea'); input.value = text; document.body.appendChild(input); input.select(); document.execCommand('copy'); document.body.removeChild(input); document.getElementById('share-btn').innerText = "COPIADO!"; setTimeout(() => document.getElementById('share-btn').innerText = "COMPARTILHAR", 2000); }
-        });
+
 
         function resize() { vpWidth = window.innerWidth; vpHeight = window.innerHeight; dpr = IS_MOBILE_CLIENT ? Math.min(window.devicePixelRatio || 1, PerformanceManager.getCfg().dprCap) : (window.devicePixelRatio || 1); CONFIG.dynamic.invalidate(); /* Recalcula config dinâmica */ if (gameCanvasElement) { gameCanvasElement.width = vpWidth * dpr; gameCanvasElement.height = vpHeight * dpr; gameCanvasElement.style.width = vpWidth + 'px'; gameCanvasElement.style.height = vpHeight + 'px'; } if (minimapCanvasElement) { minimapCanvasElement.width = 140 * dpr; minimapCanvasElement.height = 140 * dpr; minimapCanvasElement.style.width = '100%'; minimapCanvasElement.style.height = '100%'; mCtxElement.setTransform(1, 0, 0, 1, 0, 0); mCtxElement.scale(dpr, dpr); } }
         window.addEventListener('resize', resize); window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
