@@ -1340,11 +1340,11 @@
                 captura: { raioBase: 10, raioMagnet: 220, forcaAtracao: 8 }
             },
             zoom: {
-                pc: { inicial: 5.10, minimo: 4.20, fatorAfastamento: 0.620, velocidadeTransica: 0.011 },
-                mobile: { inicial: 5.10, minimo: 4.20, fatorAfastamento: 0.620, velocidadeTransica: 0.011 }
+                pc: { inicial: 5.10, minimo: 4.00, fatorAfastamento: 0.820, velocidadeTransica: 0.011 },
+                mobile: { inicial: 5.10, minimo: 4.00, fatorAfastamento: 0.820, velocidadeTransica: 0.011 }
             },
             mundo: {
-                tamanhoRaioInicial: 4000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
+                tamanhoRaioInicial: 3000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
                 pc: { quantidadeBots: 200, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 12 },
                 mobile: { quantidadeBots: 200, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 2 },
                 distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
@@ -2692,11 +2692,11 @@
                 if (dropFood) {
                     const totalValue = this.score * 0.75; // 75% do valor volta ao mapa
 
-                    // Distribuição equilibrada: 1 orb a cada ~4 segmentos, limitada para performance
+                    // Distribuição equilibrada: 2 orb a cada ~4 segmentos, limitada para performance
                     const numOrbs = Math.min(250, Math.floor(this.segments.length / 4));
                     if (numOrbs > 0) {
                         const valPerOrb = totalValue / numOrbs;
-                        const segmentStep = Math.max(1, Math.floor(this.segments.length / numOrbs));
+                        const segmentStep = Math.max(2, Math.floor(this.segments.length / numOrbs));
 
                         for (let i = 0; i < this.segments.length; i += segmentStep) {
                             const seg = this.segments[i];
@@ -2708,7 +2708,7 @@
                             const oy = (Math.random() - 0.5) * drift;
 
                             const color = this.mainColor;
-                            const size = CONFIG.mundo.comida.tamanhoMorte + Math.random() * 1.5;
+                            const size = CONFIG.mundo.comida.tamanhoMorte + Math.random() * 1.6;
 
                             foods.push(new Food(seg.x + ox, seg.y + oy, size, color, 1, valPerOrb));
                         }
