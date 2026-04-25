@@ -1326,8 +1326,8 @@
         const CONFIG = {
             cobra: {
                 pc: {
-                    espessuraInicial: 5.4, espessuraMaxima: 7.7, comprimentoInicial: 4, comprimentoMaximo: 730,
-                    velocidadeBase: 0.91, velocidadeTurbo: 1.8, velocidadeGiro: 0.040,
+                    espessuraInicial: 5.2, espessuraMaxima: 6.7, comprimentoInicial: 4.2, comprimentoMaximo: 730,
+                    velocidadeBase: 0.91, velocidadeTurbo: 1.7, velocidadeGiro: 0.040,
                     distanciaGomos: 0.17, multiplicadorCabeca: 1.05, hitboxMult: 0.85
                 },
                 mobile: {
@@ -1348,7 +1348,10 @@
                 pc: { quantidadeBots: 150, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 12 },
                 mobile: { quantidadeBots: 100, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 2 },
                 distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
-                comida: { tamanhoMin: 2.00, tamanhoMax: 4.10, tamanhoMorte: 3.10, tamanhoMorteBonus: 1.60 }
+                comida: {
+                    tamanhoMin: 2.00, tamanhoMax: 4.10, tamanhoMorte: 3.10, tamanhoMorteBonus: 1.60,
+                    densidadeBase: 0.15, densidadeCentro: 0.35, densidadeBorda: 0.05
+                }
             },
             powerups: {
                 spawnTimerMin: 600, spawnTimerMax: 900, limiteNoMapa: 0,
@@ -1554,9 +1557,9 @@
 
         // OTIMIZAÇÃO: Arrays globais reciclados para evitar Garbage Collection
         const FOOD_CELL_SIZE = 200; let foodGrid = new Map();
-        let _nearbyFoodList = []; let _foodAdded = new Uint8Array(100000);
+        let _nearbyFoodList = []; let _foodAdded = new Uint8Array(250000); // Suporte para mapas ultra-densos
         function rebuildFoodGrid() {
-            for (let v of foodGrid.values()) v.length = 0; // Limpa os arrays sem os destruir
+            foodGrid.clear(); // Limpeza total para evitar índices fantasmas de frames anteriores
             for (let i = 0; i < foods.length; i++) {
                 let f = foods[i]; if (f.dead) continue;
                 let key = (((f.x / FOOD_CELL_SIZE) | 0) << 16) | (((f.y / FOOD_CELL_SIZE) | 0) & 0xFFFF);
@@ -1584,10 +1587,41 @@
             return _nearbyFoodList;
         }
 
+        function drawVisibleFoods(ctx, time, zoom) {
+            const margin = 120 / zoom;
+            const minX = camera.x - (vpWidth / zoom / 2) - margin;
+            const maxX = camera.x + (vpWidth / zoom / 2) + margin;
+            const minY = camera.y - (vpHeight / zoom / 2) - margin;
+            const maxY = camera.y + (vpHeight / zoom / 2) + margin;
+
+            const startX = Math.floor(minX / FOOD_CELL_SIZE);
+            const endX = Math.floor(maxX / FOOD_CELL_SIZE);
+            const startY = Math.floor(minY / FOOD_CELL_SIZE);
+            const endY = Math.floor(maxY / FOOD_CELL_SIZE);
+
+            for (let gx = startX; gx <= endX; gx++) {
+                for (let gy = startY; gy <= endY; gy++) {
+                    const key = (gx << 16) | (gy & 0xFFFF);
+                    const list = foodGrid.get(key);
+                    if (list) {
+                        for (let i = 0; i < list.length; i++) {
+                            const f = foods[list[i]];
+                            if (f && !f.dead) {
+                                // Culling final por coordenada
+                                if (f.x > minX && f.x < maxX && f.y > minY && f.y < maxY) {
+                                    f.draw(ctx, time, zoom);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         const SEGMENT_CELL_SIZE = 250; let segmentGrid = new Map();
         let _nearbySnakesList = []; let _snakeAdded = new Uint8Array(4000);
         function rebuildSegmentGrid() {
-            for (let v of segmentGrid.values()) v.length = 0;
+            segmentGrid.clear();
             for (let i = 0; i < snakes.length; i++) {
                 let s = snakes[i]; if (!s.alive) continue;
                 let step = Math.max(1, Math.floor(s.radius / 4));
@@ -1654,7 +1688,83 @@
 
         const ParticlePool = { pool: [], get: function (x, y, color, s) { let p; if (this.pool.length > 0) { p = this.pool.pop(); p.init(x, y, color, s); } else { p = new Particle(x, y, color, s); } return p; }, recycle: function (p) { if (this.pool.length < 500) this.pool.push(p); } };
         function createExplosion(x, y, color, amount) { if (!APP_SETTINGS.highGfx) amount = Math.floor(amount / (IS_MOBILE_CLIENT ? 4 : 2)); for (let i = 0; i < amount; i++) particles.push(ParticlePool.get(x, y, color, Math.random() * 5 + 2)); }
-        function spawnFood(count) { for (let i = 0; i < count; i++) { let p = getRandomPosInCircle(15, 600); let weight = Math.pow(Math.random(), 2.8); let size = CONFIG.mundo.comida.tamanhoMin + weight * (CONFIG.mundo.comida.tamanhoMax - CONFIG.mundo.comida.tamanhoMin); foods.push(new Food(p.x, p.y, size, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)], 0, size)); } }
+        const OrbSystem = {
+            gridSize: 120,
+            densityGrid: new Map(),
+
+            getGridKey(x, y) {
+                return `${Math.floor(x / this.gridSize)},${Math.floor(y / this.gridSize)}`;
+            },
+
+            getDensityAt(x, y) {
+                const dx = x - WORLD_CENTER, dy = y - WORLD_CENTER;
+                const distSq = dx * dx + dy * dy;
+                const radiusSq = currentArenaRadius * currentArenaRadius;
+                const normalizedDist = Math.sqrt(distSq / radiusSq);
+
+                // Mais denso no centro, menos nas bordas
+                let factor = 1.0;
+                if (normalizedDist < 0.3) factor = 1.8; // Hotspot central
+                else if (normalizedDist > 0.8) factor = 0.4; // Deserto periférico
+
+                return CONFIG.mundo.comida.densidadeBase * factor;
+            },
+
+            canSpawnAt(x, y) {
+                const key = this.getGridKey(x, y);
+                const count = this.densityGrid.get(key) || 0;
+                const targetDensity = this.getDensityAt(x, y) * 10; // Escala arbitrária para o grid
+                return count < targetDensity;
+            },
+
+            registerSpawn(x, y) {
+                const key = this.getGridKey(x, y);
+                this.densityGrid.set(key, (this.densityGrid.get(key) || 0) + 1);
+            },
+
+            clearGrid() {
+                this.densityGrid.clear();
+            },
+
+            spawnCluster(x, y, radius, amount, type = 0, value = 1, snakeColor = null) {
+                const safeAmount = Math.min(amount, 500); // Cap de segurança para evitar lag explosivo
+                for (let i = 0; i < safeAmount; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = Math.sqrt(Math.random()) * radius;
+                    const px = x + Math.cos(angle) * dist;
+                    const py = y + Math.sin(angle) * dist;
+
+                    const color = snakeColor || PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)];
+                    const size = type === 1 ? (CONFIG.mundo.comida.tamanhoMorte + Math.random() * 2) : (CONFIG.mundo.comida.tamanhoMin + Math.random() * 2);
+
+                    foods.push(new Food(px, py, size, color, type, value));
+                }
+            }
+        };
+
+        function spawnFood(count) {
+            let spawned = 0;
+            let attempts = 0;
+            while (spawned < count && attempts < count * 3) {
+                attempts++;
+                let p = getRandomPosInCircle(20, 400);
+
+                if (OrbSystem.canSpawnAt(p.x, p.y)) {
+                    let weight = Math.pow(Math.random(), 2.8);
+                    let size = CONFIG.mundo.comida.tamanhoMin + weight * (CONFIG.mundo.comida.tamanhoMax - CONFIG.mundo.comida.tamanhoMin);
+                    let color = PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)];
+
+                    foods.push(new Food(p.x, p.y, size, color, 0, size));
+                    OrbSystem.registerSpawn(p.x, p.y);
+                    spawned++;
+
+                    // Pequena chance de criar um micro-cluster orgânico
+                    if (Math.random() < 0.05) {
+                        OrbSystem.spawnCluster(p.x, p.y, 40, 3 + Math.floor(Math.random() * 4), 0, size * 0.8, color);
+                    }
+                }
+            }
+        }
 
         // ======================================================================
         // OTIMIZAÇÃO GRÁFICA & ORBES SLITHER.IO
@@ -1804,28 +1914,68 @@
                 this.cache['eye_iris_' + type] = c; return c;
             },
             getMapOrb: function (color) {
-                let key = 'slitherOrb_' + color; if (this.cache[key]) return this.cache[key];
+                let key = 'slitherOrb_v2_' + color; if (this.cache[key]) return this.cache[key];
                 let baseColor = color.split('-')[0];
                 const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const r = 32;
-                let g1 = cx.createRadialGradient(r, r, 0, r, r, r); g1.addColorStop(0, '#ffffff'); g1.addColorStop(0.25, lightenColor(baseColor, 50)); g1.addColorStop(0.5, baseColor); g1.addColorStop(1, hexAlpha(baseColor, 0));
-                cx.fillStyle = g1; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill();
+
+                // Brilho externo suave
+                let g2 = cx.createRadialGradient(r, r, 0, r, r, r);
+                g2.addColorStop(0, hexAlpha(baseColor, 0.4));
+                g2.addColorStop(1, 'rgba(0,0,0,0)');
+                cx.fillStyle = g2; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill();
+
+                // Núcleo
+                let g1 = cx.createRadialGradient(r, r, 0, r, r, r * 0.7);
+                g1.addColorStop(0, '#ffffff');
+                g1.addColorStop(0.3, lightenColor(baseColor, 40));
+                g1.addColorStop(0.7, baseColor);
+                g1.addColorStop(1, hexAlpha(baseColor, 0));
+                cx.fillStyle = g1; cx.beginPath(); cx.arc(r, r, r * 0.7, 0, Math.PI * 2); cx.fill();
+
                 this.cache[key] = c; return c;
             },
             getDeathOrb: function (color) {
-                let key = 'slitherDeath_' + color; if (this.cache[key]) return this.cache[key];
+                let key = 'slitherDeath_v2_' + color; if (this.cache[key]) return this.cache[key];
                 let baseColor = color.split('-')[0];
                 const c = document.createElement('canvas'); c.width = 80; c.height = 80; const cx = c.getContext('2d'); const r = 40;
-                let g1 = cx.createRadialGradient(r, r, 0, r, r, r); g1.addColorStop(0, '#ffffff'); g1.addColorStop(0.2, lightenColor(baseColor, 30)); g1.addColorStop(0.6, baseColor); g1.addColorStop(1, hexAlpha(baseColor, 0));
-                cx.fillStyle = g1; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill();
-                cx.strokeStyle = 'rgba(255,255,255,0.4)'; cx.lineWidth = 2; cx.beginPath(); cx.arc(r, r, r * 0.4, 0, Math.PI * 2); cx.stroke();
+
+                // Aura externa energética
+                let aura = cx.createRadialGradient(r, r, r * 0.4, r, r, r);
+                aura.addColorStop(0, hexAlpha(baseColor, 0.6));
+                aura.addColorStop(0.5, hexAlpha(baseColor, 0.2));
+                aura.addColorStop(1, 'rgba(0,0,0,0)');
+                cx.fillStyle = aura; cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fill();
+
+                // Núcleo cristalino
+                let g1 = cx.createRadialGradient(r, r, 0, r, r, r * 0.5);
+                g1.addColorStop(0, '#ffffff');
+                g1.addColorStop(0.4, lightenColor(baseColor, 30));
+                g1.addColorStop(0.8, baseColor);
+                g1.addColorStop(1, hexAlpha(baseColor, 0));
+                cx.fillStyle = g1; cx.beginPath(); cx.arc(r, r, r * 0.5, 0, Math.PI * 2); cx.fill();
+
+                cx.strokeStyle = 'rgba(255,255,255,0.7)'; cx.lineWidth = 1.5;
+                cx.beginPath(); cx.arc(r, r, r * 0.2, 0, Math.PI * 2); cx.stroke();
+
                 this.cache[key] = c; return c;
             },
             getBoostOrb: function (color) {
-                let key = 'slitherBoost_' + color; if (this.cache[key]) return this.cache[key];
+                let key = 'slitherBoost_v2_' + color; if (this.cache[key]) return this.cache[key];
                 let baseColor = color.split('-')[0];
                 const c = document.createElement('canvas'); c.width = 64; c.height = 64; const cx = c.getContext('2d'); const r = 32;
-                const grad = cx.createRadialGradient(r, r, 0, r, r, r); grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.35, baseColor); grad.addColorStop(1, 'rgba(0,0,0,0)');
-                cx.beginPath(); cx.arc(r, r, r, 0, Math.PI * 2); cx.fillStyle = grad; cx.fill();
+
+                // Orbe ovalada para indicar velocidade/rastro
+                cx.save();
+                cx.translate(r, r);
+                cx.scale(1.3, 0.7);
+                const grad = cx.createRadialGradient(0, 0, 0, 0, 0, r * 0.7);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.5, baseColor);
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                cx.beginPath(); cx.arc(0, 0, r * 0.7, 0, Math.PI * 2);
+                cx.fillStyle = grad; cx.fill();
+                cx.restore();
+
                 this.cache[key] = c; return c;
             }
         };
@@ -2035,7 +2185,61 @@
         }
 
         class Particle { constructor(x, y, color, s) { this.init(x, y, color, s); } init(x, y, color, s) { this.x = x; this.y = y; this.color = color; let a = Math.random() * Math.PI * 2, speed = s * (0.7 + Math.random() * 0.6); this.vx = Math.cos(a) * speed; this.vy = Math.sin(a) * speed; this.vy -= Math.random() * s * 0.4; this.gravity = 0.04 + Math.random() * 0.06; this.life = 1.0; this.decay = 0.018 + Math.random() * 0.022; this.size = 2.5 + Math.random() * 3.5; this.dead = false; this.shape = Math.random() < 0.3 ? 1 : 0; this.rot = Math.random() * Math.PI; } update() { this.x += this.vx; this.y += this.vy; this.vy += this.gravity; this.vx *= 0.98; this.life -= this.decay; if (this.life <= 0) this.dead = true; } draw(ctx) { if (this.life <= 0) return; ctx.globalAlpha = Math.max(0, this.life * this.life); ctx.fillStyle = this.color; const r = this.size * this.life; if (this.shape === 1 && !IS_MOBILE_CLIENT) { ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rot + this.life * 3); ctx.fillRect(-r, -r, r * 2, r * 2); ctx.restore(); } else { ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.fill(); } ctx.globalAlpha = 1; } }
-        class Food { constructor(x, y, r, c, type = 0, eV = 2) { this.x = x; this.y = y; this.radius = r; this.color = c; this.type = type; this.value = eV; this.wO = Math.random() * Math.PI * 2; this.wX = Math.random() * Math.PI * 2; this.wY = Math.random() * Math.PI * 2; this.dead = false; this.attractSpeed = 0; this.life = 1.0; this.isDropped = (type === 1 || type === 2); } draw(ctx, time, zoom) { let invZoom = Math.pow(1 / zoom, 0.7); let scaleMult = Math.max(0.65, Math.min(invZoom, 3.0)); let r = this.radius * scaleMult; let isLOD = (r < 2.5 || zoom < 0.5); let driftX = 0, driftY = 0, pulse = 1.0; if (!isLOD) { if (this.type === 0) { pulse = 1.0 + Math.sin(time * CONFIG.visual.velocidadeAnimacaoComida + this.wO) * 0.18; driftX = Math.sin(time * 0.0012 + this.wX) * 3; driftY = Math.cos(time * 0.0015 + this.wY) * 2; } else if (this.type === 1) { pulse = 1.0 + Math.sin(time * 0.02 + this.wO) * 0.25; driftX = Math.sin(time * 0.002 + this.wX) * 1.5; driftY = Math.cos(time * 0.002 + this.wY) * 1.5; } } r *= pulse; if (this.type === 2) r *= this.life; let img; if (this.type === 0) img = TextureManager.getMapOrb(this.color); else if (this.type === 1) img = TextureManager.getDeathOrb(this.color); else img = TextureManager.getBoostOrb(this.color); if (this.type === 2) ctx.globalAlpha = this.life; else if (!isLOD) ctx.globalAlpha = 0.85 + Math.sin(time * 0.015 + this.wX) * 0.15; ctx.drawImage(img, (this.x + driftX) - r, (this.y + driftY) - r, r * 2, r * 2); if (!isLOD && this.type !== 2) { ctx.globalCompositeOperation = 'lighter'; let corePulse = 1.0 + Math.sin(time * 0.025 + this.wO) * 0.3; let cr = Math.max(1, (r * 0.35) * corePulse); ctx.fillStyle = `rgba(255,255,255,${0.3 + corePulse * 0.2})`; ctx.beginPath(); ctx.arc((this.x + driftX), (this.y + driftY), cr, 0, Math.PI * 2); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; } ctx.globalAlpha = 1.0; } }
+        class Food {
+            constructor(x, y, r, c, type = 0, eV = 2) {
+                this.x = x; this.y = y; this.radius = r; this.color = c;
+                this.type = type; // 0: World, 1: Death, 2: Turbo
+                this.value = eV;
+                this.wO = Math.random() * Math.PI * 2;
+                this.wX = Math.random() * Math.PI * 2;
+                this.wY = Math.random() * Math.PI * 2;
+                this.dead = false;
+                this.attractSpeed = 0;
+                this.life = 1.0;
+                this.isDropped = (type === 1 || type === 2);
+                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.hoverOffset = Math.random() * 10;
+            }
+
+            draw(ctx, time, zoom) {
+                if (this.dead) return;
+
+                // LOD Baseado em Zoom e tamanho final na tela
+                const screenR = this.radius * zoom;
+                if (screenR < 1.2) {
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+                    return;
+                }
+
+                const animTime = time * 0.002 + this.pulsePhase;
+                const pulse = 1.0 + Math.sin(animTime * 1.5) * 0.12;
+                const dx = Math.sin(animTime * 0.8 + this.wX) * 3;
+                const dy = Math.cos(animTime * 0.7 + this.wY) * 3;
+
+                let rFinal = this.radius * pulse;
+                let img;
+                if (this.type === 0) img = TextureManager.getMapOrb(this.color);
+                else if (this.type === 1) img = TextureManager.getDeathOrb(this.color);
+                else {
+                    img = TextureManager.getBoostOrb(this.color);
+                    rFinal *= this.life;
+                }
+
+                if (this.type === 2) ctx.globalAlpha = this.life;
+                ctx.drawImage(img, (this.x + dx) - rFinal, (this.y + dy) - rFinal, rFinal * 2, rFinal * 2);
+                if (this.type === 2) ctx.globalAlpha = 1.0;
+
+                // Core luminoso apenas para orbs grandes
+                if (screenR > 5 && this.type !== 2) {
+                    const cr = rFinal * 0.35;
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.beginPath();
+                    ctx.arc(this.x + dx, this.y + dy, cr, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
         class Butterfly { constructor(x, y) { let rnd = Math.random(); if (rnd < 0.70) { this.color = '#ffdf00'; this.glowColor = 'rgba(255,220,0,'; this.value = 150; this.rarity = 'common'; } else if (rnd < 0.90) { this.color = '#00ffaa'; this.glowColor = 'rgba(0,255,150,'; this.value = 350; this.rarity = 'rare'; } else { this.color = '#cc44ff'; this.glowColor = 'rgba(180,50,255,'; this.value = 600; this.rarity = 'epic'; } this.x = x; this.y = y; this.radius = this.rarity === 'epic' ? 5.5 : this.rarity === 'rare' ? 4.5 : 4; this.angle = Math.random() * Math.PI * 2; this.speed = 1.8; this.targetSpeed = 1.8; this.wO = Math.random() * Math.PI * 2; this.isFleeing = false; this.trailPoints = []; this.phase = Math.random() * Math.PI * 2; this.dead = false; } update() { let nearest = null, minDist = 450; for (let s of snakes) { if (!s.alive) continue; let dx = s.x - this.x, dy = s.y - this.y; let dSq = dx * dx + dy * dy; if (dSq < minDist * minDist) { minDist = Math.sqrt(dSq); nearest = s; } } if (nearest && minDist < 300) { let evadeAngle = Math.atan2(this.y - nearest.y, this.x - nearest.x); let diff = evadeAngle - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2; this.angle += diff * 0.15; this.targetSpeed = 6.5; this.isFleeing = true; } else { this.angle += Math.sin(performance.now() * 0.002 + this.phase) * 0.05 + (Math.random() - 0.5) * 0.1; this.targetSpeed = 1.8 + Math.sin(performance.now() * 0.005 + this.phase) * 0.5; this.isFleeing = false; } this.speed += (this.targetSpeed - this.speed) * 0.1; this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; if (!IS_MOBILE_CLIENT && (this.isFleeing || APP_SETTINGS.highGfx)) { if (frameCount % 2 === 0) this.trailPoints.push({ x: this.x, y: this.y, life: 1.0, size: Math.random() * 3 + 1 }); } let writeT = 0; for (let i = 0; i < this.trailPoints.length; i++) { this.trailPoints[i].life -= 0.04; if (this.trailPoints[i].life > 0) this.trailPoints[writeT++] = this.trailPoints[i]; } this.trailPoints.length = writeT; let dxWC = this.x - WORLD_CENTER, dyWC = this.y - WORLD_CENTER; if ((dxWC * dxWC + dyWC * dyWC) > (currentArenaRadius - 150) * (currentArenaRadius - 150)) { this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); } } draw(ctx, time) { if (IS_MOBILE_CLIENT) { ctx.globalAlpha = 0.5; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 0.35, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; return; } for (let t of this.trailPoints) { ctx.globalAlpha = t.life * 0.6; ctx.fillStyle = this.color; ctx.beginPath(); if (this.rarity === 'epic' && Math.random() > 0.5) { let s = t.size * t.life; ctx.moveTo(t.x, t.y - s); ctx.lineTo(t.x + s / 2, t.y - s / 2); ctx.lineTo(t.x + s, t.y); ctx.lineTo(t.x + s / 2, t.y + s / 2); ctx.lineTo(t.x, t.y + s); ctx.lineTo(t.x - s / 2, t.y + s / 2); ctx.lineTo(t.x - s, t.y); ctx.lineTo(t.x - s / 2, t.y - s / 2); } else { ctx.arc(t.x, t.y, t.size * t.life, 0, Math.PI * 2); } ctx.fill(); } ctx.globalAlpha = 1; ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle + Math.PI / 2); let flap = Math.sin(time * 0.015); let flapScale = 0.3 + Math.abs(flap) * 0.7; let g = ctx.createRadialGradient(0, 0, 0, 0, 0, this.radius * 3); g.addColorStop(0, this.glowColor + '0.4)'); g.addColorStop(1, this.glowColor + '0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, this.radius * 3, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 1.5; ctx.lineJoin = 'round'; ctx.save(); ctx.scale(flapScale, 1); this.drawWing(ctx, -1, this.color); ctx.restore(); ctx.save(); ctx.scale(flapScale, 1); this.drawWing(ctx, 1, this.color); ctx.restore(); let bodyG = ctx.createLinearGradient(0, -this.radius, 0, this.radius); bodyG.addColorStop(0, '#111'); bodyG.addColorStop(0.5, '#333'); bodyG.addColorStop(1, '#000'); ctx.fillStyle = bodyG; ctx.beginPath(); ctx.ellipse(0, 0, this.radius * 0.2, this.radius * 1.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#555'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-1, -this.radius * 0.8); ctx.quadraticCurveTo(-4, -this.radius * 1.8, -2, -this.radius * 2.2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(1, -this.radius * 0.8); ctx.quadraticCurveTo(4, -this.radius * 1.8, 2, -this.radius * 2.2); ctx.stroke(); ctx.restore(); } drawWing(ctx, side, color) { ctx.fillStyle = color; ctx.strokeStyle = shadeColor(color, -60); ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(side * this.radius * 3, -this.radius * 2, side * this.radius * 4, this.radius, 0, this.radius * 0.5); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, this.radius * 0.3); ctx.bezierCurveTo(side * this.radius * 2.5, this.radius * 0.5, side * this.radius * 3, this.radius * 2.5, 0, this.radius * 1.2); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 0.3; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(side * this.radius * 1.5, -this.radius * 0.5, this.radius * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(side * this.radius * 1.2, this.radius * 0.8, this.radius * 0.3, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; } }
         class Firefly { constructor() { let r = Math.sqrt(Math.random()) * WORLD_CENTER, t = Math.random() * 2 * Math.PI; this.x = WORLD_CENTER + r * Math.cos(t); this.y = WORLD_CENTER + r * Math.sin(t); this.radius = 0.6 + Math.random() * 1.2; /* Compactado */ this.angle = Math.random() * Math.PI * 2; this.speed = 0.5 + Math.random() * 0.5; this.targetSpeed = this.speed; this.offset = Math.random() * Math.PI * 2; this.blinkSpeed = 0.002 + Math.random() * 0.005; let colorRnd = Math.random(); if (colorRnd < 0.55) { this.color = '255,255,255'; } else if (colorRnd < 0.82) { this.color = '140,220,255'; } else { this.color = '180,255,140'; } } update() { if (IS_MOBILE_CLIENT && frameCount % 3 !== 0) { this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; return; } let dX = 0, dY = 0, count = 0; let dFugaSq = CONFIG.visual[IS_MOBILE_CLIENT ? 'mobile' : 'pc'].distanciaFugaVagalumes ** 2; for (let s of snakes) { if (!s.alive) continue; let dx = s.x - this.x, dy = s.y - this.y; if ((dx * dx + dy * dy) < dFugaSq) { dX += s.x; dY += s.y; count++; } } if (count > 0) { let away = Math.atan2(this.y - (dY / count), this.x - (dX / count)); let diff = away - this.angle; while (diff < -Math.PI) diff += Math.PI * 2; while (diff > Math.PI) diff -= Math.PI * 2; this.angle += diff * 0.15; this.targetSpeed = 4.5; } else { this.angle += (Math.random() - 0.5) * 0.1; this.targetSpeed = 1.2; } this.speed += (this.targetSpeed - this.speed) * 0.08; this.x += Math.cos(this.angle) * this.speed; this.y += Math.sin(this.angle) * this.speed; let dxWC = this.x - WORLD_CENTER, dyWC = this.y - WORLD_CENTER; if ((dxWC * dxWC + dyWC * dyWC) > currentArenaRadius * currentArenaRadius) this.angle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); } draw(ctx, time) { let blink = Math.sin(time * this.blinkSpeed + this.offset); let brightness = Math.max(0, blink); if (brightness < 0.05) return; let cR = this.radius; if (!IS_MOBILE_CLIENT) ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(${this.color}, ${brightness * 0.8})`; ctx.beginPath(); ctx.arc(this.x, this.y, cR * 2.5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = `rgba(255,255,255, ${brightness})`; ctx.beginPath(); ctx.arc(this.x, this.y, cR, 0, Math.PI * 2); ctx.fill(); if (!IS_MOBILE_CLIENT) ctx.globalCompositeOperation = 'source-over'; } }
         class PowerUp { constructor(x, y, type) { this.x = x; this.y = y; this.type = type; this.cfg = POWERUP_TYPES[type]; this.radius = 18; this.dead = false; this.bornAt = performance.now(); this.life = 60 * 35; this.wO = Math.random() * Math.PI * 2; } update() { this.life--; if (this.life <= 0) this.dead = true; } draw(ctx, time, zoom) { let invZoom = Math.pow(1 / zoom, 0.7); let scaleMult = Math.max(0.85, Math.min(invZoom, 2.6)); let pulse = 1.0 + Math.sin(time * 0.005 + this.wO) * 0.18; let r = this.radius * scaleMult * pulse; let alpha = this.life < 180 ? (Math.sin(this.life * 0.3) * 0.5 + 0.5) : 1; ctx.save(); ctx.globalAlpha = alpha; let halo = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r * 3.2); halo.addColorStop(0, this.cfg.glow + '0.55)'); halo.addColorStop(0.5, this.cfg.glow + '0.15)'); halo.addColorStop(1, this.cfg.glow + '0)'); ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(this.x, this.y, r * 3.2, 0, Math.PI * 2); ctx.fill(); let ringRot = time * 0.002; ctx.strokeStyle = this.cfg.color; ctx.lineWidth = 2.5; ctx.setLineDash([r * 0.5, r * 0.3]); ctx.lineDashOffset = -ringRot * 50; ctx.beginPath(); ctx.arc(this.x, this.y, r * 1.4, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); let core = ctx.createRadialGradient(this.x - r * 0.3, this.y - r * 0.3, 0, this.x, this.y, r); core.addColorStop(0, '#fff'); core.addColorStop(0.4, this.cfg.color); core.addColorStop(1, this.cfg.glow + '0.2)'); ctx.fillStyle = core; ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.fill(); ctx.font = `${Math.floor(r * 1.25)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(this.cfg.emoji, this.x, this.y + r * 0.05); ctx.restore(); } }
@@ -2056,46 +2260,48 @@
                 for (let i = 0; i < this.targetLength; i++) { this.segments.push({ x: x - Math.cos(this.angle) * spc * i, y: y - Math.sin(this.angle) * spc * i }); }
             }
             // ── angle helper ──────────────────────────────────────────────────
-            _ad(a, b) { let d=a-b; while(d>Math.PI)d-=Math.PI*2; while(d<-Math.PI)d+=Math.PI*2; return d; }
+            _ad(a, b) { let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; }
 
             // ── AI initialiser (called once lazily) ───────────────────────────
             _initAI() {
                 // Per-name personality presets  (ag=aggression, ca=caution, gr=greed, iq=intelligence, im=impulsivity)
                 const P = {
-                    "Helena":    {ag:.22,ca:.82,gr:.88,iq:.62,im:.24},
-                    "Jorge":     {ag:.44,ca:.64,gr:.72,iq:.68,im:.32},
-                    "Principe":  {ag:.58,ca:.45,gr:.80,iq:.72,im:.44},
-                    "Vila":      {ag:.20,ca:.85,gr:.86,iq:.55,im:.20},
-                    "Milagre":   {ag:.27,ca:.78,gr:.90,iq:.60,im:.27},
-                    "Sombra":    {ag:.68,ca:.46,gr:.68,iq:.84,im:.40},
-                    "Veloz":     {ag:.70,ca:.28,gr:.74,iq:.62,im:.74},
-                    "Mago":      {ag:.60,ca:.52,gr:.58,iq:.92,im:.28},
-                    "Rei":       {ag:.78,ca:.36,gr:.42,iq:.82,im:.50},
-                    "Guardiao":  {ag:.72,ca:.40,gr:.38,iq:.82,im:.36},
-                    "Fantasma":  {ag:.56,ca:.50,gr:.82,iq:.78,im:.35},
-                    "Lenda":     {ag:.80,ca:.30,gr:.46,iq:.75,im:.58},
-                    "Tita":      {ag:.90,ca:.16,gr:.44,iq:.60,im:.68},
-                    "Tempestade":{ag:.84,ca:.18,gr:.50,iq:.46,im:.90},
-                    "Veneno":    {ag:.76,ca:.33,gr:.54,iq:.70,im:.54},
+                    "Helena": { ag: .22, ca: .82, gr: .88, iq: .62, im: .24 },
+                    "Jorge": { ag: .44, ca: .64, gr: .72, iq: .68, im: .32 },
+                    "Principe": { ag: .58, ca: .45, gr: .80, iq: .72, im: .44 },
+                    "Vila": { ag: .20, ca: .85, gr: .86, iq: .55, im: .20 },
+                    "Milagre": { ag: .27, ca: .78, gr: .90, iq: .60, im: .27 },
+                    "Sombra": { ag: .68, ca: .46, gr: .68, iq: .84, im: .40 },
+                    "Veloz": { ag: .70, ca: .28, gr: .74, iq: .62, im: .74 },
+                    "Mago": { ag: .60, ca: .52, gr: .58, iq: .92, im: .28 },
+                    "Rei": { ag: .78, ca: .36, gr: .42, iq: .82, im: .50 },
+                    "Guardiao": { ag: .72, ca: .40, gr: .38, iq: .82, im: .36 },
+                    "Fantasma": { ag: .56, ca: .50, gr: .82, iq: .78, im: .35 },
+                    "Lenda": { ag: .80, ca: .30, gr: .46, iq: .75, im: .58 },
+                    "Tita": { ag: .90, ca: .16, gr: .44, iq: .60, im: .68 },
+                    "Tempestade": { ag: .84, ca: .18, gr: .50, iq: .46, im: .90 },
+                    "Veneno": { ag: .76, ca: .33, gr: .54, iq: .70, im: .54 },
                 };
                 // Strip accents for lookup
-                const key = this.name.normalize('NFD').replace(/[̀-ͯ]/g,'');
-                const base = P[key] || {ag:.35+Math.random()*.55, ca:.20+Math.random()*.60,
-                                        gr:.40+Math.random()*.50, iq:.30+Math.random()*.60,
-                                        im:.20+Math.random()*.65};
+                const key = this.name.normalize('NFD').replace(/[̀-ͯ]/g, '');
+                const base = P[key] || {
+                    ag: .35 + Math.random() * .55, ca: .20 + Math.random() * .60,
+                    gr: .40 + Math.random() * .50, iq: .30 + Math.random() * .60,
+                    im: .20 + Math.random() * .65
+                };
                 // ±15% jitter so same-named bots still vary
-                const j = v => Math.max(.05, Math.min(.95, v+(Math.random()-.5)*.30));
+                const j = v => Math.max(.05, Math.min(.95, v + (Math.random() - .5) * .30));
                 this._ai = {
-                    tr: {ag:j(base.ag), ca:j(base.ca), gr:j(base.gr), iq:j(base.iq), im:j(base.im)},
-                    emo: {fear:0, hunger:.5, ego:0, rage:0},
+                    tr: { ag: j(base.ag), ca: j(base.ca), gr: j(base.gr), iq: j(base.iq), im: j(base.im) },
+                    emo: { fear: 0, hunger: .5, ego: 0, rage: 0 },
                     mood: 'neutral',          // 'aggressive' | 'neutral' | 'cautious'
                     moodTmr: 0,
-                    decTmr: Math.floor(Math.random()*18),
-                    wp: Math.random()*Math.PI*2,  // wander phase
+                    decTmr: Math.floor(Math.random() * 18),
+                    wp: Math.random() * Math.PI * 2,  // wander phase
                     wAmp: 0,                       // wander amplitude (smoothed)
-                    wanderAngle: Math.random()*Math.PI*2,
+                    wanderAngle: Math.random() * Math.PI * 2,
                     homeX: this.x, homeY: this.y,
-                    territoryR: 850+Math.random()*750,
+                    territoryR: 850 + Math.random() * 750,
                     boostCD: 0,
                     dodgeFrame: -999,
                     circTarget: null,
@@ -2115,32 +2321,32 @@
                 // ── COOLDOWNS ───────────────────────────────────────────────
                 if (ai.boostCD > 0) ai.boostCD--;
                 if (ai.attackTmr > 0) ai.attackTmr--; else ai.attacker = null;
-                if (ai.rageTmr   > 0) ai.rageTmr--;   else ai.rageTarget = null;
-                if (this.isKing) tr.ag = Math.min(.95, tr.ag+.0015);
+                if (ai.rageTmr > 0) ai.rageTmr--; else ai.rageTarget = null;
+                if (this.isKing) tr.ag = Math.min(.95, tr.ag + .0015);
 
                 // ── EMOTION TICK (O(1), every frame) ────────────────────────
                 const szF = Math.min(1, this.score / 8000);  // 0→small 1→huge
-                ai.emo.hunger = Math.max(0,Math.min(1, ai.emo.hunger*.996 + (szF<.25?.011:-.007)));
-                ai.emo.ego    = Math.max(0,Math.min(1, ai.emo.ego*.995   + (szF>.45?.013:-.009)));
-                ai.emo.fear   = Math.max(0, ai.emo.fear   - .0055);
-                ai.emo.rage   = Math.max(0, ai.emo.rage   - .0038);
+                ai.emo.hunger = Math.max(0, Math.min(1, ai.emo.hunger * .996 + (szF < .25 ? .011 : -.007)));
+                ai.emo.ego = Math.max(0, Math.min(1, ai.emo.ego * .995 + (szF > .45 ? .013 : -.009)));
+                ai.emo.fear = Math.max(0, ai.emo.fear - .0055);
+                ai.emo.rage = Math.max(0, ai.emo.rage - .0038);
 
                 // Death-zone decay
-                for (let z=ai.deathZones.length-1;z>=0;z--)
-                    if (frameCount-ai.deathZones[z].born>720) ai.deathZones.splice(z,1);
+                for (let z = ai.deathZones.length - 1; z >= 0; z--)
+                    if (frameCount - ai.deathZones[z].born > 720) ai.deathZones.splice(z, 1);
 
                 // ── IMMEDIATE SELF-COLLISION (every frame) ──────────────────
                 {
                     const spc = this.conf.espessuraInicial * CONFIG.cobra.distanciaGomos;
-                    const skip = Math.max(10, Math.ceil(this.radius*3.5/Math.max(.1,spc)));
-                    const selfR = this.isBoosting ? this.radius*24 : this.radius*12;
-                    for (let k=skip; k<this.segments.length; k+=2) {
-                        const seg=this.segments[k], ds=Math.hypot(seg.x-this.x,seg.y-this.y);
-                        if (ds>selfR) break;
-                        const ad=this._ad(Math.atan2(seg.y-this.y,seg.x-this.x),this.angle);
-                        if (Math.abs(ad)<1.6) {
-                            this.isBoosting=false; ai.emo.fear=Math.min(1,ai.emo.fear+.22);
-                            this.targetAngle=this.angle+(ad<0?Math.PI*.62:-Math.PI*.62)+(Math.random()-.5)*.22;
+                    const skip = Math.max(10, Math.ceil(this.radius * 3.5 / Math.max(.1, spc)));
+                    const selfR = this.isBoosting ? this.radius * 24 : this.radius * 12;
+                    for (let k = skip; k < this.segments.length; k += 2) {
+                        const seg = this.segments[k], ds = Math.hypot(seg.x - this.x, seg.y - this.y);
+                        if (ds > selfR) break;
+                        const ad = this._ad(Math.atan2(seg.y - this.y, seg.x - this.x), this.angle);
+                        if (Math.abs(ad) < 1.6) {
+                            this.isBoosting = false; ai.emo.fear = Math.min(1, ai.emo.fear + .22);
+                            this.targetAngle = this.angle + (ad < 0 ? Math.PI * .62 : -Math.PI * .62) + (Math.random() - .5) * .22;
                             return;
                         }
                     }
@@ -2148,212 +2354,211 @@
 
                 // ── ENEMY DANGER (every frame) ──────────────────────────────
                 {
-                    const scanR = this.radius*(7+tr.ca*5+ai.emo.fear*5+this.isBoosting*2);
-                    let wDist=scanR, wAngle=0, danger=false;
+                    const scanR = this.radius * (7 + tr.ca * 5 + ai.emo.fear * 5 + this.isBoosting * 2);
+                    let wDist = scanR, wAngle = 0, danger = false;
                     for (const o of snakes) {
-                        if (o===this||!o.alive) continue;
-                        const dH=Math.hypot(o.x-this.x,o.y-this.y);
-                        if (dH>scanR+o.radius*2) continue;
-                        const step=dH<this.radius*8?2:5;
-                        for (let k=0;k<o.segments.length;k+=step) {
-                            const seg=o.segments[k];
-                            const ds=Math.hypot(seg.x-this.x,seg.y-this.y);
-                            const hz=this.radius*(3.5+tr.ca*2.8+ai.emo.fear*3.2);
-                            if (ds<hz) {
-                                const ad=this._ad(Math.atan2(seg.y-this.y,seg.x-this.x),this.angle);
-                                if (Math.abs(ad)<1.9&&ds<wDist) {
-                                    wDist=ds; wAngle=Math.atan2(this.y-seg.y,this.x-seg.x); danger=true;
-                                    if (o!==ai.attacker){ai.attacker=o;ai.attackTmr=280;}
-                                    if (ai.emo.rage<.35){ai.emo.rage=.60;ai.rageTarget=o;ai.rageTmr=220;}
+                        if (o === this || !o.alive) continue;
+                        const dH = Math.hypot(o.x - this.x, o.y - this.y);
+                        if (dH > scanR + o.radius * 2) continue;
+                        const step = dH < this.radius * 8 ? 2 : 5;
+                        for (let k = 0; k < o.segments.length; k += step) {
+                            const seg = o.segments[k];
+                            const ds = Math.hypot(seg.x - this.x, seg.y - this.y);
+                            const hz = this.radius * (3.5 + tr.ca * 2.8 + ai.emo.fear * 3.2);
+                            if (ds < hz) {
+                                const ad = this._ad(Math.atan2(seg.y - this.y, seg.x - this.x), this.angle);
+                                if (Math.abs(ad) < 1.9 && ds < wDist) {
+                                    wDist = ds; wAngle = Math.atan2(this.y - seg.y, this.x - seg.x); danger = true;
+                                    if (o !== ai.attacker) { ai.attacker = o; ai.attackTmr = 280; }
+                                    if (ai.emo.rage < .35) { ai.emo.rage = .60; ai.rageTarget = o; ai.rageTmr = 220; }
                                 }
                             }
                         }
                         if (danger) break;
                     }
                     if (danger) {
-                        ai.emo.fear=Math.min(1,ai.emo.fear+.16);
-                        const ok=(frameCount-ai.dodgeFrame)>Math.floor((1-tr.iq)*5+1);
+                        ai.emo.fear = Math.min(1, ai.emo.fear + .16);
+                        const ok = (frameCount - ai.dodgeFrame) > Math.floor((1 - tr.iq) * 5 + 1);
                         if (ok) {
-                            ai.dodgeFrame=frameCount;
-                            const L=wAngle+Math.PI*.58, R=wAngle-Math.PI*.58, pD=this.radius*8;
-                            let cL=true, cR=true;
+                            ai.dodgeFrame = frameCount;
+                            const L = wAngle + Math.PI * .58, R = wAngle - Math.PI * .58, pD = this.radius * 8;
+                            let cL = true, cR = true;
                             for (const os of snakes) {
-                                if (os===this||!os.alive) continue;
-                                const st=Math.max(5,Math.floor(os.segments.length/18));
-                                for (let ks=0;ks<os.segments.length;ks+=st) {
-                                    const sx=os.segments[ks].x,sy=os.segments[ks].y;
-                                    if(Math.hypot(sx-(this.x+Math.cos(L)*pD),sy-(this.y+Math.sin(L)*pD))<this.radius*2.4)cL=false;
-                                    if(Math.hypot(sx-(this.x+Math.cos(R)*pD),sy-(this.y+Math.sin(R)*pD))<this.radius*2.4)cR=false;
+                                if (os === this || !os.alive) continue;
+                                const st = Math.max(5, Math.floor(os.segments.length / 18));
+                                for (let ks = 0; ks < os.segments.length; ks += st) {
+                                    const sx = os.segments[ks].x, sy = os.segments[ks].y;
+                                    if (Math.hypot(sx - (this.x + Math.cos(L) * pD), sy - (this.y + Math.sin(L) * pD)) < this.radius * 2.4) cL = false;
+                                    if (Math.hypot(sx - (this.x + Math.cos(R) * pD), sy - (this.y + Math.sin(R) * pD)) < this.radius * 2.4) cR = false;
                                 }
                             }
-                            const esc=(cL&&!cR)?L:(cR&&!cL)?R:wAngle+Math.PI;
-                            const err=(Math.random()-.5)*(1-tr.iq)*.32;
-                            this.targetAngle=esc+err;
-                            this.isBoosting=wDist<this.radius*5&&ai.boostCD===0;
-                            if(this.isBoosting)ai.boostCD=20+Math.floor(Math.random()*14);
+                            const esc = (cL && !cR) ? L : (cR && !cL) ? R : wAngle + Math.PI;
+                            const err = (Math.random() - .5) * (1 - tr.iq) * .32;
+                            this.targetAngle = esc + err;
+                            this.isBoosting = wDist < this.radius * 5 && ai.boostCD === 0;
+                            if (this.isBoosting) ai.boostCD = 20 + Math.floor(Math.random() * 14);
                         }
                         return;
                     }
                 }
 
                 // ── ARENA BOUNDARY ──────────────────────────────────────────
-                const dCenter=Math.hypot(this.x-WORLD_CENTER,this.y-WORLD_CENTER);
-                if (dCenter>currentArenaRadius-480) {
-                    this.targetAngle=Math.atan2(WORLD_CENTER-this.y,WORLD_CENTER-this.x)+(Math.random()-.5)*.38;
-                    this.isBoosting=dCenter>currentArenaRadius-240&&ai.boostCD===0;
-                    if(this.isBoosting)ai.boostCD=10; return;
+                const dCenter = Math.hypot(this.x - WORLD_CENTER, this.y - WORLD_CENTER);
+                if (dCenter > currentArenaRadius - 480) {
+                    this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x) + (Math.random() - .5) * .38;
+                    this.isBoosting = dCenter > currentArenaRadius - 240 && ai.boostCD === 0;
+                    if (this.isBoosting) ai.boostCD = 10; return;
                 }
 
                 // ── WANDER NOISE (every frame — humanizing micro-drift) ──────
-                ai.wp += .013+tr.im*.024;
-                const noiseAmp = .022+tr.im*.065+ai.emo.rage*.038;
-                ai.wAmp = ai.wAmp*.90+noiseAmp*.10;
-                this.targetAngle += Math.sin(ai.wp)*ai.wAmp;
+                ai.wp += .013 + tr.im * .024;
+                const noiseAmp = .022 + tr.im * .065 + ai.emo.rage * .038;
+                ai.wAmp = ai.wAmp * .90 + noiseAmp * .10;
+                this.targetAngle += Math.sin(ai.wp) * ai.wAmp;
 
                 // ── STRATEGIC DECISION GATE ──────────────────────────────────
                 ai.decTmr--;
-                if (ai.decTmr>0) return;
-                const baseInt=Math.floor(4+(1-tr.im)*13+(1-tr.ag)*5+ai.emo.fear*9);
-                ai.decTmr=baseInt+Math.floor(Math.random()*9);
+                if (ai.decTmr > 0) return;
+                const baseInt = Math.floor(4 + (1 - tr.im) * 13 + (1 - tr.ag) * 5 + ai.emo.fear * 9);
+                ai.decTmr = baseInt + Math.floor(Math.random() * 9);
 
                 // ── MOOD TRANSITION ──────────────────────────────────────────
-                if (--ai.moodTmr<=0) {
-                    const rv=Math.random();
-                    const aB=tr.ag*.55+ai.emo.ego*.30+ai.emo.rage*.38-ai.emo.fear*.45;
-                    const cB=tr.ca*.55+ai.emo.fear*.38-ai.emo.ego*.18;
-                    ai.mood = rv<aB*.52 ? 'aggressive' : rv<aB*.52+cB*.52 ? 'cautious' : 'neutral';
-                    ai.moodTmr=180+Math.floor(Math.random()*320);
+                if (--ai.moodTmr <= 0) {
+                    const rv = Math.random();
+                    const aB = tr.ag * .55 + ai.emo.ego * .30 + ai.emo.rage * .38 - ai.emo.fear * .45;
+                    const cB = tr.ca * .55 + ai.emo.fear * .38 - ai.emo.ego * .18;
+                    ai.mood = rv < aB * .52 ? 'aggressive' : rv < aB * .52 + cB * .52 ? 'cautious' : 'neutral';
+                    ai.moodTmr = 180 + Math.floor(Math.random() * 320);
                 }
-                const mM = ai.mood==='aggressive'?1.55 : ai.mood==='cautious'?.52 : 1.0;
+                const mM = ai.mood === 'aggressive' ? 1.55 : ai.mood === 'cautious' ? .52 : 1.0;
 
                 // ── SCAN: FOOD ───────────────────────────────────────────────
-                let bestFood=null, bFScore=-1;
-                const fR=this.radius*(16+tr.gr*12);
-                for (const idx of getNearbyFoodIndices(this.x,this.y,fR)) {
-                    const f=foods[idx]; if(!f||f.dead) continue;
-                    const d=Math.hypot(f.x-this.x,f.y-this.y);
-                    let zpen=1;
-                    for(const z of ai.deathZones){if(Math.hypot(f.x-z.x,f.y-z.y)<220){zpen=.28;break;}}
-                    const sc=(f.value*(f.isDropped?5+tr.gr*4:1)*zpen*(1+ai.emo.hunger*.55))/Math.max(1,d);
-                    if(sc>bFScore){bFScore=sc;bestFood=f;}
+                let bestFood = null, bFScore = -1;
+                const fR = this.radius * (16 + tr.gr * 12);
+                for (const idx of getNearbyFoodIndices(this.x, this.y, fR)) {
+                    const f = foods[idx]; if (!f || f.dead) continue;
+                    const d = Math.hypot(f.x - this.x, f.y - this.y);
+                    let zpen = 1;
+                    for (const z of ai.deathZones) { if (Math.hypot(f.x - z.x, f.y - z.y) < 220) { zpen = .28; break; } }
+                    const sc = (f.value * (f.isDropped ? 5 + tr.gr * 4 : 1) * zpen * (1 + ai.emo.hunger * .55)) / Math.max(1, d);
+                    if (sc > bFScore) { bFScore = sc; bestFood = f; }
                 }
 
                 // ── SCAN: PREY & THREATS ─────────────────────────────────────
-                let bestPrey=null, bPScore=-1, bigThreat=null, bTDist=9999;
+                let bestPrey = null, bPScore = -1, bigThreat = null, bTDist = 9999;
                 // rage target overrides prey selection
-                if (ai.rageTarget&&ai.rageTarget.alive&&ai.rageTmr>0) bestPrey=ai.rageTarget;
-                const prR=this.radius*(13+tr.ag*11+ai.emo.ego*6);
+                if (ai.rageTarget && ai.rageTarget.alive && ai.rageTmr > 0) bestPrey = ai.rageTarget;
+                const prR = this.radius * (13 + tr.ag * 11 + ai.emo.ego * 6);
                 for (const s of snakes) {
-                    if (s===this||!s.alive) continue;
-                    const d=Math.hypot(s.x-this.x,s.y-this.y); if(d>prR+200) continue;
-                    const ratio=s.score/Math.max(1,this.score);
-                    if (!bestPrey && ratio<(1.08+tr.ag*.45)) {
-                        const ps=(1.4-ratio)*(1+ai.emo.ego*.4)*mM/Math.max(1,d)*1000;
-                        if(ps>bPScore){bPScore=ps;bestPrey=s;}
+                    if (s === this || !s.alive) continue;
+                    const d = Math.hypot(s.x - this.x, s.y - this.y); if (d > prR + 200) continue;
+                    const ratio = s.score / Math.max(1, this.score);
+                    if (!bestPrey && ratio < (1.08 + tr.ag * .45)) {
+                        const ps = (1.4 - ratio) * (1 + ai.emo.ego * .4) * mM / Math.max(1, d) * 1000;
+                        if (ps > bPScore) { bPScore = ps; bestPrey = s; }
                     }
-                    if (ratio>1.28&&d<bTDist){bigThreat=s;bTDist=d;}
+                    if (ratio > 1.28 && d < bTDist) { bigThreat = s; bTDist = d; }
                 }
 
                 // ── DROPPED FOOD CLUSTER → death-zone hint ──────────────────
-                if (bestFood&&bestFood.isDropped) {
-                    const nearby=getNearbyFoodIndices(bestFood.x,bestFood.y,300).filter(i=>foods[i]&&foods[i].isDropped&&!foods[i].dead).length;
-                    if (nearby>4) { ai.deathZones.push({x:bestFood.x,y:bestFood.y,born:frameCount}); if(ai.deathZones.length>6)ai.deathZones.shift(); }
+                if (bestFood && bestFood.isDropped) {
+                    const nearby = getNearbyFoodIndices(bestFood.x, bestFood.y, 300).filter(i => foods[i] && foods[i].isDropped && !foods[i].dead).length;
+                    if (nearby > 4) { ai.deathZones.push({ x: bestFood.x, y: bestFood.y, born: frameCount }); if (ai.deathZones.length > 6) ai.deathZones.shift(); }
                 }
 
                 // ── SCORE OPTIONS ────────────────────────────────────────────
-                const fMult=1+ai.emo.hunger*.58, egoM=1+ai.emo.ego*.5, fearM=1-ai.emo.fear*.55;
-                let act=null, aScore=-Infinity;
-                const try_=(id,sc)=>{ if(sc>aScore){aScore=sc;act=id;} };
+                const fMult = 1 + ai.emo.hunger * .58, egoM = 1 + ai.emo.ego * .5, fearM = 1 - ai.emo.fear * .55;
+                let act = null, aScore = -Infinity;
+                const try_ = (id, sc) => { if (sc > aScore) { aScore = sc; act = id; } };
 
-                if(bestFood){
-                    try_('food', tr.gr*fMult*(bFScore*55+(bestFood.isDropped?180:0)));
+                if (bestFood) {
+                    try_('food', tr.gr * fMult * (bFScore * 55 + (bestFood.isDropped ? 180 : 0)));
                 }
-                if(bestPrey&&bestPrey!==ai.rageTarget){
-                    const d=Math.hypot(bestPrey.x-this.x,bestPrey.y-this.y);
-                    try_('attack', tr.ag*mM*fearM*egoM*(750/Math.max(1,d)));
+                if (bestPrey && bestPrey !== ai.rageTarget) {
+                    const d = Math.hypot(bestPrey.x - this.x, bestPrey.y - this.y);
+                    try_('attack', tr.ag * mM * fearM * egoM * (750 / Math.max(1, d)));
                 }
-                if(ai.rageTarget&&ai.rageTarget.alive){
-                    try_('rage', tr.ag*.75+ai.emo.rage*1.25);
+                if (ai.rageTarget && ai.rageTarget.alive) {
+                    try_('rage', tr.ag * .75 + ai.emo.rage * 1.25);
                 }
-                if(bigThreat){
-                    const flScore=tr.ca*(1+ai.emo.fear*.75)*fearM*1.6+(bTDist<this.radius*9?2.8:.5);
+                if (bigThreat) {
+                    const flScore = tr.ca * (1 + ai.emo.fear * .75) * fearM * 1.6 + (bTDist < this.radius * 9 ? 2.8 : .5);
                     try_('flee', flScore);
                 }
-                try_('wander', .38+Math.random()*.28);
+                try_('wander', .38 + Math.random() * .28);
 
                 // ── EXECUTE ACTION ───────────────────────────────────────────
-                this.isBoosting=false;
-                const err=(Math.random()-.5)*(1-tr.iq)*.30;
+                this.isBoosting = false;
+                const err = (Math.random() - .5) * (1 - tr.iq) * .30;
 
-                if (act==='food'&&bestFood) {
-                    const d=Math.hypot(bestFood.x-this.x,bestFood.y-this.y);
-                    this.targetAngle=Math.atan2(bestFood.y-this.y,bestFood.x-this.x)+err;
-                    if((bestFood.isDropped||(tr.gr>.68&&d<420))&&ai.boostCD===0){
-                        this.isBoosting=true; ai.boostCD=8+Math.floor(Math.random()*8);
+                if (act === 'food' && bestFood) {
+                    const d = Math.hypot(bestFood.x - this.x, bestFood.y - this.y);
+                    this.targetAngle = Math.atan2(bestFood.y - this.y, bestFood.x - this.x) + err;
+                    if ((bestFood.isDropped || (tr.gr > .68 && d < 420)) && ai.boostCD === 0) {
+                        this.isBoosting = true; ai.boostCD = 8 + Math.floor(Math.random() * 8);
                     }
                 }
-                else if (act==='attack'&&bestPrey) {
-                    const d=Math.hypot(bestPrey.x-this.x,bestPrey.y-this.y);
-                    const tE=d/Math.max(1,this.speed);
-                    const iqF=.6+tr.iq*.5;
-                    this.targetAngle=Math.atan2(
-                        bestPrey.y+Math.sin(bestPrey.angle)*bestPrey.speed*tE*iqF-this.y,
-                        bestPrey.x+Math.cos(bestPrey.angle)*bestPrey.speed*tE*iqF-this.x)+err;
-                    if(d>100&&d<1300&&ai.boostCD===0&&tr.ag>.42){
-                        this.isBoosting=true; ai.boostCD=6+Math.floor(Math.random()*10);
+                else if (act === 'attack' && bestPrey) {
+                    const d = Math.hypot(bestPrey.x - this.x, bestPrey.y - this.y);
+                    const tE = d / Math.max(1, this.speed);
+                    const iqF = .6 + tr.iq * .5;
+                    this.targetAngle = Math.atan2(
+                        bestPrey.y + Math.sin(bestPrey.angle) * bestPrey.speed * tE * iqF - this.y,
+                        bestPrey.x + Math.cos(bestPrey.angle) * bestPrey.speed * tE * iqF - this.x) + err;
+                    if (d > 100 && d < 1300 && ai.boostCD === 0 && tr.ag > .42) {
+                        this.isBoosting = true; ai.boostCD = 6 + Math.floor(Math.random() * 10);
                     }
-                    if(d<750&&tr.iq>.52&&!ai.circTarget){ai.circTarget=bestPrey;ai.circPhase=1;}
+                    if (d < 750 && tr.iq > .52 && !ai.circTarget) { ai.circTarget = bestPrey; ai.circPhase = 1; }
                 }
-                else if (act==='rage'&&ai.rageTarget&&ai.rageTarget.alive) {
-                    const rt=ai.rageTarget, d=Math.hypot(rt.x-this.x,rt.y-this.y);
-                    this.targetAngle=Math.atan2(rt.y-this.y,rt.x-this.x)+err;
-                    if(d<1600&&ai.boostCD===0){this.isBoosting=true;ai.boostCD=9;}
+                else if (act === 'rage' && ai.rageTarget && ai.rageTarget.alive) {
+                    const rt = ai.rageTarget, d = Math.hypot(rt.x - this.x, rt.y - this.y);
+                    this.targetAngle = Math.atan2(rt.y - this.y, rt.x - this.x) + err;
+                    if (d < 1600 && ai.boostCD === 0) { this.isBoosting = true; ai.boostCD = 9; }
                 }
-                else if (act==='flee'&&bigThreat) {
-                    const fa=Math.atan2(this.y-bigThreat.y,this.x-bigThreat.x);
-                    if(bestFood&&tr.ca<.72){
-                        const foa=Math.atan2(bestFood.y-this.y,bestFood.x-this.x);
-                        const bl=tr.ca*.62;
-                        this.targetAngle=fa*bl+foa*(1-bl)+err;
-                    } else { this.targetAngle=fa+err; }
-                    if(bTDist<this.radius*8&&ai.boostCD===0){
-                        this.isBoosting=true; ai.boostCD=20+Math.floor(Math.random()*12);
+                else if (act === 'flee' && bigThreat) {
+                    const fa = Math.atan2(this.y - bigThreat.y, this.x - bigThreat.x);
+                    if (bestFood && tr.ca < .72) {
+                        const foa = Math.atan2(bestFood.y - this.y, bestFood.x - this.x);
+                        const bl = tr.ca * .62;
+                        this.targetAngle = fa * bl + foa * (1 - bl) + err;
+                    } else { this.targetAngle = fa + err; }
+                    if (bTDist < this.radius * 8 && ai.boostCD === 0) {
+                        this.isBoosting = true; ai.boostCD = 20 + Math.floor(Math.random() * 12);
                     }
                 }
                 else { // wander
-                    if(Math.random()<tr.im*.38+.05)
-                        ai.wanderAngle+=(Math.random()-.5)*(0.38+tr.im*.78);
-                    const dHome=Math.hypot(this.x-ai.homeX,this.y-ai.homeY);
-                    if(dHome>ai.territoryR){
-                        const ha=Math.atan2(ai.homeY-this.y,ai.homeX-this.x);
-                        ai.wanderAngle+=this._ad(ha,ai.wanderAngle)*.14;
+                    if (Math.random() < tr.im * .38 + .05)
+                        ai.wanderAngle += (Math.random() - .5) * (0.38 + tr.im * .78);
+                    const dHome = Math.hypot(this.x - ai.homeX, this.y - ai.homeY);
+                    if (dHome > ai.territoryR) {
+                        const ha = Math.atan2(ai.homeY - this.y, ai.homeX - this.x);
+                        ai.wanderAngle += this._ad(ha, ai.wanderAngle) * .14;
                     }
-                    this.targetAngle=ai.wanderAngle+err;
+                    this.targetAngle = ai.wanderAngle + err;
                 }
 
                 // ── ENCIRCLE (intelligent bots) ──────────────────────────────
                 if (ai.circTarget) {
-                    if(!ai.circTarget.alive||Math.hypot(ai.circTarget.x-this.x,ai.circTarget.y-this.y)>2200)
-                        {ai.circTarget=null;ai.circPhase=0;}
+                    if (!ai.circTarget.alive || Math.hypot(ai.circTarget.x - this.x, ai.circTarget.y - this.y) > 2200) { ai.circTarget = null; ai.circPhase = 0; }
                 }
-                if (ai.circTarget&&ai.circTarget.alive&&ai.circPhase>0) {
-                    const et=ai.circTarget, d=Math.hypot(et.x-this.x,et.y-this.y);
+                if (ai.circTarget && ai.circTarget.alive && ai.circPhase > 0) {
+                    const et = ai.circTarget, d = Math.hypot(et.x - this.x, et.y - this.y);
                     ai.circPhase++;
-                    if (ai.circPhase<38) {
-                        const tE=d/Math.max(1,this.speed);
-                        this.targetAngle=Math.atan2(et.y+Math.sin(et.angle)*et.speed*tE-this.y,
-                                                     et.x+Math.cos(et.angle)*et.speed*tE-this.x)+err;
-                        if(d>100&&ai.boostCD===0){this.isBoosting=true;ai.boostCD=5;}
-                    } else if (ai.circPhase<95) {
-                        this.targetAngle=et.angle+Math.PI*(Math.random()<.5?.52:-.52)+err;
-                        if(ai.boostCD===0){this.isBoosting=true;ai.boostCD=4;}
-                    } else if (ai.circPhase<210&&this.score>et.score*1.38) {
-                        const oR=Math.max(et.radius*2.4,et.radius*(10-(ai.circPhase-95)/30));
-                        const ata=Math.atan2(this.y-et.y,this.x-et.x);
-                        this.targetAngle=Math.atan2(et.y+Math.sin(ata+.22)*oR-this.y,
-                                                     et.x+Math.cos(ata+.22)*oR-this.x)+err;
-                        if(d>oR*1.25&&ai.boostCD===0){this.isBoosting=true;ai.boostCD=8;}
-                    } else {ai.circTarget=null;ai.circPhase=0;}
+                    if (ai.circPhase < 38) {
+                        const tE = d / Math.max(1, this.speed);
+                        this.targetAngle = Math.atan2(et.y + Math.sin(et.angle) * et.speed * tE - this.y,
+                            et.x + Math.cos(et.angle) * et.speed * tE - this.x) + err;
+                        if (d > 100 && ai.boostCD === 0) { this.isBoosting = true; ai.boostCD = 5; }
+                    } else if (ai.circPhase < 95) {
+                        this.targetAngle = et.angle + Math.PI * (Math.random() < .5 ? .52 : -.52) + err;
+                        if (ai.boostCD === 0) { this.isBoosting = true; ai.boostCD = 4; }
+                    } else if (ai.circPhase < 210 && this.score > et.score * 1.38) {
+                        const oR = Math.max(et.radius * 2.4, et.radius * (10 - (ai.circPhase - 95) / 30));
+                        const ata = Math.atan2(this.y - et.y, this.x - et.x);
+                        this.targetAngle = Math.atan2(et.y + Math.sin(ata + .22) * oR - this.y,
+                            et.x + Math.cos(ata + .22) * oR - this.x) + err;
+                        if (d > oR * 1.25 && ai.boostCD === 0) { this.isBoosting = true; ai.boostCD = 8; }
+                    } else { ai.circTarget = null; ai.circPhase = 0; }
                 }
             }
             update() {
@@ -2466,7 +2671,33 @@
                         DOM.inGameHud.classList.add('hidden');
                     }, 1500);
                 }
-                if (dropFood) { let step = 3, num = Math.max(1, Math.floor(this.segments.length / step)), val = this.score / num; for (let i = 0; i < this.segments.length; i += step) { let s = this.segments[i]; let rSize = CONFIG.mundo.comida.tamanhoMorte + Math.min(CONFIG.mundo.comida.tamanhoMorteBonus, val / 30); foods.push(new Food(s.x + (Math.random() * 6 - 3), s.y + (Math.random() * 6 - 3), rSize, this.skin[i % this.skin.length], 1, val)); } }
+                if (dropFood) {
+                    const totalValue = this.score * 0.75; // 75% do valor volta ao mapa
+
+                    // Distribuição equilibrada: 1 orb a cada ~4 segmentos, limitada para performance
+                    const numOrbs = Math.min(250, Math.floor(this.segments.length / 4));
+                    if (numOrbs > 0) {
+                        const valPerOrb = totalValue / numOrbs;
+                        const segmentStep = Math.max(1, Math.floor(this.segments.length / numOrbs));
+
+                        for (let i = 0; i < this.segments.length; i += segmentStep) {
+                            const seg = this.segments[i];
+                            if (!seg) continue;
+
+                            // Desvio orgânico suave para não parecer uma linha perfeitamente reta
+                            const drift = this.radius * 1.2;
+                            const ox = (Math.random() - 0.5) * drift;
+                            const oy = (Math.random() - 0.5) * drift;
+
+                            const color = this.mainColor || PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)];
+                            const size = CONFIG.mundo.comida.tamanhoMorte + Math.random() * 1.5;
+
+                            foods.push(new Food(seg.x + ox, seg.y + oy, size, color, 1, valPerOrb));
+                        }
+                    }
+
+
+                }
             }
             draw(ctx) {
                 if (!this.alive) return;
@@ -2781,14 +3012,9 @@
             player = new Snake(spawn.x, spawn.y, DOM.nick.value.trim() || "LENDA", skinIndex, true, CONFIG.cobra.pontosIniciais, ACCESSORIES[accIndex].id);
             player.activePowers = {}; snakes.push(player);
 
-            // BÔNUS DE NASCIMENTO: Cria um cluster de orbs focado perto do jogador para garantir um bom começo
-            for (let i = 0; i < 80; i++) {
-                let pAngle = Math.random() * Math.PI * 2;
-                let pRadius = Math.random() * 800;
-                let weight = Math.pow(Math.random(), 2.0);
-                let size = CONFIG.mundo.comida.tamanhoMin + weight * (CONFIG.mundo.comida.tamanhoMax - CONFIG.mundo.comida.tamanhoMin);
-                foods.push(new Food(spawn.x + Math.cos(pAngle) * pRadius, spawn.y + Math.sin(pAngle) * pRadius, size, PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)], 0, size));
-            }
+            // BÔNUS DE NASCIMENTO: Cria clusters orgânicos ao redor do jogador
+            OrbSystem.spawnCluster(spawn.x, spawn.y, 400, 40, 0, 2);
+            OrbSystem.spawnCluster(spawn.x, spawn.y, 800, 60, 0, 1.5);
 
             // PRÉ-SPAWN DE BOTS VETERANOS — arena competitiva desde o início
             const veteranTiers = [
@@ -2858,7 +3084,10 @@
             // (A linha de decaimento f.life -= 0.006 foi removida)
             if (frameCount % 60 === 0) { let writeF = 0; for (let i = 0; i < foods.length; i++) { if (!foods[i].dead) foods[writeF++] = foods[i]; } foods.length = writeF; }
             if (frameCount % 45 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) cnt++; window._activeFoodCount = cnt; }
-            if ((window._activeFoodCount || 0) < cfgMundo.quantidadeComida) { spawnFood(IS_MOBILE_CLIENT ? 8 : 15); window._activeFoodCount = (window._activeFoodCount || 0) + (IS_MOBILE_CLIENT ? 8 : 15); }
+            if ((window._activeFoodCount || 0) < cfgMundo.quantidadeComida) {
+                spawnFood(IS_MOBILE_CLIENT ? 12 : 25);
+                window._activeFoodCount = (window._activeFoodCount || 0) + (IS_MOBILE_CLIENT ? 12 : 25);
+            }
             if (butterflies.length < cfgMundo.quantidadeInsetos && Math.random() < 0.01) butterflies.push(new Butterfly(getSafeSpawnPos(100).x, getSafeSpawnPos(100).y));
 
             if (gameState === 'playing') {
@@ -2870,16 +3099,17 @@
                 for (let s of snakes) { if (!s.alive) continue; let dx = s.x - pu.x, dy = s.y - pu.y; let hit = s.radius + pu.radius; if (dx * dx + dy * dy < hit * hit) { applyPowerUp(s, pu.type); powerUps.splice(i, 1); break; } }
             }
 
-            if (frameCount % 2 === 0) rebuildFoodGrid(); rebuildSegmentGrid();
+            if (frameCount % 120 === 0) OrbSystem.clearGrid(); // Limpeza periódica do grid de densidade
+            if (frameCount % 2 === 0) { rebuildFoodGrid(); rebuildSegmentGrid(); }
             for (let i = 0; i < snakes.length; i++) snakes[i].update(); for (let i = 0; i < butterflies.length; i++) butterflies[i].update();
 
             let segStep = PerformanceManager.getCfg().segStep;
             for (let i = 0; i < snakes.length; i++) {
-                let s1 = snakes[i]; if (!s1.alive) continue; let s1Ghost = s1.activePowers && s1.activePowers.ghost > 0;
+                let s1 = snakes[i]; if (!s1 || !s1.alive) continue; let s1Ghost = s1.activePowers && s1.activePowers.ghost > 0;
                 let searchRadius = s1.radius + 150; let nearSnakesIdx = getNearbySnakesIndices(s1.x, s1.y, searchRadius);
                 for (let _k = 0; _k < nearSnakesIdx.length; _k++) {
                     let j = nearSnakesIdx[_k];
-                    let s2 = snakes[j]; if (i === j || !s2.alive) continue; if (s1Ghost) continue;
+                    let s2 = snakes[j]; if (!s2 || i === j || !s2.alive) continue; if (s1Ghost) continue;
                     let hitDist = (s1.radius * s1.conf.hitboxMult) + (s2.radius * s2.conf.hitboxMult); let dx = s1.x - s2.x; let dy = s1.y - s2.y;
                     if (Math.abs(dx) < 300 && Math.abs(dy) < 300) { if (dx * dx + dy * dy < hitDist * hitDist) { let loser = s1.score > s2.score ? s2 : s1; if (loser.activePowers && loser.activePowers.shield > 0) { loser.activePowers.shield = 0; if (loser.isPlayer) Haptic.medium(); } else loser.die(true); } }
                     for (let k = 0; k < s2.segments.length; k += segStep) {
@@ -2912,7 +3142,7 @@
             const camMinY = camera.y - (vpHeight / camera.zoom / 2) - frustumMargin; const camMaxY = camera.y + (vpHeight / camera.zoom / 2) + frustumMargin;
 
             if (gameState === 'playing' || gameState === 'dead') {
-                for (let i = 0; i < foods.length; i++) { let f = foods[i]; if (!f.dead && f.x > camMinX && f.x < camMaxX && f.y > camMinY && f.y < camMaxY) { f.draw(mainCtx, time, camera.zoom); } }
+                drawVisibleFoods(mainCtx, time, camera.zoom);
                 for (let i = 0; i < powerUps.length; i++) { let pu = powerUps[i]; if (pu.x > camMinX && pu.x < camMaxX && pu.y > camMinY && pu.y < camMaxY) pu.draw(mainCtx, time, camera.zoom); }
                 for (let i = 0; i < fireflies.length; i++) { let ff = fireflies[i]; if (Math.hypot(ff.x - camera.x, ff.y - camera.y) < cullingDist) ff.draw(mainCtx, time); }
                 for (let i = 0; i < butterflies.length; i++) { let b = butterflies[i]; if (Math.hypot(b.x - camera.x, b.y - camera.y) < cullingDist) b.draw(mainCtx, time); }
