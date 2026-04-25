@@ -2255,7 +2255,13 @@
 
         class Snake {
             constructor(x, y, n, sI, isP = false, startScore = CONFIG.cobra.pontosIniciais, aI = 0) {
-                this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.accId = aI; this.mainColor = this.skin[0]; this.isPlayer = isP; this.alive = true;
+                this.x = x; this.y = y; this.name = n; this.skinId = sI; this.skin = SKINS[sI]; this.accId = aI;
+                // Garantir que a cor principal das orbs não seja preta
+                this.mainColor = this.skin[0];
+                if (this.mainColor === '#000000' || this.mainColor === '#111111' || this.mainColor === '#222222' || this.mainColor === '#0b0c10' || this.mainColor === '#1a1a2e') {
+                    this.mainColor = this.skin[1] || PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)];
+                }
+                this.isPlayer = isP; this.alive = true;
                 this.angle = Math.random() * Math.PI * 2; this.targetAngle = this.angle;
                 this.conf = IS_MOBILE_CLIENT ? CONFIG.cobra.mobile : CONFIG.cobra.pc;
                 this.speed = this.conf.velocidadeBase; this.isBoosting = false; this.score = startScore;
@@ -2583,7 +2589,13 @@
                     if (frameCount % 2 === 0 && APP_SETTINGS.highGfx) this.trails.push({ x: this.segments[0].x, y: this.segments[0].y, life: 1.0 });
                     if (!hasMega && Math.random() < CONFIG.cobra.turbo.chanceOrbe) {
                         this.score -= CONFIG.cobra.turbo.custo; let t = this.segments[this.segments.length - 1];
-                        for (let q = 0; q < CONFIG.cobra.turbo.quantidadeOrbe; q++) foods.push(new Food(t.x + (Math.random() * 14 - 7), t.y + (Math.random() * 14 - 7), CONFIG.cobra.turbo.tamanhoOrbe, this.skin[this.segments.length % this.skin.length], 2, CONFIG.cobra.turbo.custo));
+                        for (let q = 0; q < CONFIG.cobra.turbo.quantidadeOrbe; q++) {
+                            let boostColor = this.mainColor;
+                            if (boostColor === '#000000' || boostColor === '#111111') {
+                                boostColor = this.skin[1] || '#ffffff';
+                            }
+                            foods.push(new Food(t.x + (Math.random() * 14 - 7), t.y + (Math.random() * 14 - 7), CONFIG.cobra.turbo.tamanhoOrbe, boostColor, 2, CONFIG.cobra.turbo.custo));
+                        }
                     }
                 } else { this.speed = this.conf.velocidadeBase; this.isBoosting = false; }
 
@@ -2695,7 +2707,7 @@
                             const ox = (Math.random() - 0.5) * drift;
                             const oy = (Math.random() - 0.5) * drift;
 
-                            const color = this.mainColor || PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)];
+                            const color = this.mainColor;
                             const size = CONFIG.mundo.comida.tamanhoMorte + Math.random() * 1.5;
 
                             foods.push(new Food(seg.x + ox, seg.y + oy, size, color, 1, valPerOrb));
