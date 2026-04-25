@@ -1434,34 +1434,35 @@
                 // scaleEfetivo é o multiplicador central para TODOS os parâmetros
                 const scaleEfetivo = scaleBase * clamp(aspectCorrection, 0.75, 1.25);
 
-                // ── 3. COBRA (tamanhos e velocidades em WU) ───────────────────
+                // ── 3. COBRA (lê do SUPER PAINEL e aplica escala) ──────────────
+                // Base = CONFIG.cobra.pc/mobile (respeitando o painel)
+                const cobraBase = isMobile ? CONFIG.cobra.mobile : CONFIG.cobra.pc;
                 const cobra = {
-                    espessuraInicial: REF.espessuraInicial * scaleEfetivo,
-                    espessuraMaxima: REF.espessuraMaxima * scaleEfetivo,
-                    comprimentoInicial: REF.comprimentoInicial,  // invariante lógico
-                    comprimentoMaximo: REF.comprimentoMaximo,    // invariante lógico
-                    velocidadeBase: REF.velocidadeBase * scaleEfetivo,
-                    velocidadeTurbo: REF.velocidadeTurbo * scaleEfetivo,
-                    velocidadeGiro: REF.velocidadeGiro * scaleEfetivo,
-                    distanciaGomos: REF.distanciaGomos,          // ratio, invariante
-                    multiplicadorCabeca: REF.multiplicadorCabeca, // ratio
-                    hitboxMult: REF.hitboxMult,                  // ratio
+                    espessuraInicial: cobraBase.espessuraInicial * scaleEfetivo,
+                    espessuraMaxima: cobraBase.espessuraMaxima * scaleEfetivo,
+                    comprimentoInicial: cobraBase.comprimentoInicial,  // invariante lógico
+                    comprimentoMaximo: cobraBase.comprimentoMaximo,    // invariante lógico
+                    velocidadeBase: cobraBase.velocidadeBase * scaleEfetivo,
+                    velocidadeTurbo: cobraBase.velocidadeTurbo * scaleEfetivo,
+                    velocidadeGiro: cobraBase.velocidadeGiro * scaleEfetivo,
+                    distanciaGomos: cobraBase.distanciaGomos,          // ratio, invariante
+                    multiplicadorCabeca: cobraBase.multiplicadorCabeca, // ratio
+                    hitboxMult: cobraBase.hitboxMult,                  // ratio
                 };
 
                 // ── 4. ZOOM / FOV ─────────────────────────────────────────────
-                // Zoom para manter a mesma FOV em world units
-                const zoomInicial = clamp(vW / FOV_REF, 2.0, 8.0);
-                const zoomMinimo = clamp(zoomInicial * (REF.zoomMinimo / REF.zoomInicial), 1.5, 7.0);
+                // Lê diretamente do SUPER PAINEL — os valores manuais são autoridade
+                const zoomBase = isMobile ? CONFIG.zoom.mobile : CONFIG.zoom.pc;
                 const zoom = {
-                    inicial: zoomInicial,
-                    minimo: zoomMinimo,
-                    fatorAfastamento: REF.zoomFatorAfastamento,
-                    velocidadeTransica: REF.zoomVelTransicao,
+                    inicial: zoomBase.inicial,
+                    minimo: zoomBase.minimo,
+                    fatorAfastamento: zoomBase.fatorAfastamento,
+                    velocidadeTransica: zoomBase.velocidadeTransica,
                 };
 
                 // ── 5. MUNDO (densidade proporcional à área visível) ──────────
                 const areaVisivelRef = (REF_W / REF.zoomInicial) * (REF_H / REF.zoomInicial);
-                const areaVisivel = (vW / zoomInicial) * (vH / zoomInicial);
+                const areaVisivel = (vW / zoom.inicial) * (vH / zoom.inicial);
                 const densityRatio = clamp(areaVisivel / areaVisivelRef, 0.3, 2.5);
 
                 const mundo = {
