@@ -3059,6 +3059,9 @@
                 }
             }
 
+            // Repor comida para o nível inicial a cada nova partida
+            { let wf = 0; for (let i = 0; i < foods.length; i++) { if (!foods[i].dead) foods[wf++] = foods[i]; } foods.length = wf; OrbSystem.clearGrid(); for (let i = 0; i < foods.length; i++) { if (foods[i].type === 0) OrbSystem.registerSpawn(foods[i].x, foods[i].y); } let cfgR = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc; let activeCnt = 0; for (let i = 0; i < foods.length; i++) if (foods[i].type === 0) activeCnt++; let deficit = cfgR.quantidadeComida - activeCnt; if (deficit > 0) spawnFood(deficit); window._activeFoodCount = activeCnt + Math.max(0, deficit); }
+
             let zV = CONFIG.zoom[IS_MOBILE_CLIENT ? 'mobile' : 'pc']; camera.zoom = zV.inicial; camera.x = player.x; camera.y = player.y; isMouseDown = false; smoothedJoystickAngle = player.angle;
 
             gameState = 'playing';
@@ -3103,7 +3106,13 @@
             // Os orbs soltos pelo turbo (type === 2) agora não desaparecem com o tempo.
             // (A linha de decaimento f.life -= 0.006 foi removida)
             if (frameCount % 60 === 0) { let writeF = 0; for (let i = 0; i < foods.length; i++) { if (!foods[i].dead) foods[writeF++] = foods[i]; } foods.length = writeF; }
-            if (frameCount % 30 === 0) { let cnt = 0; for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) cnt++; window._activeFoodCount = cnt; }
+            if (frameCount % 30 === 0) {
+                let cnt = 0;
+                for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) cnt++;
+                window._activeFoodCount = cnt;
+                OrbSystem.clearGrid();
+                for (let i = 0; i < foods.length; i++) if (!foods[i].dead && foods[i].type === 0) OrbSystem.registerSpawn(foods[i].x, foods[i].y);
+            }
             if ((window._activeFoodCount || 0) < cfgMundo.quantidadeComida) {
                 let deficit = cfgMundo.quantidadeComida - (window._activeFoodCount || 0);
                 let batch = Math.min(deficit, IS_MOBILE_CLIENT ? 80 : 150);
@@ -3121,7 +3130,6 @@
                 for (let s of snakes) { if (!s.alive) continue; let dx = s.x - pu.x, dy = s.y - pu.y; let hit = s.radius + pu.radius; if (dx * dx + dy * dy < hit * hit) { applyPowerUp(s, pu.type); powerUps.splice(i, 1); break; } }
             }
 
-            if (frameCount % 60 === 0) OrbSystem.clearGrid(); // Limpeza mais frequente para manter densidade atualizada
             if (frameCount % 2 === 0) { rebuildFoodGrid(); rebuildSegmentGrid(); }
             for (let i = 0; i < snakes.length; i++) snakes[i].update(); for (let i = 0; i < butterflies.length; i++) butterflies[i].update();
 
