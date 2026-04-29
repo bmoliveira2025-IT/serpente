@@ -1346,7 +1346,7 @@
             mundo: {
                 tamanhoRaioInicial: 3000, expansaoPorPonto: 28, taxaExpansao: 0.005, distanciaSeguraSpawn: 1200,
                 pc: { quantidadeBots: 200, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 12 },
-                mobile: { quantidadeBots: 200, quantidadeComida: 15000, quantidadeInsetos: 2, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 2 },
+                mobile: { quantidadeBots: 12, quantidadeComida: 2000, quantidadeInsetos: 0, corGrade: '#242424', corFundo: '#000000', tamanhoHexagono: 40 },
                 distribuicaoBots: { probabilidades: { pequeno: 0.15, medio: 0.35, grande: 0.25, gigante: 0.35 }, pontos: { pequeno: [2000, 3500], medio: [3500, 8000], grande: [8000, 15000], gigante: [25000, 35000] } },
                 comida: {
                     tamanhoMin: 2.00, tamanhoMax: 4.10, tamanhoMorte: 3.10, tamanhoMorteBonus: 1.70,
@@ -1430,10 +1430,10 @@
         let APP_SETTINGS = { audio: savedAudio !== null ? savedAudio === 'true' : true, highGfx: savedGfx !== null ? savedGfx === 'true' : !IS_MOBILE_CLIENT, performanceMode: false };
 
         const PerformanceManager = {
-            TIERS: { LOW: { dprCap: 0.9, particles: 20, vagalumes: 0, segStep: 12, renderScale: 0.75 }, MEDIUM: { dprCap: 1.2, particles: 60, vagalumes: 0, segStep: 8, renderScale: 0.90 }, HIGH: { dprCap: 1.6, particles: 250, vagalumes: 0, segStep: 4, renderScale: 1.00 } },
+            TIERS: { LOW: { dprCap: 0.9, particles: 20, vagalumes: 0, segStep: 12, renderScale: 0.75, bots: 6, food: 600 }, MEDIUM: { dprCap: 1.2, particles: 60, vagalumes: 0, segStep: 8, renderScale: 0.90, bots: 10, food: 1200 }, HIGH: { dprCap: 1.6, particles: 250, vagalumes: 0, segStep: 4, renderScale: 1.00, bots: 15, food: 2000 } },
             tier: 'HIGH', _framesSinceCheck: 0, _degradeCooldown: 0,
             getCfg() { return this.TIERS[this.tier]; },
-            apply(tier) { this.tier = tier; CONFIG.visual.vagalumesAtuais = this.TIERS[tier].vagalumes; },
+            apply(tier) { this.tier = tier; CONFIG.visual.vagalumesAtuais = this.TIERS[tier].vagalumes; if (IS_MOBILE_CLIENT) { CONFIG.mundo.mobile.quantidadeBots = this.TIERS[tier].bots; CONFIG.mundo.mobile.quantidadeComida = this.TIERS[tier].food; } },
             detect() {
                 let score = 0; const mem = navigator.deviceMemory || 4; if (mem >= 8) score += 2; else if (mem >= 4) score += 1;
                 try { const gl = document.createElement('canvas').getContext('webgl'); if (gl) { const dbg = gl.getExtension('WEBGL_debug_renderer_info'); if (dbg) { const r = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL).toLowerCase(); if (/apple gpu|m[123]|rtx|radeon rx [5-9]|geforce [3-4]/.test(r)) score += 2; else if (/intel|mali-g[567]|adreno [5-9]/.test(r)) score += 1; } } } catch (e) { }
@@ -3037,7 +3037,7 @@
             OrbSystem.spawnCluster(spawn.x, spawn.y, 800, 60, 0, 1.5);
 
             // PRÉ-SPAWN DE BOTS VETERANOS — arena competitiva desde o início
-            const veteranTiers = [
+            const veteranTiers = IS_MOBILE_CLIENT ? [] : [
                 { count: 15, minScore: 5000, maxScore: 8000 },
                 { count: 10, minScore: 8000, maxScore: 15000 }
             ];
@@ -3236,7 +3236,7 @@
 
         let cfgMundoInitial = IS_MOBILE_CLIENT ? CONFIG.mundo.mobile : CONFIG.mundo.pc;
         // BURST INICIAL: Preencher o mundo com comida imediatamente para eliminar espaços vazios
-        spawnFood(Math.min(cfgMundoInitial.quantidadeComida, IS_MOBILE_CLIENT ? 8000 : 12000));
+        spawnFood(Math.min(cfgMundoInitial.quantidadeComida, IS_MOBILE_CLIENT ? 2000 : 12000));
         window._activeFoodCount = foods.length;
         for (let i = 0; i < cfgMundoInitial.quantidadeBots; i++) {
             let sI = Math.floor(Math.random() * SKINS.length);
